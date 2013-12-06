@@ -1,0 +1,163 @@
+﻿
+@media screen and (min-width: 1080px) and (max-width: 1280px) {
+	html, body {
+		font-size: 14px !important;
+	}
+
+	input {
+		font-size: 14px !important;
+	}
+
+	textarea {
+		font-size: 14px !important;
+	}
+
+	font {
+		font-family: Verdana !important;
+		font-size: 14px !important;
+	}
+	.esriOuterContainer {
+		width: 100%;
+		margin: 0px auto;
+		height: 100%;
+		background: #e5f1f9;
+	}
+	.esriMapBookContainer {
+		width: 87%;
+		margin: 0px auto;
+		float: left;
+	}
+	.esriNext {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-left: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriPrevious {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-right: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriMapBookList {
+		margin: 26px 0 0 6%;
+		padding-top: 10px;
+		text-align: center;
+		width: 17%;
+	}
+	div.next, div.nextDisabled, div.prevDisabled, div.prev {
+		top: 41%;
+	}
+}
+
+@media screen and (min-width: 768px) and (max-width: 1080px) {
+	html, body {
+		font-size: 14px !important;
+	}
+
+	input {
+		font-size: 14px !important;
+	}
+
+	textarea {
+		font-size: 14px !important;
+	}
+
+	font {
+		font-family: Verdana !important;
+		font-size: 14px !important;
+	}
+	.esriOuterContainer {
+		width: 100%;
+		margin: 0px auto;
+		height: 100%;
+		background: #e5f1f9;
+	}
+	.esriMapBookContainer {
+		width: 87%;
+		margin: 0px auto;
+		float: left;
+	}
+	.esriNext {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-left: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriPrevious {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-right: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriMapBookList {
+		margin: 26px 0 0 6%;
+		padding-top: 10px;
+		text-align: center;
+		width: 17%;
+	}
+	div.next, div.nextDisabled, div.prevDisabled, div.prev {
+		top: 41%;
+		width: 40px !important;
+	}
+}
+
+@media screen and (min-width: 641px) and (max-width:767px) {
+	html, body {
+		font-size: 14px !important;
+	}
+
+	input {
+		font-size: 14px !important;
+	}
+
+	textarea {
+		font-size: 14px !important;
+	}
+
+	font {
+		font-family: Verdana !important;
+		font-size: 14px !important;
+	}
+	.esriOuterContainer {
+		width: 100%;
+		margin: 0px auto;
+		height: 100%;
+	}
+	.esriMapBookContainer {
+		width: 87%;
+		margin: 0px auto;
+		float: left;
+		background: #e5f1f9;
+	}
+	.esriNext {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-left: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriPrevious {
+		background: #e5f1f9;
+		float: left;
+		height: 100%;
+		border-right: 1px Solid #007ac2;
+		width: 6%;
+	}
+	.esriMapBookList {
+		margin: 26px 0 0 6%;
+		padding-top: 10px;
+		text-align: center;
+		width: 17%;
+	}
+	div.next, div.nextDisabled, div.prevDisabled, div.prev {
+		width: 40px;
+		top: 41%;
+	}
+
+
+}

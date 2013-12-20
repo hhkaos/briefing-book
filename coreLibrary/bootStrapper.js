@@ -23,8 +23,9 @@ require([
         "application/appConfig",
         "application/bookList",
         "application/moduleData",
+        "esri/config",
         "dojo/domReady!"
-    ], function (widgetLoader, appConfig, bookList, moduleData, domReady) {
+    ], function (widgetLoader, appConfig, bookList, moduleData,esriConfig, domReady) {
 
         //========================================================================================================================//
 
@@ -34,9 +35,12 @@ require([
             * load application configuration settings from configuration file
             * create an object of widget loader class
             */
+            esriConfig.defaults.io.proxyUrl = "proxy.ashx";
+            esriConfig.defaults.io.alwaysUseProxy = false;
+            esriConfig.defaults.io.timeout = 600000;
             dojo.appConfigData = appConfig;
             dojo.bookListData = bookList;
-            dojo.moduleData = moduleData;
+            dojo.moduleData = moduleData.BookDetails;
             var applicationWidgetLoader = new widgetLoader();
             applicationWidgetLoader.startup();
 

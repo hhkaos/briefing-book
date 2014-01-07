@@ -64,6 +64,9 @@
 		width: 6%;
 	}
 
+	.esriTitleListDiv {
+		width: 80% !important;
+	}
 
 	.esriNextImage, .esriNextDisabled, .esriPrevDisabled, .esriPreviousImage {
 		top: 41%;
@@ -100,6 +103,9 @@
 		width: 6%;
 	}
 
+	.esriTitleListDiv {
+		width: 80% !important;
+	}
 
 	.esriNextImage, .esriNextDisabled, .esriPrevDisabled, .esriPreviousImage {
 		width: 40px;
@@ -146,6 +152,9 @@
 	}
 	.esriBookContainer {
 		width: 33% !important;
+	}
+	.esriTitleListDiv {
+		width: 70% !important;
 	}
 }
 

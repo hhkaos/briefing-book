@@ -1,28 +1,34 @@
-﻿define([],function () {
+﻿define([
+
+],
+function () {
 		return {
-				Books: [{
+				Books: [
+         {
          		title: "Esri Briefing Book",
          		authorName: "Kevin Peterson",
          		CoverPage: {
-         				layout: "coverPageLayout1",
+         				layout: "coverPageLayout",
          				columns: 2,
+         				columnWidth: [60, 40],
          				content: [
                   [
-                     "title",         					// Book title
-                     "subtitle",      					// Book subtitle
-                     "author",        					// Author
-                     "date",        						// Last updated date
-                     "logo",        						// First Logo
+                     "title",         												// Book title
+                     "cv-345762237",      								// Book subtitle
+                     "author",        												// Author
+                     "date",        														// Last updated date
+                     "cv-345762240",        						// First Logo
                   ],
                   [
-                     "bm-map1345762252"         // for map
+                     "bm-map1345762252"										 // for map
                   ]
                ]
          		},
          		ContentPage: {
          				title: "Contents",
-         				layout: "contentsWithMap", 		// based on selected layout
+         				layout: "contentsWithMap", 									// based on selected layout
          				columns: 2,
+         				columnWidth: [60, 40],
          				content: [
                   [
                       "bm-mapcontent1345762252", //webmap
@@ -38,6 +44,7 @@
                		layout: "mostlyText",
                		title: "Mostly Text Layout",
                		columns: 2,
+               		columnWidth: [30, 70],
                		content: [
                      [
                         "bm-1345762252",
@@ -52,6 +59,7 @@
                		layout: "mostlyVisual",
                		title: "Mostly Visual Layout 1",
                		columns: 1,
+               		columnWidth: [100],
                		content: [
                      [
                         "bm-1345762253",
@@ -63,6 +71,7 @@
                		layout: "mostlyVisual",
                		title: "Mostly Visual Layout 2",
                		columns: 2,
+               		columnWidth: [40, 60],
                		content: [
                      [
                         "bm-mapcontent1345762253",
@@ -76,13 +85,16 @@
                		layout: "mostlyVisual",
                		title: "Mostly Visual Layout 3",
                		columns: 2,
+               		columnWidth: [60, 40],
                		content: [
                      [
                         "bm-1345762241",
                         "bm-1345762290"
                      ],
                      [
-                        "bm-1345762251", //flicker
+                        "bm-1345762251",
+                        "imageLastPage",
+                        "imageLastPage1"
 
                      ]
                   ]

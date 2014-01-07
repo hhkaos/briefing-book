@@ -25,7 +25,7 @@ function () {
          {
          		Name: "coverPageLayout1",
          		NumberofColumns: 2,
-         		ColumnWidths: [
+         		columnWidth: [
                50,
                50
             ],
@@ -68,7 +68,7 @@ function () {
          		Name: "contentsWithMap",
          		//contentsWithMAp
          		NumberofColumns: 2,
-         		ColumnWidths: [
+         		columnWidth: [
                35,
                65
             ],
@@ -98,7 +98,7 @@ function () {
          		Name: "contentsWithIntro",
          		//contentsWithIntro
          		NumberofColumns: 2,
-         		ColumnWidths: [
+         		columnWidth: [
                40,
                60
             ], 					         	// in pixel
@@ -129,7 +129,7 @@ function () {
          		Name: "contentsWithIntroAndMap",
          		//contentsWithIntroAndMap
          		NumberofColumns: 2,
-         		ColumnWidths: [
+         		columnWidth: [
                40,
                60
             ], 					         		// in pixel
@@ -161,7 +161,7 @@ function () {
 				BookPageLayouts: [
          {
          		Name: "mostlyVisual",
-         		//"Mostly Visual"
+         		columnWidth: [40, 60],
          		columns: 2,
          		templateIcon: "themes/images/temp1.png",
          		selectedTemplateIcon: "themes/images/temp1-select.png",
@@ -173,16 +173,18 @@ function () {
          {
          		Name: "mostlyText",
          		columns: 2,
+         		columnWidth: [50, 50],
          		templateIcon: "themes/images/temp2.png",
          		selectedTemplateIcon: "themes/images/temp2-select.png",
          		content: [
-               ["text", "text"],
+               ["webmap", "text"],
                ["text"]
             ]
          },
          {
          		Name: "twoColumnText",
          		columns: 1,
+         		columnWidth: [100],
          		templateIcon: "themes/images/temp3.png",
          		selectedTemplateIcon: "themes/images/temp3-select.png",
          		content: [
@@ -191,9 +193,10 @@ function () {
          },
          {
          		Name: "dominantVisual",
-         		columns: 1,
-         		templateIcon: "themes/images/temp3.png",
-         		selectedTemplateIcon: "themes/images/temp3-select.png",
+         		columns: 2,
+         		columnWidth: [30, 70],
+         		templateIcon: "themes/images/temp4.png",
+         		selectedTemplateIcon: "themes/images/temp4-select.png",
          		content: [
                ["text", "text"],
                ["text"]
@@ -206,11 +209,11 @@ function () {
 								title: "webmap title",
 								caption: "The webmap caption",
 								webmap_id: "8a567ebac15748d39a747649a2e86cf4",
-								height: 75								// in pixel
+								height: 230								// in pixel
 						},
 						"text": {
 								type: "text",
-								text: "",
+								text: "Untitled",
 								height: 20								// in pixel
 						},
 						"html": {
@@ -220,17 +223,16 @@ function () {
 						},
 						"image": {
 								type: "image",
-								title: "image title",
-								caption: "The image caption",
-								src: "http://",
-								height: ''								// in pixel
+								path: "",
+								height: '',
+								width:'',								// in pixel
 						},
 						"video": {
 								type: "video",
 								title: "video title",
 								caption: "The video caption",
 								provider: "youtube",
-								id: "Xujhimh5eWs",
+								uid: "Xujhimh5eWs",
 								height: 250							// in pixel
 						},
 						"flickr": {
@@ -238,12 +240,19 @@ function () {
 								title: "photoset title",
 								caption: "The photoset caption",
 								photoset_id: "72157627065236829",
+								rows:5,
+								columns:5,
 								height: 250
 						},
 						"page": {
 								title: "Untitled Page",
 								shortTitle: "Untitled",
 								cols: 2,
+								height: ''            // in pixel
+						},
+						"logo": {
+								type: "logo",
+								path: '',
 								height: ''            // in pixel
 						},
 						"TOC": {

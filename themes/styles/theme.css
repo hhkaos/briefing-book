@@ -4,7 +4,7 @@
 	padding: 0px;
 	width: 100%;
 	font-size: 11px;
-	font-family: Arial;
+	font-family: verdana !important;
 	color: #6E6E6E;
 }
 
@@ -25,13 +25,16 @@
 	height: 0px !important;
 }
 
+* {
+	outline: none;
+}
 /*--------------------------------------------Book Container Style-----------------------------------------------*/
 
 .esriMapBookContainer {
 	width: 90.9%;
 	margin: 0px auto;
 	height: 100%;
-	background: #fff;
+	background: #efefef;
 	border: 1px solid #007ac2;
 	position: relative;
 	overflow: hidden;
@@ -71,7 +74,7 @@
 	height: 48px;
 }
 
-.esriSaveIcon, .esriDownloadIcon, .esriRefreshIcon, .esrihomeButtonIcon, .esriNewPageIcon, .esriEditIcon, .esriTocIcon, .esriDeleteIcon, .esriNewPageIcon {
+.esriSaveIcon, .esriDownloadIcon, .esriRefreshIcon, .esrihomeButtonIcon, .esriNewBookIcon, .esriEditIcon, .esriTocIcon, .esriDeleteIcon, .esriNewBookIcon {
 	width: 30px;
 	height: 30px;
 	background-repeat: no-repeat;
@@ -94,7 +97,7 @@
 	background-image: url('../images/home.png');
 }
 
-.esriNewPageIcon {
+.esriNewBookIcon {
 	background-image: url('../images/newPage.png');
 }
 
@@ -141,8 +144,8 @@
 	width: 92%;
 }
 .esriBookContainer {
-	width: 20%;
-	min-width: 150px;
+	width: 14.25%;
+	min-width: 125px;
 	float: left;
 }
 .esriMapBookList {
@@ -150,12 +153,11 @@
 	background-repeat: no-repeat;
 	background-position: TOP CENTER;
 	cursor: pointer;
-	font-family: georgia;
 	font-size: 19px;
 	height: 159px;
 	margin: 45px auto 0;
 	text-align: center;
-	width: 115px;
+	width: 125px;
 }
 
 .esriOuterContainer {
@@ -259,7 +261,6 @@
 .esriMapTitle {
 	font-size: 30px;
 	font-weight: bold;
-	font-family: georgia, 'times new roman' , serif;
 	margin-bottom: 25px;
 }
 
@@ -514,17 +515,21 @@ ol.list li a {
 }
 
 .esriArialFont {
-	font-family: Arial;
 	font-size: 14px;
 }
 
 .esriGeorgiaFont {
-	font-family: Georgia;
 	font-size: 23px;
 }
 .esriTitleFontSize {
 	font-size: 35px;
 	line-height: 35px;
+	height: 40px !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	word-break: break-word;
+	width: 100%;
 }
 .esriContentListPanelDiv {
 	height: 94%;
@@ -624,16 +629,15 @@ ol.list li a {
 }
 
 .esriMapBookPageTitle {
-	padding: 8px 4px !important;
+	/*padding: 8px 4px !important;height: 25px;*/
 	margin: 20px 20px 0px 22px;
 	font-size: 23px;
-	height: 25px;
 	line-height: 25px;
-	font-family: georgia;
+	font-family: Verdana;
 }
 
 .esriModuleTitle, .esriModuleCaption {
-	font-family: Arial !important;
+	font-family: Verdana;
 	font-size: 13px;
 	font-style: italic;
 }
@@ -705,7 +709,7 @@ ol.list li a {
 }
 .esriBookTitledivInner {
 	display: table;
-	font-family: times new roman;
+	font-family: Verdana;
 	font-size: 16px;
 	margin: 0 auto;
 	width: 115px;
@@ -729,7 +733,7 @@ ol.list li a {
 	line-height: 18px;
 	margin: 72px auto 0;
 	color: #fff;
-	font-family: times new roman;
+	font-family: Verdana;
 }
 
 /*-----------------------------------Legend Container Styles----------------------------------------------------*/
@@ -743,7 +747,7 @@ ol.list li a {
 	top: 30px;
 	z-index: 40;
 	font-size: 13px;
-	font-family: Arial;
+	font-family: Verdana;
 	background-color: #fff;
 	position: absolute !important;
 	overflow: auto;
@@ -779,7 +783,7 @@ ol.list li a {
 	cursor: move;
 }
 
-.esriEditableModeContent:hover .pageM {
+.esriEditableModeContent:hover .divPageModule {
 	opacity: .5;
 }
 
@@ -900,7 +904,6 @@ h2 {
 	vertical-align: middle;
 	border: 1px solid transparent;
 	text-align: center;
-	font-size: 12px;
 	padding-top: 70px;
 	background-repeat: no-repeat !important;
 }
@@ -926,11 +929,6 @@ h2 {
 	background-color: #fff9e2;
 	cursor: pointer;
 }
-
-.esriAddNewPageLabel {
-	font-size: 13px;
-}
-
 .esriFullImage {
 	position: absolute;
 	height: 100%;
@@ -1165,6 +1163,12 @@ h2 {
 .esriPageTitle {
 	color: Black;
 	padding: 5px;
+	display: inline-block;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	width: 100%;
+	word-break: break-word;
+	white-space: nowrap;
 }
 
 .esriPopup .titlePane {
@@ -1210,7 +1214,6 @@ h2 {
 	padding-top: 70px;
 	background-color: #fff;
 	width: 95px;
-	font-size: 15px;
 	text-align: center;
 	border: 1px solid #dadada;
 }
@@ -1279,13 +1282,14 @@ h2 {
 	border-color: #fff !important;
 }
 
-.pageM {
+.divPageModule {
 	margin: 0px 5px;
 }
 
 .esriText {
 	padding: 5px;
 	overflow: auto;
+	word-break: break-all;
 }
 
 /*--------------------------Dnd Module Style-----------------------------------*/
@@ -1322,12 +1326,14 @@ h2 {
 
 /*-------------------------Edit Setting dialog Style-----------------------------------*/
 .claro .dijitDialogTitleBar {
+	padding: 3px;
+	background-color: #007ac2 !important;
+	color: White !important;
+	border: 1px solid #007ac2 !important;
 	background-image: none;
-	background-color: #007ac2;
 }
 
 .dijitDialogUnderlayWrapper {
-	background-color: black !important;
 	opacity: 0.6 !important;
 }
 
@@ -1352,11 +1358,11 @@ h2 {
 }
 
 .esriEditModuleIcon {
-	background: url('../images/edit-module.png') no-repeat center center;
+	background-image: url('../images/edit-module.png');
 }
 
 .esriDeletetModuleIcon {
-	background: url('../images/delete-module.png')no-repeat center center;
+	background-image: url('../images/delete-module.png');
 }
 
 .esriDeletetModuleIcon, .esriEditModuleIcon {
@@ -1365,10 +1371,12 @@ h2 {
 	cursor: pointer;
 	margin: 0px 5px;
 	float: right;
+	background-repeat: no-repeat;
+	background-position: center center;
 }
 
 .dijitDialog {
-	font-family: Arial !important;
+	font-family: Verdana !important;
 	font-size: 14px !important;
 	background-image: none !important;
 	max-width: 1000px;
@@ -1378,21 +1386,20 @@ h2 {
 .claro .dijitDialogCloseIcon {
 	background-image: url('../images/close.png');
 	background-position: center;
+	margin: 4px;
 }
 
 .claro .dijitDialogCloseIconHover {
 	background-position: center;
 }
 
-.dijitDialogTitleBar {
-	background-color: #007ac2 !important;
+.claro .dijitDialogTitle {
 	color: White !important;
-	border: 1px solid #007ac2 !important;
-	background-image: none;
-}
-
-.dijitDialogTitle {
-	color: White !important;
+	padding: 0 2px;
+	font-size: 1.091em;
+	color: #000000;
+	height: 25px;
+	line-height: 25px;
 }
 
 .dijitDialogPaneContent {
@@ -1431,7 +1438,7 @@ h2 {
 	color: #6E6E6E;
 }
 
-.dijitValidationTextBox {
+.dijitTextBox {
 	width: 84%;
 	float: left;
 	height: 20px;
@@ -1447,6 +1454,7 @@ h2 {
 
 .dijitValidationTextBox .dijitInputInner {
 	color: #6e6e6e;
+	font-size: 13px;
 }
 
 .esriSettingLabel {
@@ -1456,6 +1464,13 @@ h2 {
 	height: 20px;
 	line-height: 20px;
 	padding-top: 5px;
+	white-space: nowrap;
+}
+.esriSettingModuleIcon {
+	width: 25px;
+	height: 25px;
+	float: left;
+	margin: 0px 2px;
 }
 
 .esriSettinBtns {
@@ -1473,3 +1488,26 @@ h2 {
 	height: 175px !important;
 }
 
+.dijitFontNameCombo, .dijitFormatBlockCombo, .dijitFontSizeCombo {
+	float: none;
+	margin: 5px 0px;
+	padding: 0px;
+	width: 110px;
+}
+.claro .dijitToolbar label {
+	padding: 0px;
+	width: 45px;
+	margin: 0px 5px;
+	text-align: center;
+}
+.claro .dijitTextArea {
+	height: 100px !important;
+	font-size: 13px;
+	color: #6e6e6e;
+	font-family: Verdana;
+}
+
+.dojoxLightboxFooter {
+	padding: 3px 0px 5px 0px;
+	height: 15px;
+}

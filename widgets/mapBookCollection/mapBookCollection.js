@@ -11,12 +11,12 @@
     "dojo/touch",
     "dojo/topic",
     "dojo/query",
-    "dojo/topic",
     "dojo/string",
     "dojo/dnd/Source",
     "dojo/dnd/Target",
     "dojo/dnd/Manager",
     "esri/arcgis/utils",
+    "esri/urlUtils",
     "esri/dijit/HomeButton",
     "esri/dijit/Legend",
     "dijit/form/Button",
@@ -24,6 +24,8 @@
     "dijit/Editor",
     "dijit/_editor/plugins/AlwaysShowToolbar",
     "dijit/_editor/plugins/FontChoice",
+	"dijit/_editor/plugins/LinkDialog",
+	"dijit/form/Textarea",
     "esri/request",
     "esri/TimeExtent",
     "esri/dijit/TimeSlider",
@@ -37,7 +39,7 @@
     "dojox/image/Lightbox",
     "dojo/parser"
 ],
-     function (declare, domConstruct, lang, array, domAttr, domStyle, domClass, dom, on, touch, topic, query, topic, dojoString, dndSource, Target, Manager, arcgisUtils, homeButton, legendDijit, button, dialog, editor, alwaysShowToolbar, FontChoice, esriRequest, TimeExtent, TimeSlider, template, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, flickrBadge, swipe, lightBox) {
+     function (declare, domConstruct, lang, array, domAttr, domStyle, domClass, dom, on, touch, topic, query, dojoString, dndSource, Target, Manager, arcgisUtils, urlUtils, homeButton, legendDijit, button, dialog, editor, alwaysShowToolbar, FontChoice, LinkDialog, Textarea, esriRequest, TimeExtent, TimeSlider, template, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, flickrBadge, swipe, lightBox) {
      	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
      		templateString: template,
      		nls: nls,
@@ -51,14 +53,26 @@
      		DNDArray: [],
      		isNavigationEnabled: true,
      		isEditModeEnable: false,
+     		selectedMapBook: null,
      		postCreate: function () {
-     			var _self = this, bookShelfHeight;
+     			var _self = this;
      			topic.subscribe("editMapBookHandler", function (isEditModeEnable) {
      				_self.isEditModeEnable = isEditModeEnable;
      				_self._enableMapBookEditing();
      			});
      			topic.subscribe("deletePageHandler", function () {
+     				_self.isNavigationEnabled = true;
      				_self._deletePage();
+     			});
+     			topic.subscribe("addBookHandler", function (bookIndex) {
+     				_self._createMapBookList();
+     				_self.currentBookIndex = bookIndex;
+     				_self._displaySelectedBookContent(dojo.bookListData.Books[bookIndex]);
+     			});
+     			topic.subscribe("destroyWebmapHandler", function () {
+     				array.forEach(_self.webmapArray, function (webmap) {
+     					webmap.destroy();
+     				});
      			});
 
      			dom.byId("divCTParentDivContainer").appendChild(this.divOuterContainer);
@@ -83,36 +97,63 @@
      			}));
      		},
 
+     		_checkPageContent: function () {
+
+     			var flag = true;
+     			if (this.isEditModeEnable) {
+     				if (dom.byId("mapBookPagesUList")) {
+     					var currentPage = dom.byId("mapBookPagesUList").children[this.currentIndex];
+     					var pageModuleData = query('.divPageModule', currentPage);
+     					array.forEach(pageModuleData, function (module, index) {
+     						if (module.innerHTML == 'Untitled' || module.innerHTML == '') {
+     							flag = false;
+     						}
+     					});
+     				}
+     				if (flag) {
+     					this._removeClass(query(".esriEditIcon")[0], "disableEditing");
+     				} else {
+     					domClass.add(query(".esriEditIcon")[0], "disableEditing");
+     				}
+     			}
+     			return flag;
+     		},
+
      		_handlePageNavigation: function (currentObj, isSlideLeft) {
      			var _self = this;
      			if (_self.isNavigationEnabled) {
-     				isSlideLeft ? currentClass = "esriPrevDisabled" : currentClass = "esriNextDisabled";
-     				if (!domClass.contains(currentObj, currentClass)) {
-     					if (_self.currentIndex > 0 && _self.isEditModeEnable) {
-     						var title = query('.esriMapBookPageTitle', dom.byId("mapBookPagesUList").children[_self.currentIndex])[0];
-     						if (title && title.innerHTML.length > 0) {
-     							_self._updateTOC();
-     						} else {
-     							alert(nls.pageRequireMessage);
-     							return 0;
+     				if (!dojo.moduleData[_self.currentBookIndex].ContentPage) {
+     					domStyle.set(query('.esriEditPageBody')[0], "display", "block");
+     					domStyle.set(query('.esriMapBookEditPage')[0], "height", "100%");
+     					domStyle.set(query('.contentLayoutOption')[0], "display", "block");
+     					domStyle.set(query('.pageLayoutOption')[0], "display", "none");
+     					_self._togglePageNavigation(false);
+     				} else {
+     					currentClass = isSlideLeft ? "esriPrevDisabled" : "esriNextDisabled";
+     					if (!domClass.contains(currentObj, currentClass)) {
+     						if (_self.currentIndex > 0 && _self.isEditModeEnable) {
+     							var title = query('.esriMapBookPageTitle', dom.byId("mapBookPagesUList").children[_self.currentIndex])[0];
+     							if (title && title.innerHTML.length > 0) {
+     								_self._updateTOC();
+     							} else {
+     								alert(nls.pageRequireMessage);
+     								return 0;
+     							}
      						}
+     						_self._slideMapBookPage(isSlideLeft);
      					}
-     					_self._slideMapBookPage(isSlideLeft);
      				}
      			}
      		},
 
      		_slideMapBookPage: function (slideLeft) {
-
      			slideLeft ? this.currentIndex-- : this.currentIndex++;
      			this._slideBookPage();
      			this._setArrowVisibility();
      			this._setPageNavigation();
-
      		},
 
      		_setArrowVisibility: function () {
-
      			if (this.currentIndex === 0) {
      				this._removeClass(this.mapBookNextPage, "esriNextDisabled");
      				domClass.add(this.mapBookPreviousPage, "esriPrevDisabled");
@@ -125,7 +166,6 @@
      				this._removeClass(this.mapBookNextPage, "esriNextDisabled");
      				this._removeClass(this.mapBookPreviousPage, "esriPrevDisabled");
      			}
-
      		},
 
      		_slideBookPage: function () {
@@ -136,7 +176,6 @@
      			if (domClass.contains(dom.byId("divContentListPanel"), "esriContentPanelOpened")) {
      				domClass.remove(dom.byId("divContentListPanel"), "esriContentPanelOpened");
      				domClass.remove(query('.esriTocIcon')[0], "esriHeaderIconSelected");
-
      			}
      			this._highlightSelectedPage();
      		},
@@ -171,59 +210,59 @@
      				mapBookdivContainer = domConstruct.create("div", { "class": "esriBookTitlediv" }, currentMapBook);
      				mapBookdivContainerInner = domConstruct.create("div", { "class": "esriBookTitledivInner" }, mapBookdivContainer);
      				mapBookname = domConstruct.create("div", { "class": "esriBookTitle", "innerHTML": currentBook.title }, mapBookdivContainerInner);
-     				mapBookAuthor = domConstruct.create("div", { "class": "esriBookAuthor", "innerHTML": currentBook.authorName }, currentMapBook);
+     				mapBookAuthor = domConstruct.create("div", { "class": "esriBookAuthor", "innerHTML": currentBook.author }, currentMapBook);
      				_self.webmapArray = [];
      				if (currentBook.title.length > 20) {
      					domAttr.set(mapBookname, "title", currentBook.title);
      				}
-
      				_self.own(on(currentMapBook, "click", function (evt) {
      					_self.currentBookIndex = parseInt(domAttr.get(this, "index"));
-     					dom.byId("esriMapPages").style.display = "block";
-     					dom.byId("mapBookScrollContent").style.display = "none";
+
      					array.some(dojo.bookListData.Books, function (book, index) {
-
      						if (book.title == evt.currentTarget.value && _self.currentBookIndex == index) {
-     							if (dom.byId("divContentList")) {
-     								domConstruct.empty(dom.byId("divContentList"));
-     							}
-     							domAttr.set(query(".esriMapBookTitle")[0], "innerHTML", book.title);
-     							domStyle.set(query(".esrihomeButtonIcon")[0], "display", "block");
-     							domStyle.set(query(".esriTocIcon")[0], "display", "block");
-
-     							if (dojo.appConfigData.AuthoringMode) {
-     								domStyle.set(query(".esriDownloadIcon")[0], "display", "none");
-     								domStyle.set(query(".esriNewPageIcon")[0], "display", "none");
-     								domStyle.set(query(".esriRefreshIcon")[0], "display", "none");
-     								domStyle.set(query(".esriEditIcon")[0], "display", "block");
-     								domStyle.set(query(".esriDeleteIcon")[0], "display", "none");
-     							}
-     							array.forEach(_self.webmapArray, function (webmap) {
-     								webmap.destroy();
-     							});
-     							_self.webmapArray = [];
-     							_self._displayBookContent(book, _self.currentBookIndex);
-     							_self.currentIndex = 0;
-
-     							if (_self.mapBookDetails[_self.selectedMapBook].length == 1) {
-     								domClass.add(_self.mapBookNextPage, "esriNextDisabled");
-     							} else {
-     								_self._removeClass(_self.mapBookNextPage, "esriNextDisabled");
-     								domClass.add(_self.mapBookPreviousPage, "esriPrevDisabled");
-     							}
-     							return true;
+     							_self._displaySelectedBookContent(book);
      						}
      					});
      				}));
      			});
      		},
 
+     		_displaySelectedBookContent: function (book) {
+     			dom.byId("esriMapPages").style.display = "block";
+     			dom.byId("mapBookScrollContent").style.display = "none";
+     			if (dom.byId("divContentList")) {
+     				domConstruct.empty(dom.byId("divContentList"));
+     			}
+     			domAttr.set(query(".esriMapBookTitle")[0], "innerHTML", book.title);
+     			domStyle.set(query(".esrihomeButtonIcon")[0], "display", "block");
+     			domStyle.set(query(".esriTocIcon")[0], "display", "block");
+
+     			if (dojo.appConfigData.AuthoringMode) {
+     				domStyle.set(query(".esriDownloadIcon")[0], "display", "none");
+     				domStyle.set(query(".esriNewBookIcon")[0], "display", "none");
+     				domStyle.set(query(".esriRefreshIcon")[0], "display", "none");
+     				domStyle.set(query(".esriEditIcon")[0], "display", "block");
+     				domStyle.set(query(".esriDeleteIcon")[0], "display", "none");
+     			}
+     			array.forEach(this.webmapArray, function (webmap) {
+     				webmap.destroy();
+     			});
+     			this.webmapArray = [];
+     			this._displayBookContent(book, this.currentBookIndex);
+     			this.currentIndex = 0;
+
+     			if (this.mapBookDetails[this.selectedMapBook].length == 1) {
+     				domClass.add(this.mapBookNextPage, "esriNextDisabled");
+     			} else {
+     				this._removeClass(this.mapBookNextPage, "esriNextDisabled");
+     				domClass.add(this.mapBookPreviousPage, "esriPrevDisabled");
+     			}
+     		},
+
      		_enableMapBookEditing: function () {
-     			var _self = this, divTitle;
+     			var _self = this, divTitle, isModuleValid, mapBookContents;
      			_self._resizeMapBook();
-     			var selectedPage = dom.byId('mapBookPagesUList').children[_self.currentIndex];
-     			var mapBookContents = query('.esriMapBookColContent');
-     			var mapBookPageTitle = query('.esriMapBookPageTitle');
+     			mapBookContents = query('.esriMapBookColContent');
      			if (_self.currentIndex > 1) {
      				divTitle = query('.esriMapBookPageTitle', dom.byId("mapBookPagesUList").children[_self.currentIndex])[0];
      				if (divTitle && divTitle.innerHTML.length == 0) {
@@ -231,76 +270,50 @@
      				}
      			}
      			if (_self.isEditModeEnable) {
-     				if (query(".esriPopup")) {
-     					array.forEach(query(".esriPopup"), function (popup) {
-     						popup.style.display = "none";
-     					});
-     				}
      				domStyle.set(query(".esriMapBookEditPage")[0], "display", "block");
-     				_self._setSliderWidth();
-     				_self._setSliderArrows();
-     				array.forEach(mapBookPageTitle, function (node) {
-     					domAttr.set(node, "contentEditable", true);
-     				});
+     				setTimeout(function () {
+     					_self._setSliderWidth();
+     					_self._setSliderArrows();
+     				}, 100);
      				array.forEach(mapBookContents, function (node) {
      					domClass.add(node, "esriEditableModeContent");
      				});
      				_self._highlightSelectedPage();
+     				_self._toggleDnd(true);
      			} else {
-     				_self._updateMapBook();
+
      				_self._updateTOC();
-     				if (query(".esriPopup")) {
-     					array.forEach(query(".esriPopup"), function (popup) {
-     						popup.style.display = "block";
-     					});
-     				}
      				domStyle.set(query(".esriMapBookEditPage")[0], "display", "none");
      				array.forEach(mapBookContents, function (node) {
      					domClass.remove(node, "esriEditableModeContent");
-     					domAttr.set(node, "contentEditable", false);
-
-     				});
-     				array.forEach(mapBookPageTitle, function (node) {
-     					domAttr.set(node, "contentEditable", false);
      				});
      				domStyle.set(query('.esriEditPageBody')[0], "display", "none");
      				domStyle.set(query('.esriMapBookEditPage')[0], "height", "auto");
      				_self._togglePageNavigation(true);
+     				_self._toggleDnd(false);
      			}
-     			if (!_self.isDND) {
-     				_self.isDND = true;
-     			}
-     			else {
-     				_self.isDND = false;
-     			}
-     			array.forEach(_self.DNDArray, function (dndCont) {
-     				if (_self.isDND) {
-     					dndCont.delay = 0;
-     					dndCont.checkAcceptance = function (source, nodes) {
-     						return true;
-     					};
-     				}
-     				else {
+
+     		},
+
+     		_toggleDnd: function (enableDnd) {
+     			var pageIndex, columnIndex;
+     			array.forEach(this.DNDArray, function (dndCont) {
+     				if (enableDnd) {
+     					pageIndex = domAttr.get(dndCont.node.parentElement, "pageIndex");
+     					columnIndex = domAttr.get(dndCont.node, "columnIndex");
+     					if (!(pageIndex === "0" && columnIndex === "0")) {
+     						dndCont.delay = 0;
+     						dndCont.checkAcceptance = function (source, nodes) {
+     							return true;
+     						};
+     					}
+     				} else {
      					dndCont.delay = 1000;
      					dndCont.checkAcceptance = function (source, nodes) {
      						return false;
      					};
      				}
      			});
-     		},
-
-     		_updateMapBook: function () {
-
-     			for (var i = 0; i < this.mapBookDetails[this.selectedMapBook].length; i++) {
-     				if (i == 0) {
-     					this._updateCoverPage();
-     				} else if (i == 1) {
-     					this._updateContentPage();
-     				} else {
-     					this._updateBookPage(i);
-     				}
-     			}
-
      		},
 
      		_updateCoverPage: function () {
@@ -333,7 +346,7 @@
      			var marginleft, totalPages, pageWidth, pageHeight, bookPageHeight, listcontentPage, marginTop = 0, _self = this;
      			totalPages = query('#mapBookPagesUList .esriMapBookPageListItem');
      			pageWidth = domStyle.get(query("#mapBookContentContainer")[0], "width");
-     			bookPageHeight = pageHeight = window.innerHeight - (domStyle.get(dom.byId("mapBookHeaderContainer"), "height")) - 5;
+     			bookPageHeight = pageHeight = dojo.window.getBox().h - (domStyle.get(dom.byId("mapBookHeaderContainer"), "height")) - 5;
      			domStyle.set(dom.byId("mapBookScrollContent"), "height", pageHeight + 'px');
      			if (_self.isEditModeEnable) {
      				pageHeight -= 150;
@@ -370,23 +383,31 @@
      		},
 
      		_displayBookContent: function (book, index) {
-     			var _self = this, contentPages, totalPages, listTOCContent, arrPages = [];
-     			domConstruct.empty(dom.byId("esriMapPages"));
-     			_self.selectedMapBook = book.title;
-
+     			var _self = this, contentPages, totalPages, flag, listTOCContent, arrPages = [];
+     			if (dom.byId("esriMapPages")) {
+     				domConstruct.empty(dom.byId("esriMapPages"));
+     			}
+     			this.selectedMapBook = book.title;
+     			this.DNDArray = [];
      			if (!_self.mapBookDetails[_self.selectedMapBook]) {
-     				if (book.CoverPage) {
+     				if (book.hasOwnProperty('CoverPage')) {
      					book.CoverPage.type = "CoverPage";
      					arrPages.push(book.CoverPage);
+     				} else {
+     					this.isEditModeEnable = true;
+     					arrPages.push(_self._createCoverPage());
      				}
-     				if (book.ContentPage) {
+     				if (book.hasOwnProperty('ContentPage')) {
      					book.ContentPage.type = "ContentPage";
      					arrPages.push(book.ContentPage);
      				}
-     				if (book.BookPages) {
+     				if (book.hasOwnProperty('BookPages')) {
      					if (book.BookPages.length == 0) {
      						domAttr.set(dom.byId("divContentList"), "innerHTML", nls.noPages);
      					}
+     				} else {
+     					dojo.bookListData.Books[_self.currentBookIndex].BookPages = [];
+     					dojo.moduleData[_self.currentBookIndex].BookPages = [];
      				}
      				array.forEach(book.BookPages, function (currentPage) {
      					currentPage.type = "BookPages";
@@ -397,6 +418,25 @@
      			_self._renderPages(_self.mapBookDetails[_self.selectedMapBook]);
      			_self._renderTOCContent(dom.byId("divContentList"));
 
+     		},
+
+     		_createCoverPage: function () {
+     			var coverPage, moduleDataCoverPage;
+     			moduleDataCoverPage = {};
+     			if (!dojo.moduleData[this.currentBookIndex]) {
+     				dojo.moduleData[this.currentBookIndex] = {};
+     			}
+     			defaultTitle = lang.clone(dojo.appConfigData.ModuleDefaultsConfig.title);
+     			defaultTitle.text = dojo.bookListData.Books[this.currentBookIndex].title;
+     			moduleDataCoverPage.title = defaultTitle;
+     			coverPage = lang.clone(dojo.appConfigData.CoverPageLayout);
+
+     			coverPage.title = dojo.bookListData.Books[this.currentBookIndex].title;
+
+     			dojo.bookListData.Books[this.currentBookIndex]["CoverPage"] = coverPage;
+     			dojo.moduleData[this.currentBookIndex]["CoverPage"] = {};
+     			this._removeClass(this.mapBookNextPage, "esriNextDisabled");
+     			return coverPage;
      		},
 
      		_renderPages: function (pages) {
@@ -421,7 +461,8 @@
      			settingDialog = new dialog({
      				title: "Setting Dialog",
      				content: "Test content.",
-     				id: "settingDialog"
+     				id: "settingDialog",
+     				draggable: false
      			});
      			settingDialog.startup();
      			settingDialog.hide();
@@ -429,24 +470,33 @@
      		},
 
      		_renderEditPage: function () {
-     			var divEditPage, divEditPageHeader, divEditPageList, imgEditCoverPage, imgEditContentPage, divAddNewPage, tempContHeight, divEditPageBody, divPageSlider, _self = this;
+     			var divEditPage, isModuleValid, divEditPageHeader, divEditPageList, imgEditCoverPage, imgEditContentPage, divAddNewPage, tempContHeight, divEditPageBody, divPageSlider, _self = this;
 
      			divEditPage = domConstruct.create("div", { "class": "esriMapBookEditPage" }, dom.byId('esriMapPages'));
      			divEditPageHeader = domConstruct.create("div", { "class": "esriEditPageHeader" }, divEditPage);
      			divEditPageList = domConstruct.create("div", { "class": "esriEditPageOptionList" }, divEditPageHeader);
-
-     			optionListimg = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
-     			imgEditCoverPage = domConstruct.create("div", { "index": 0, "class": "esriEditPageImg esriBookPage", "style": "background:url('themes/images/coverpage.png')" }, optionListimg);
-     			imgEditCoverPage.innerHTML = "Cover Page";
-     			on(imgEditCoverPage, "click", function () {
-     				_self._gotoPage(0);
-     			});
+     			if (dojo.bookListData.Books[this.currentBookIndex].CoverPage) {
+     				optionListimg = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
+     				imgEditCoverPage = domConstruct.create("div", { "index": 0, "class": "esriEditPageImg esriBookPage esriPageSelected", "style": "background:url('themes/images/coverpage.png')" }, optionListimg);
+     				imgEditCoverPage.innerHTML = "Cover Page";
+     				on(imgEditCoverPage, "click", function () {
+     					_self._gotoPage(0);
+     				});
+     			}
      			optionListimg = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
      			imgEditContentPage = domConstruct.create("div", { "index": 1, "class": "esriEditPageImg esriBookPage", "style": "background:url('themes/images/content-temp.png')" }, optionListimg);
      			imgEditContentPage.innerHTML = "Content Page";
-
      			on(imgEditContentPage, "click", function () {
-     				_self._gotoPage(1);
+     				if (dojo.bookListData.Books[_self.currentBookIndex].ContentPage) {
+     					_self._gotoPage(1);
+     				} else {
+     					domStyle.set(query('.esriEditPageBody')[0], "display", "block");
+     					domStyle.set(query('.esriMapBookEditPage')[0], "height", "100%");
+     					domStyle.set(query('.contentLayoutOption')[0], "display", "block");
+     					domStyle.set(query('.pageLayoutOption')[0], "display", "none");
+     					_self._togglePageNavigation(false);
+
+     				}
      			});
 
      			divAddNewPage = domConstruct.create("div", { "class": "esriAddNewPageDiv" }, divEditPageHeader);
@@ -456,21 +506,36 @@
      			divPageSlider = domConstruct.create("div", { "class": "esriPageSliderContainer" }, divEditPageHeader);
 
      			_self._createPageSlider();
-     			_self._createDnDModuleList(divEditPageHeader);
-
-     			_self._renderTemplateOptionPage(divEditPageBody);
-     			tempContHeight = window.innerHeight - domStyle.get(dom.byId("mapBookHeaderContainer"), "height") - domStyle.get(query(".esriEditPageHeader")[0], "height") - 10;
+     			_self._createDnDModuleList();
+     			_self._renderTemplateOptionPage(divEditPageBody, dojo.appConfigData.BookPageLayouts, true);
+     			_self._renderTemplateOptionPage(divEditPageBody, dojo.appConfigData.ContentPageLayouts, false);
+     			tempContHeight = dojo.window.getBox().h - domStyle.get(dom.byId("mapBookHeaderContainer"), "height") - domStyle.get(query(".esriEditPageHeader")[0], "height") - 10;
      			domStyle.set(divEditPageBody, "height", tempContHeight + 'px')
      			on(divAddNewPage, "click", function () {
      				if (query('.esriEditPageBody')[0]) {
-     					_self._clearTemplateSelection();
-     					if (domStyle.get(query('.esriEditPageBody')[0], "display") == "none") {
-     						domStyle.set(query('.esriEditPageBody')[0], "display", "block");
-     						domStyle.set(query('.esriMapBookEditPage')[0], "height", "100%");
-     						_self._togglePageNavigation(false);
+     					if (dojo.bookListData.Books[_self.currentBookIndex].ContentPage) {
+     						_self._clearTemplateSelection();
+     						if (domStyle.get(query('.esriEditPageBody')[0], "display") == "none") {
+     							domStyle.set(query('.esriEditPageBody')[0], "display", "block");
+     							domStyle.set(query('.esriMapBookEditPage')[0], "height", "100%");
+     							domStyle.set(query('.contentLayoutOption')[0], "display", "none");
+     							domStyle.set(query('.pageLayoutOption')[0], "display", "block");
+     							_self._togglePageNavigation(false);
+     						}
+     					} else {
+     						alert(nls.errorMessages.contentPageRequired);
      					}
      				}
      			});
+     			if (_self.isEditModeEnable) {
+     				_self._enableMapBookEditing();
+     				domStyle.set(query('.esriMapBookEditPage')[0], "display", "block");
+     			}
+     			if (!dojo.bookListData.Books[_self.currentBookIndex].ContentPage) {
+     				_self.isEditModeEnable = false;
+     				_self._enableMapBookEditing();
+     				domStyle.set(query('.esriMapBookEditPage')[0], "display", "none");
+     			}
      		},
 
      		_createPageSlider: function () {
@@ -479,43 +544,41 @@
      			if (divPageSlider) {
      				domConstruct.empty(divPageSlider);
      			}
-
-     			divPageSliderLeft = domConstruct.create("div", { "class": "esriPageSliderLeft" }, divPageSlider);
-     			divLeftArrowIcon = domConstruct.create("div", { "class": "esriLeftArrowIcon esriLeftArrowDisable" }, divPageSliderLeft);
-     			on(divLeftArrowIcon, "click", function () {
-     				if (!domClass.contains(this, "esriLeftArrowDisable")) {
-     					_self._slidePage(true);
-     				}
-     			});
-
-     			divPageSliderContent = domConstruct.create("div", { "class": "esriPageSliderContent" }, divPageSlider);
-     			divPageSliderRight = domConstruct.create("div", { "class": "esriPageSliderRight" }, divPageSlider);
-     			divRightArrowIcon = domConstruct.create("div", { "class": "esriRightArrowIcon" }, divPageSliderRight);
-     			on(divRightArrowIcon, "click", function () {
-     				if (!domClass.contains(this, "esriRightArrowDisable")) {
-     					_self._slidePage(false);
-     				}
-     			});
-     			_self.pageIndex = 0;
-     			ulist = domConstruct.create("ul", { "class": "esriPageSliderUlist" }, divPageSliderContent);
-     			for (var i = 2; i < this.mapBookDetails[this.selectedMapBook].length; i++) {
-
-     				listItem = domConstruct.create("li", { "class": "esriPageSliderListItem" }, ulist);
-     				divPage = domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": i, "innerHTML": "Page " + (i - 1) }, listItem);
-     				on(divPage, "click", function (evt) {
-     					_self._gotoPage(parseInt(domAttr.get(evt.currentTarget, "index")));
+     			if (this.mapBookDetails[this.selectedMapBook].length > 2) {
+     				divPageSliderLeft = domConstruct.create("div", { "class": "esriPageSliderLeft" }, divPageSlider);
+     				divLeftArrowIcon = domConstruct.create("div", { "class": "esriLeftArrowIcon esriLeftArrowDisable" }, divPageSliderLeft);
+     				on(divLeftArrowIcon, "click", function () {
+     					if (!domClass.contains(this, "esriLeftArrowDisable")) {
+     						_self._slidePage(true);
+     					}
      				});
-     			}
-     			if (this.mapBookDetails[this.selectedMapBook].length == 2) {
-     				domStyle.set(divPageSlider, "display", "none");
-     			} else {
-     				domStyle.set(divPageSlider, "display", "inline-block");
-     			}
 
+     				divPageSliderContent = domConstruct.create("div", { "class": "esriPageSliderContent" }, divPageSlider);
+     				divPageSliderRight = domConstruct.create("div", { "class": "esriPageSliderRight" }, divPageSlider);
+     				divRightArrowIcon = domConstruct.create("div", { "class": "esriRightArrowIcon" }, divPageSliderRight);
+     				on(divRightArrowIcon, "click", function () {
+     					if (!domClass.contains(this, "esriRightArrowDisable")) {
+     						_self._slidePage(false);
+     					}
+     				});
+     				_self.pageIndex = 0;
+     				ulist = domConstruct.create("ul", { "class": "esriPageSliderUlist" }, divPageSliderContent);
+     				for (var i = 2; i < this.mapBookDetails[this.selectedMapBook].length; i++) {
+     					listItem = domConstruct.create("li", { "class": "esriPageSliderListItem" }, ulist);
+     					divPage = domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": i, "innerHTML": "Page " + (i - 1) }, listItem);
+     					on(divPage, "click", function (evt) {
+     						_self._gotoPage(parseInt(domAttr.get(evt.currentTarget, "index")));
+     					});
+     				}
+     				if (this.mapBookDetails[this.selectedMapBook].length == 2) {
+     					domStyle.set(divPageSlider, "display", "none");
+     				} else {
+     					domStyle.set(divPageSlider, "display", "inline-block");
+     				}
+     			}
      		},
 
      		_highlightSelectedPage: function () {
-
      			var preSelectedPage, bookPageList, sliderContentWidth, totalUlistWidth;
      			preSelectedPage = query('.esriPageSelected');
      			bookPageList = query('.esriBookPage');
@@ -546,32 +609,32 @@
 
      		_setSliderArrows: function () {
      			var sliderleft, pageUlistWidth, sliderContentWidth, pageWidth, pageUList;
-     			sliderContentWidth = domStyle.get(query('.esriPageSliderContent')[0], 'width');
-     			pageUList = query('.esriPageSliderUlist')[0];
-     			uListChild = query('.esriPageSliderUlist')[0].children.length;
-     			if (domStyle.get(query(".esriPageSliderContainer")[0], "display") == "inline-block") {
-     				pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
-     				pageUlistWidth = pageWidth * pageUList.childElementCount;
-     				sliderleft = pageWidth * this.pageIndex;
-
-     				if (this.pageIndex == 0) {
-     					domClass.add(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
-     					if (sliderContentWidth < pageUlistWidth) {
-     						this._removeClass(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
-     					} else {
-     						domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     			if (query('.esriPageSliderContent')[0]) {
+     				sliderContentWidth = domStyle.get(query('.esriPageSliderContent')[0], 'width');
+     				pageUList = query('.esriPageSliderUlist')[0];
+     				uListChild = query('.esriPageSliderUlist')[0].children.length;
+     				if (domStyle.get(query(".esriPageSliderContainer")[0], "display") == "inline-block") {
+     					pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
+     					pageUlistWidth = pageWidth * pageUList.childElementCount;
+     					sliderleft = pageWidth * this.pageIndex;
+     					if (this.pageIndex == 0) {
+     						domClass.add(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
+     						if (sliderContentWidth < pageUlistWidth) {
+     							this._removeClass(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     						} else {
+     							domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     						}
      					}
-     				}
-     				else {
-     					this._removeClass(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
-     					if (sliderContentWidth >= pageUlistWidth + sliderleft) {
-     						domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
-     					} else {
-     						this._removeClass(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     					else {
+     						this._removeClass(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
+     						if (sliderContentWidth >= pageUlistWidth + sliderleft) {
+     							domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     						} else {
+     							this._removeClass(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
+     						}
      					}
      				}
      			}
-
      		},
 
      		_slidePage: function (isSlideLeft, pageNo) {
@@ -587,93 +650,101 @@
      			}
      		},
 
-     		_createDnDModuleList: function (divEditPageHeader) {
-     			var _self = this, Arraydnd = [], divDndModule, dndModuleContent, dndIocnDiv, webmapIcon, textareaIcon, videoIcon, copyIcon, flickrIcon, imageIcon
-     			divDndModule = domConstruct.create("div", { "id": "DNDContainer", "class": "esriDragAndDropPanel" }, divEditPageHeader);
-     			dndModuleContent = new dndSource("DNDContainer", { "type": "header", creator: _self._createAvatar, accept: [] });
-     			domConstruct.create("div", { innerHTML: nls.dndModuleText, "class": "esriDragAndDropTitle" }, divDndModule);
-     			dndIocnDiv = domConstruct.create("div", { "class": "esriDragAndDropIcon" }, null);
-     			webmapIcon = domConstruct.create("span", { "class": "esriDragAndDropWebmapIcon", type: "webmap", "title": nls.webMapIconTitle }, dndIocnDiv);
-     			textareaIcon = domConstruct.create("span", { "class": "esriDragAndDropTextareaIcon", "title": nls.textAreaIconTitle }, dndIocnDiv);
-     			videoIcon = domConstruct.create("span", { "class": "esriDragAndDropVideoIcon", "title": nls.videoIconTitle }, dndIocnDiv);
-     			copyIcon = domConstruct.create("span", { "class": "esriDragAndDropCopyIcon", "title": nls.freeFormIconTitle }, dndIocnDiv);
-     			flickrIcon = domConstruct.create("span", { "class": "esriDragAndDropFlickrIcon", "title": nls.flickrIconTitle }, dndIocnDiv);
-     			imageIcon = domConstruct.create("span", { "class": "esriDragAndDropImageIcon", "title": nls.imageIconTitle }, dndIocnDiv);
-     			sampleArray = [];
-     			dndModuleContent.copyOnly = true;
-     			for (var i = 0; i < dndIocnDiv.children.length; i++) {
-     				sampleArray.push({ data: dndIocnDiv.children[i].outerHTML, type: ["text"] });
-     			}
-     			dndModuleContent.insertNodes(false, sampleArray);
-     			dndModuleContent.forInItems(function (item, id, map) {
-     				domClass.add(id, item.type[0]);
-     			});
-     			dndModuleContent.checkAcceptance = function (source, nodes) {
-     				return false;
-     			};
+     		_createDnDModuleList: function () {
+     			var _self = this, divDndModule, dndModuleContent, dndIocnDiv, webmapIcon, textareaIcon, videoIcon, copyIcon, flickrIcon, imageIcon;
+     			var divEditPageHeader = query('.esriEditPageHeader')[0];
 
-     			on(dndModuleContent, "DndDrop", function (srcContainer, nodes, copy, targetContainer, dndManager) {
-     				if (srcContainer.type == "header") {
-     					var nodesArray = targetContainer.getAllNodes();
-     					for (var i = 0; i < nodesArray.length; i++) {
-     						if (targetContainer.getAllNodes()[i].innerHTML == nodes[0].innerHTML) {
-     							nodesArray[i].class = "";
-     							_self.currentNode = nodesArray[i];
-     							_self.currentNode.index = i;
-     							_self.currentNode.innerHTML = '';
-     							if (nodes[0].firstElementChild.className == "esriDragAndDropWebmapIcon") {
-     								_self._showModuleSettingDialog("webmap", true, targetContainer, nodesArray.length);
-     								break;
-     							}
-     							else if (nodes[0].firstElementChild.className == "esriDragAndDropVideoIcon") {
-     								_self._showModuleSettingDialog("video", true, targetContainer, nodesArray.length);
-     								break;
-     							}
-     							else if (nodes[0].firstElementChild.className == "esriDragAndDropFlickrIcon") {
-     								_self._showModuleSettingDialog("flickr", true, targetContainer, nodesArray.length);
-     								break;
-     							}
-     							else if (nodes[0].firstElementChild.className == "esriDragAndDropTextareaIcon") {
-     								_self._showModuleSettingDialog("text", true, targetContainer, nodesArray.length);
-     								break;
-     							}
-     							else if (nodes[0].firstElementChild.className == "esriDragAndDropImageIcon") {
-     								_self._showModuleSettingDialog("image", true, targetContainer, nodesArray.length);
-     								break;
-     							}
-     							else if (nodes[0].firstElementChild.className == "esriDragAndDropCopyIcon") {
-     								_self._showModuleSettingDialog("html", true, targetContainer, nodesArray.length);
-     								break;
+     			if (dom.byId("DNDContainer")) {
+     				domConstruct.destroy(dom.byId("DNDContainer"));
+     			}
+     			if (divEditPageHeader) {
+     				divDndModule = domConstruct.create("div", { "id": "DNDContainer", "class": "esriDragAndDropPanel" }, divEditPageHeader);
+     				dndModuleContent = new dndSource("DNDContainer", { "type": "header", creator: _self._createAvatar, accept: [] });
+     				domConstruct.create("div", { "innerHTML": nls.dndModuleText, "class": "esriDragAndDropTitle" }, divDndModule);
+     				dndIocnDiv = domConstruct.create("div", { "class": "esriDragAndDropIcon" }, null);
+     				webmapIcon = domConstruct.create("span", { "class": "esriDragAndDropWebmapIcon", "type": "webmap", "title": nls.webMapIconTitle }, dndIocnDiv);
+     				textareaIcon = domConstruct.create("span", { "class": "esriDragAndDropTextareaIcon", "title": nls.textAreaIconTitle }, dndIocnDiv);
+     				videoIcon = domConstruct.create("span", { "class": "esriDragAndDropVideoIcon", "title": nls.videoIconTitle }, dndIocnDiv);
+     				copyIcon = domConstruct.create("span", { "class": "esriDragAndDropCopyIcon", "title": nls.freeFormIconTitle }, dndIocnDiv);
+     				flickrIcon = domConstruct.create("span", { "class": "esriDragAndDropFlickrIcon", "title": nls.flickrIconTitle }, dndIocnDiv);
+     				imageIcon = domConstruct.create("span", { "class": "esriDragAndDropImageIcon", "title": nls.imageIconTitle }, dndIocnDiv);
+     				sampleArray = [];
+     				dndModuleContent.copyOnly = true;
+     				for (var i = 0; i < dndIocnDiv.children.length; i++) {
+     					sampleArray.push({ data: dndIocnDiv.children[i].outerHTML, type: ["text"] });
+     				}
+     				dndModuleContent.insertNodes(false, sampleArray);
+     				dndModuleContent.forInItems(function (item, id, map) {
+     					domClass.add(id, item.type[0]);
+     				});
+     				dndModuleContent.checkAcceptance = function (source, nodes) {
+     					return false;
+     				};
+
+     				on(dndModuleContent, "DndDrop", function (srcContainer, nodes, copy, targetContainer) {
+     					if (srcContainer.type == "header") {
+     						var nodesArray = targetContainer.getAllNodes();
+     						for (var i = 0; i < nodesArray.length; i++) {
+     							if (targetContainer.getAllNodes()[i].innerHTML == nodes[0].innerHTML) {
+     								_self.currentNode = nodesArray[i];
+     								_self.currentNode.index = i;
+     								_self.currentNode.innerHTML = '';
+     								firstChildClassName = nodes[0].firstElementChild ? nodes[0].firstElementChild.className : nodes[0].firstChild.className;
+     								if (firstChildClassName == "esriDragAndDropWebmapIcon") {
+     									_self._showModuleSettingDialog("webmap", true, targetContainer, nodesArray.length);
+     									break;
+     								}
+     								else if (firstChildClassName == "esriDragAndDropVideoIcon") {
+     									_self._showModuleSettingDialog("video", true, targetContainer, nodesArray.length);
+     									break;
+     								}
+     								else if (firstChildClassName == "esriDragAndDropFlickrIcon") {
+     									_self._showModuleSettingDialog("flickr", true, targetContainer, nodesArray.length);
+     									break;
+     								}
+     								else if (firstChildClassName == "esriDragAndDropTextareaIcon") {
+     									_self._showModuleSettingDialog("text", true, targetContainer, nodesArray.length);
+     									break;
+     								}
+     								else if (firstChildClassName == "esriDragAndDropImageIcon") {
+     									_self._showModuleSettingDialog("image", true, targetContainer, nodesArray.length);
+     									break;
+     								}
+     								else if (firstChildClassName == "esriDragAndDropCopyIcon") {
+     									_self._showModuleSettingDialog("HTML", true, targetContainer, nodesArray.length);
+     									break;
+     								}
      							}
      						}
      					}
-     				}
-     				else {
-     					targetContainer.sync();
-     					srcContainer.sync();
-     					setTimeout(function () {
-     						_self._saveModuleSequence(srcContainer, targetContainer);
-     					}, 0);
-     				}
-     			});
+     					else {
+     						targetContainer.sync();
+     						srcContainer.sync();
+     						setTimeout(function () {
+     							_self._saveModuleSequence(srcContainer, targetContainer);
+     						}, 0);
+     					}
+     				});
+     			}
      		},
 
      		_saveModuleSequence: function (srcContainer, targetContainer) {
      			var moduleKey, bookData, targetColIndex, srcColIndex, targetNodes, sourceNodes;
-     			targetColIndex = parseInt(targetContainer.node.id.charAt(4));
+     			targetColIndex = parseInt(domAttr.get(targetContainer.node, "columnIndex"));
      			targetNodes = targetContainer.getAllNodes();
      			bookData = this._getConfigData(dojo.bookListData.Books[this.currentBookIndex]);
      			bookData.content[targetColIndex] = [];
      			if (srcContainer) {
-     				srcColIndex = parseInt(srcContainer.node.id.charAt(4));
+     				srcColIndex = parseInt(domAttr.get(srcContainer.node, "columnIndex"));
      				sourceNodes = srcContainer.getAllNodes();
      			}
      			for (var i = 0; i < targetNodes.length; i++) {
      				if (srcContainer) {
-     					domClass.replace(targetNodes[i].firstElementChild, "esriLayoutDiv" + targetColIndex, "esriLayoutDiv" + srcColIndex);
+     					targetNodes[i].firstElementChild ? firstChild = targetNodes[i].firstElementChild : firstChild = targetNodes[i].firstChild;
+     					domClass.replace(firstChild, "esriLayoutDiv" + targetColIndex, "esriLayoutDiv" + srcColIndex);
      				}
      				else {
-     					domClass.add(targetNodes[i].firstElementChild, "esriLayoutDiv" + targetColIndex);
+     					domClass.add(firstChild, "esriLayoutDiv" + targetColIndex);
      				}
      				moduleKey = domAttr.get(targetNodes[i], "moduleKey");
      				bookData.content[targetColIndex].push(moduleKey);
@@ -685,31 +756,39 @@
      					bookData.content[srcColIndex].push(moduleKey);
      				}
      			}
+     			this.mapBookDetails[this.selectedMapBook][this.currentIndex].content = bookData.content;
      		},
 
-     		_renderTemplateOptionPage: function (divEditPageBody) {
-     			var _self = this, divTemplateContainer, divTemplatelist, divEditPageFooter, divContinue, divCancel, tempIndex;
-     			var divTitle = domConstruct.create("div", { "class": "esriLabelSelectlayout", "innerHTML": nls.selectAnyLayout }, divEditPageBody);
-     			array.forEach(dojo.appConfigData.BookPageLayouts, function (layoutOption, index) {
-     				divTemplateContainer = domConstruct.create("div", { "class": "esriTemplateContainer" }, divEditPageBody);
-
-     				divTemplatelist = domConstruct.create("img", { "class": "esriTemplateImage", "src": layoutOption.templateIcon, "index": index }, divTemplateContainer);
+     		_renderTemplateOptionPage: function (divEditPageBody, configLayout, isBookPageLayout) {
+     			var _self = this, layoutType, templateType, divTemplateContainer, divTemplatelist, divEditPageBodyContent, divEditPageFooter, divContinue, divCancel, tempIndex;
+     			if (isBookPageLayout) {
+     				layoutType = "pageLayoutOption";
+     			} else {
+     				layoutType = "contentLayoutOption";
+     			}
+     			divEditPageBodyContent = domConstruct.create("div", { "class": layoutType }, divEditPageBody);
+     			var divTitle = domConstruct.create("div", { "class": "esriLabelSelectlayout", "innerHTML": nls.selectAnyLayout }, divEditPageBodyContent);
+     			array.forEach(configLayout, function (layoutOption, index) {
+     				divTemplateContainer = domConstruct.create("div", { "class": "esriTemplateContainer" }, divEditPageBodyContent);
+     				divTemplatelist = domConstruct.create("img", { "isBookPageLayout": isBookPageLayout, "class": "esriTemplateImage", "src": layoutOption.templateIcon, "index": index }, divTemplateContainer);
      				on(divTemplatelist, "click", function () {
-     					_self._clearTemplateSelection();
+     					templateType = domAttr.get(this, "isBookPageLayout");
+     					_self._clearTemplateSelection(templateType);
      					tempIndex = domAttr.get(this, "index");
      					if (!domClass.contains(this, "selectedTemplate")) {
      						domClass.add(this, "selectedTemplate");
-     						domAttr.set(this, "src", dojo.appConfigData.BookPageLayouts[tempIndex].selectedTemplateIcon);
+     						domAttr.set(this, "src", configLayout[tempIndex].selectedTemplateIcon);
      					}
      				});
      			});
-     			divEditPageFooter = domConstruct.create("div", { "class": "esriEditPageFooter" }, divEditPageBody);
-     			divContinue = domConstruct.create("div", { "class": "esriCancelBtn", "innerHTML": nls.continueText }, divEditPageFooter);
+     			divEditPageFooter = domConstruct.create("div", { "class": "esriEditPageFooter" }, divEditPageBodyContent);
+     			divContinue = domConstruct.create("div", { "isBookPageLayout": isBookPageLayout, "class": "esriCancelBtn", "innerHTML": nls.continueText }, divEditPageFooter);
      			divCancel = domConstruct.create("div", { "class": "esriContinueBtn", "innerHTML": nls.cancelText }, divEditPageFooter);
      			on(divContinue, "click", function () {
+     				templateType = domAttr.get(this, "isBookPageLayout");
      				if (query('.selectedTemplate')[0]) {
      					_self._togglePageNavigation(true);
-     					_self._createNewPage();
+     					_self._createNewPage(templateType);
      					_self._createPageSlider();
      					_self._setSliderWidth();
      					_self._highlightSelectedPage();
@@ -727,51 +806,105 @@
      			var sliderContainerWidth = domStyle.get(query('.esriEditPageHeader')[0], "width") - domStyle.get(query('.esriEditPageOptionList')[0], "width") - domStyle.get(query('.esriAddNewPageDiv')[0], "width");
 
      			if (query('.esriPageSliderContainer')[0]) {
-     				domStyle.set(query('.esriPageSliderContainer')[0], "width", sliderContainerWidth - 20 + 'px');
+     				if (sliderContainerWidth > 0) {
+     					domStyle.set(query('.esriPageSliderContainer')[0], "width", sliderContainerWidth - 20 + 'px');
+     				}
      			}
      			var SliderContainer = domStyle.get(query('.esriPageSliderContainer')[0], "width");
      			if (query('.esriPageSliderContent')[0]) {
-     				domStyle.set(query('.esriPageSliderContent')[0], "width", SliderContainer - 80 + 'px');
+     				if (SliderContainer > 0) {
+     					domStyle.set(query('.esriPageSliderContent')[0], "width", SliderContainer - 80 + 'px');
+     				}
      			}
      		},
 
-     		_createNewPage: function () {
-     			var selectedTempIndex, newPage;
-
+     		_createNewPage: function (isBookPageLayout) {
+     			var selectedTempIndex, newPage = {}, pageIndex, flag = false;
+     			var currentPageIndex = this.currentIndex;
      			selectedTempIndex = parseInt(domAttr.get(query('.selectedTemplate')[0], "index"));
-     			newPage = dojo.appConfigData.BookPageLayouts[selectedTempIndex];
-     			newPage.type = "BookPages";
+     			pageIndex = this.mapBookDetails[this.selectedMapBook].length;
+
+     			if (isBookPageLayout) {
+     				newPage = dojo.appConfigData.BookPageLayouts[selectedTempIndex];
+     				newPage.type = "BookPages";
+     				if (currentPageIndex > 2 && currentPageIndex !== pageIndex - 1) {
+     					pageIndex = this.currentIndex + 1;
+     					flag = true;
+     				}
+     				newPage.title = "Page " + (pageIndex - 1);
+     			} else {
+     				newPage = dojo.appConfigData.ContentPageLayouts[selectedTempIndex];
+     				newPage.type = "ContentPage";
+     				newPage.title = "Contents";
+     				if (dojo.bookListData.Books[this.currentBookIndex].contentPage) {
+     					dojo.bookListData.Books[this.currentBookIndex].contentPage = {};
+     					dojo.moduleData[this.currentBookIndex].contentPage = {};
+     				}
+     			}
      			newPage.index = this.mapBookDetails[this.selectedMapBook].length;
-     			newPage.title = "Page " + (newPage.index - 1);
      			domStyle.set(query('.esriEditPageBody')[0], "display", "none");
      			domStyle.set(query('.esriMapBookEditPage')[0], "height", "auto");
      			this._renderPage(newPage);
-     			this._gotoPage(newPage.index);
+     			if (flag) {
+     				this._insertNewPage(currentPageIndex + 1);
+     			}
+     			this._gotoPage(this.currentIndex);
      			this._updateTOC();
+     			this._togglePageNavigation(true);
+
+     		},
+
+     		_insertNewPage: function (currentPageIndex) {
+
+     			var selectedPage, bookPages, mapBookDetails, bookListdata;
+
+     			selectedPage = dom.byId('mapBookPagesUList').children[this.currentIndex];
+
+     			dom.byId('mapBookPagesUList').insertBefore(selectedPage, dom.byId('mapBookPagesUList').children[currentPageIndex]);
+     			bookPages = dojo.moduleData[this.currentBookIndex].BookPages;
+     			bookListdata = dojo.bookListData.Books[this.currentBookIndex].BookPages;
+
+     			mapBookDetails = this.mapBookDetails[this.selectedMapBook];
+
+     			this.mapBookDetails[this.selectedMapBook].splice(currentPageIndex, 0, mapBookDetails[this.currentIndex]);
+     			bookPages.splice(currentPageIndex - 2, 0, bookPages[this.currentIndex - 2]);
+     			bookListdata.splice(currentPageIndex - 2, 0, bookListdata[this.currentIndex - 2]);
+
+     			this.mapBookDetails[this.selectedMapBook].splice(this.currentIndex + 1, 1);
+     			bookPages.splice(this.currentIndex - 1, 1);
+     			bookListdata.splice(this.currentIndex - 1, 1);
+
+     			for (var i = currentPageIndex - 2; i < bookPages.length; i++) {
+     				bookListdata[i].index = i + 2;
+     			}
+     			this.currentIndex = currentPageIndex;
      		},
 
      		_deletePage: function () {
-     			var selectedPage, pageIndex, bookPages, spage, bookPageIndex, pageIn;
+     			var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this;
 
      			selectedPage = dom.byId('mapBookPagesUList').children[this.currentIndex];
      			domStyle.set(selectedPage, "display", "none");
-     			pageIndex = this.currentIndex;
      			bookPages = dojo.moduleData[this.currentBookIndex].BookPages;
-     			spage = dojo.moduleData[this.currentBookIndex].BookPages[this.currentIndex - 2];
+     			moduleData = dojo.moduleData[this.currentBookIndex].BookPages[this.currentIndex - 2];
      			bookPageIndex = this.currentIndex - 2;
-     			this.webmapArray.splice(pageIndex, 1);
+     			pageModuleContent = query('.esriMapBookColContent', selectedPage);
+     			this.mapBookDetails[this.selectedMapBook].splice(bookPageIndex + 2, 1);
      			for (var i = bookPageIndex; i < bookPages.length - 1; i++) {
-     				pageIn = i + 2;
-     				dojo.moduleData[this.currentBookIndex].BookPages[i] = dojo.moduleData[this.currentBookIndex].BookPages[i + 1];
-     				this.mapBookDetails[this.selectedMapBook][pageIn + 1].index = pageIn;
-     				this.mapBookDetails[this.selectedMapBook][pageIn] = this.mapBookDetails[this.selectedMapBook][pageIn + 1];
+     				this.mapBookDetails[this.selectedMapBook][i].index = i;
      			}
-     			dojo.moduleData[this.currentBookIndex].BookPages.splice(bookPages.length - 1);
-     			this.mapBookDetails[this.selectedMapBook].splice(this.mapBookDetails[this.selectedMapBook].length - 1);
+     			array.forEach(pageModuleContent, function (node) {
+     				if (domAttr.get(node, "type") == "webmap") {
+     					var moduleIndex = domAttr.get(node, "moduleIndex");
+     					_self._destroyMap("map" + moduleIndex);
+     				}
+     			});
+
+     			dojo.moduleData[this.currentBookIndex].BookPages.splice(bookPageIndex, 1);
      			dom.byId('mapBookPagesUList').removeChild(selectedPage);
      			this._createPageSlider();
      			this._setSliderWidth();
-     			this._gotoPage(pageIndex - 1);
+     			this._gotoPage(this.currentIndex - 1);
      			this._updateTOC();
      		},
 
@@ -787,12 +920,24 @@
      			}
      		},
 
-     		_clearTemplateSelection: function () {
-     			var selectedTemp, selectedClass, _self = this;
-     			selectedTemp = query('.esriTemplateImage');
+     		_clearTemplateSelection: function (isBookPageLayout) {
+     			var configLayout, selectedTemp, selectedClass, _self = this;
+
+     			selectedTemp = query('.pageLayoutOption .esriTemplateImage');
+     			configLayout = dojo.appConfigData.BookPageLayouts
+
      			array.forEach(selectedTemp, function (template, index) {
      				_self._removeClass(template, "selectedTemplate")
-     				domAttr.set(template, "src", dojo.appConfigData.BookPageLayouts[index].templateIcon);
+     				domAttr.set(template, "src", configLayout[index].templateIcon);
+     			});
+
+     			selectedTemp = query('.contentLayoutOption .esriTemplateImage');
+     			configLayout = dojo.appConfigData.ContentPageLayouts
+
+
+     			array.forEach(selectedTemp, function (template, index) {
+     				_self._removeClass(template, "selectedTemplate")
+     				domAttr.set(template, "src", configLayout[index].templateIcon);
      			});
      		},
 
@@ -801,83 +946,71 @@
      			listItem = domConstruct.create("li", { "class": "esriMapBookPageListItem" }, null);
      			dom.byId("mapBookPagesUList").appendChild(listItem);
      			_self.currentIndex = page.index;
-     			_self.currentPage = domConstruct.create("div", { "class": "esriMapBookPage" }, listItem);
+     			_self.currentPage = domConstruct.create("div", { "class": "esriMapBookPage", "pageIndex": page.index }, listItem);
      			_self.slidingPages.push(_self.currentPage);
      			domStyle.set(_self.currentPage, "width", Math.ceil(dom.byId("mapBookContentContainer").offsetWidth) + 'px');
      			_self._createPageLayout(page);
-     			pageHeight = window.innerHeight - domStyle.get(dom.byId("mapBookHeaderContainer"), "height") - 5;
+     			pageHeight = dojo.window.getBox().h - domStyle.get(dom.byId("mapBookHeaderContainer"), "height") - 5;
 
      			if (_self.isEditModeEnable) {
-     				domStyle.set(_self.currentPage, "margin-top", domStyle.get(query(".esriEditPageHeader")[0], "height") + 'px');
-     				pageHeight -= domStyle.get(query(".esriEditPageHeader")[0], "height");
+     				if (query(".esriEditPageHeader")[0]) {
+     					domStyle.set(_self.currentPage, "margin-top", domStyle.get(query(".esriEditPageHeader")[0], "height") + 'px');
+     					pageHeight -= domStyle.get(query(".esriEditPageHeader")[0], "height");
+     					_self.currentPage.style.marginTop = domStyle.get(query(".esriEditPageHeader")[0], "height") + 'px';
+     				}
      			}
      			if (page.index > 1) {
-     				pageHeight -= domStyle.get(query(".esriFooterDiv")[0], "height");
+     				if (query(".esriFooterDiv")[0]) {
+     					pageHeight -= domStyle.get(query(".esriFooterDiv")[0], "height");
+     				}
      			}
      			domStyle.set(_self.currentPage, "height", pageHeight + 'px');
      		},
 
      		_createPageLayout: function (page) {
-     			var _self = this, divPageTitle, newBookPage, parentContainer, pageContentHolder, mapBookPageContent, titleClass, pageLayoutClass;
-     			var currentDate, data = {}, moduleIndex, pageModule, pageContentModule, arrContent = {};
+     			var _self = this, divPageTitle, newBookPage, moduleConfigData, parentContainer, pageContentHolder, mapBookPageContent, titleClass, pageLayoutClass;
+     			var newModuleKey, data = {}, moduleIndex, pageModule, pageContentModule, arrContent = {};
+     			var pageTitleClass = "esriMapBookPageTitle esriMapBookColContent";
+     			if (!this.isEditModeEnable) {
+     				mapBookPageContent = this._getConfigData(dojo.moduleData[_self.currentBookIndex]);
+     			} else {
+     				mapBookPageContent = lang.clone(dojo.appConfigData.ModuleDefaultsConfig);
+     				newBookPage = {};
+     				pageTitleClass += " esriEditableModeContent";
+     				newBookPage = lang.clone(page);
+     				if (page.title) {
+     					mapBookPageContent.title["text"] = page.title;
+     					arrContent["title"] = mapBookPageContent.title;
+     				}
+     			}
+
 
      			titleClass = "esriGeorgiaFont esriPageTitle";
      			if (page.type == "CoverPage") {
-     				mapBookPageContent = dojo.moduleData[_self.currentBookIndex].CoverPage;
      				titleClass += ' esriTitleFontSize';
      			}
-     			else if (page.type == "ContentPage") {
-     				mapBookPageContent = dojo.moduleData[_self.currentBookIndex].ContentPage;
-     				divPageTitle = domConstruct.create("div", { "class": titleClass + " esriMapBookPageTitle esriMapBookColContent" }, _self.currentPage);
-     				if (page.title) {
-     					domAttr.set(divPageTitle, "innerHTML", page.title);
-     				}
+     			else {
+     				pageTitleHolder = domConstruct.create("div", { "type": "text", "class": pageTitleClass }, _self.currentPage);
+     				this._createTitleModule(mapBookPageContent.title, pageTitleHolder);
      			}
-     			else if (page.type == "BookPages") {
-     				mapBookPageContent = dojo.moduleData[_self.currentBookIndex].BookPages[page.index - 2];
-     				divPageTitle = domConstruct.create("div", { "class": titleClass + " esriMapBookPageTitle esriMapBookColContent" }, _self.currentPage);
-     				if (page.title) {
-     					domAttr.set(divPageTitle, "innerHTML", page.title);
-     				}
-     				domAttr.set(divPageTitle, "type", "Title");
-     				if (_self.isEditModeEnable) {
-     					newBookPage = {};
-     					domClass.add(divPageTitle, "esriEditableModeContent");
-     					domAttr.set(divPageTitle, "contentEditable", true);
-     					newBookPage.content = [];
-     					newBookPage.title = page.title;
-     					newBookPage.columnWidth = page.columnWidth;
-     					newBookPage.type = "BookPages";
-     					newBookPage.columns = page.columns;
-     				}
-
-     			}
-
      			array.forEach(page.content, function (currentContent, columnIndex) {
      				var columnWidth = page.columnWidth[columnIndex] + '%';
      				if (page.columns === 1) {
      					pageLayoutClass = "esriLayoutDiv";
-     				}
-     				else if (page.columns === 2) {
+     				} else {
      					pageLayoutClass = "esriLayoutDiv" + columnIndex;
-
-     				}
-     				else if (page.columns === 3) {
-     					pageLayoutClass = "esriLayoutDiv" + columnIndex;
-
      				}
      				pageLayoutClass += ' esriMapBookColContent';
-     				parentContainer = domConstruct.create("div", { "id": "cont" + columnIndex + page.index, "class": "esriColumnLayout", "style": "width:" + columnWidth }, _self.currentPage);
-     				if (_self.isEditModeEnable) {
-     					newBookPage.content[columnIndex] = [];
-     				}
+     				parentContainer = domConstruct.create("div", { "columnIndex": columnIndex, "pageIndex": page.index, "id": "cont" + columnIndex + page.index, "class": "esriColumnLayout" }, _self.currentPage);
+     				domStyle.set(parentContainer, "width", columnWidth);
      				dndCont = new dndSource(parentContainer.id, { accept: ["webmap", "title", "image", "video", "TOC", "text"] });
-     				if (!_self.isEditModeEnable || page.index == 0) {
+     				if (!_self.isEditModeEnable || (page.index == 0 && columnIndex == 0)) {
      					dndCont.delay = 1000;
      					dndCont.checkAcceptance = function (source, nodes) {
      						return false;
      					};
      				} else {
+     					newBookPage.content[columnIndex] = [];
      					dndCont.delay = 0;
      					dndCont.checkAcceptance = function (source, nodes) {
      						return true;
@@ -885,53 +1018,60 @@
      				}
      				dndContentArray = [];
      				array.forEach(currentContent, function (currentModuleContent, contentIndex) {
+
      					pageContentContainer = domConstruct.create("div", {}, null);
      					pageContentHolder = domConstruct.create("div", { "class": pageLayoutClass + "  dojoDndItem" }, pageContentContainer);
-     					pageModule = domConstruct.create("div", { "class": "pageM" }, pageContentHolder);
-     					moduleIndex = contentIndex + '' + columnIndex + '' + page.index;
+     					pageModule = domConstruct.create("div", { "class": "divPageModule" }, pageContentHolder);
+     					moduleIndex = contentIndex + '' + columnIndex + '' + page.index + '' + _self.currentBookIndex;
      					domAttr.set(pageContentHolder, "moduleIndex", moduleIndex);
+     					domAttr.set(pageContentHolder, "columnIndex", columnIndex);
+     					domAttr.set(pageContentHolder, "contentIndex", contentIndex);
      					domAttr.set(pageModule, "moduleIndex", moduleIndex);
+     					if (currentModuleContent.length > 0) {
+     						if (!_self.isEditModeEnable) {
+     							domAttr.set(pageContentContainer, "moduleKey", currentModuleContent);
+     							if (mapBookPageContent.hasOwnProperty(currentModuleContent)) {
+     								pageContentModule = mapBookPageContent[currentModuleContent];
+     								domAttr.set(pageContentHolder, "type", pageContentModule.type);
+     								_self._renderModuleContent(pageContentModule.type, pageModule, pageContentModule);
+     							}
+     						} else {
 
-     					if (!_self.isEditModeEnable) {
-     						domAttr.set(pageContentContainer, "moduleKey", currentModuleContent);
-     						if (mapBookPageContent.hasOwnProperty(currentModuleContent)) {
-     							pageContentModule = mapBookPageContent[currentModuleContent];
+     							pageContentModule = lang.clone(mapBookPageContent[currentModuleContent]);
+     							domClass.add(pageContentHolder, "esriEditableModeContent");
      							domAttr.set(pageContentHolder, "type", pageContentModule.type);
-     							if (currentModuleContent == "title") {
-     								if (page.type == "CoverPage") {
-     									domClass.add(pageModule, titleClass);
-     									domAttr.set(pageModule, "height", pageContentModule.height + 'px');
-     									domAttr.set(pageModule, "innerHTML", pageContentModule.text);
-     									_self._createEditMenu(pageModule.parentElement, currentModuleContent);
-     								}
+     							domStyle.set(pageModule, "height", pageContentModule.height + "px");
+     							if (currentModuleContent == "title" || currentModuleContent == "author") {
+     								newModuleKey = currentModuleContent;
+     								pageContentModule[pageContentModule.type] = dojo.bookListData.Books[_self.currentBookIndex][currentModuleContent];
      							} else {
-     								_self._reRenderModuleContent(pageContentModule.type, pageModule, pageContentModule, moduleIndex);
+     								newModuleKey = ((new Date()).getTime() + contentIndex).toString(); //get unique key in microseconds
+     							}
+     							domAttr.set(pageContentContainer, "moduleKey", newModuleKey);
+     							newBookPage.content[columnIndex][contentIndex] = newModuleKey;
+     							pageContentModule["uid"] = newModuleKey;
+     							arrContent[newModuleKey] = pageContentModule;
+     							if (currentModuleContent !== "TOC") {
+     								if (pageContentModule[pageContentModule.type]) {
+     									domAttr.set(pageModule, "innerHTML", pageContentModule[pageContentModule.type]);
+     								} else {
+     									domAttr.set(pageModule, "innerHTML", nls.untitled);
+
+     								} _self._createEditMenu(pageModule.parentElement, newModuleKey);
+
+     							} else {
+     								_self._renderTOCContent(pageModule);
      							}
      						}
-     					} else {
-     						pageContentModule = dojo.appConfigData.ModuleDefaultsConfig[currentModuleContent];
-     						domClass.add(pageContentHolder, "esriEditableModeContent");
-     						currentDate = Date.now();
-     						data = {};
-     						domAttr.set(pageContentContainer, "moduleKey", currentDate.toString());
-     						newBookPage.content[columnIndex].push(currentDate.toString());
-     						domAttr.set(pageContentHolder, "type", pageContentModule.type);
-     						domStyle.set(pageModule, "height", pageContentModule.height + "px");
-     						domAttr.set(pageModule, "innerHTML", nls.untitled);
-     						data["text"] = nls.untitled;
-     						data["type"] = pageContentModule.type;
-     						data["uid"] = currentDate.toString();
-     						data["height"] = pageContentModule.height;
-     						arrContent[currentDate] = data;
-     						_self._createEditMenu(pageModule.parentElement, currentDate.toString());
-     					}
-     					if (pageContentModule) {
-     						pageContentContainer.type = pageContentModule.type;
-     						domAttr.set(pageContentContainer, "type", pageContentModule.type);
-     						dndContentArray.push(pageContentContainer);
+     						if (pageContentModule) {
+     							pageContentContainer.type = pageContentModule.type;
+     							domAttr.set(pageContentContainer, "type", pageContentModule.type);
+     							dndContentArray.push(pageContentContainer);
+     						}
      					}
      				});
-     				on(dndCont, "DndStart", function (srcContainer, nodes, copy, targetContainer) {
+
+     				on(dndCont, "DndStart", function () {
      					_self._setSliderWidth();
      				});
 
@@ -941,17 +1081,25 @@
      				});
      				dndCont.sync();
      				_self.DNDArray.push(dndCont);
+
+
      			});
      			if (_self.isEditModeEnable) {
-     				dojo.bookListData.Books[_self.currentBookIndex].BookPages.push(newBookPage);
-     				dojo.moduleData[_self.currentBookIndex].BookPages.push(arrContent);
-     				_self.mapBookDetails[_self.selectedMapBook].push(newBookPage);
+     				_self._createDnDModuleList();
+     				if (page.type == "BookPages") {
+     					dojo.bookListData.Books[_self.currentBookIndex][page.type].push(newBookPage);
+     					dojo.moduleData[_self.currentBookIndex].BookPages.push(arrContent);
+     					_self.mapBookDetails[_self.selectedMapBook].push(newBookPage);
+     				} else {
+     					dojo.bookListData.Books[_self.currentBookIndex][page.type] = newBookPage;
+     					dojo.moduleData[_self.currentBookIndex][page.type] = arrContent;
+     					_self.mapBookDetails[_self.selectedMapBook][_self.currentIndex] = newBookPage;
+     				}
      			}
      		},
 
      		_createLogo: function (pageContentModule, pageModule) {
      			var divLogo = domConstruct.create("div", {}, pageModule);
-     			domStyle.set(divLogo, "height", pageContentModule.height + 'px');
      			domAttr.set(divLogo, "innerHTML", "<img src=" + pageContentModule.path + " height=" + pageContentModule.height + ">");
      			this._createEditMenu(pageModule.parentElement, pageContentModule.uid);
      		},
@@ -961,43 +1109,47 @@
      			divEditOption = domConstruct.create("div", { "class": "esriEditContentOption" }, null);
      			pageContentHolder.appendChild(divEditOption);
 
-     			divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": "Delete Module" }, divEditOption);
-     			domAttr.set(divDeleteIcon, "type", domAttr.get(pageContentHolder, "type"));
+     			var columnIndex = domAttr.get(pageContentHolder, "columnIndex");
+     			if (!(this.currentIndex == 0 && columnIndex === "0" || moduleId === "title")) {
+     				divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": "Delete Module" }, divEditOption);
+     				domAttr.set(divDeleteIcon, "type", domAttr.get(pageContentHolder, "type"));
+     				on(divDeleteIcon, "click", function () {
+     					var deleteModuleFlag = confirm(nls.confirmModuleDeleting);
+     					if (deleteModuleFlag) {
+     						moduleContainer = this.parentElement.parentElement;
+     						_self._deleteModule(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
 
+     					}
+     				});
+     			}
      			divEditIcon = domConstruct.create("div", { "key": moduleId, "class": "esriEditModuleIcon", "title": "Edit Module" }, divEditOption);
      			domAttr.set(divEditIcon, "type", domAttr.get(pageContentHolder, "type"));
 
-     			on(divEditIcon, "click", function () {
-     				moduleContainer = this.parentElement.parentElement;
+     			on(divEditIcon, "click", function (evt) {
+     				moduleContainer = evt.srcElement.parentElement.parentElement;
      				_self._showModuleSettingDialog(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
 
      			});
-
-     			on(divDeleteIcon, "click", function () {
-     				moduleContainer = this.parentElement.parentElement;
-     				_self._deleteModule(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
-
-     			});
-
      		},
+
      		_deleteModule: function (moduleType, isNewModule, moduleContainer, moduleKey) {
-     			var colIndex, moduleIndex, moduleData, mapId;
+     			var colIndex, columnData, isModuleValid, moduleIndex, moduleData, mapId;
 
      			moduleIndex = domAttr.get(moduleContainer, "moduleIndex");
      			domConstruct.destroy(moduleContainer);
-     			colIndex = parseInt(moduleIndex.charAt(1));
+     			colIndex = parseInt(domAttr.get(moduleContainer, "columnIndex"));
      			bookList = this._getConfigData(dojo.bookListData.Books[this.currentBookIndex]);
      			moduleData = this._getConfigData(dojo.moduleData[this.currentBookIndex]);
 
-     			var contentIndex = bookList.content[colIndex].indexOf(moduleKey);
-     			bookList.content[colIndex].splice(contentIndex, 1);
+     			var contentIndex = parseInt(domAttr.get(moduleContainer, "contentIndex"));
+     			this.mapBookDetails[this.selectedMapBook][this.currentIndex].content[colIndex][contentIndex] = [];
+     			bookList.content[colIndex][contentIndex] = [];
 
      			delete moduleData[moduleKey];
      			if (moduleType == "webmap") {
      				mapId = "map" + moduleIndex;
      				this._destroyMap(mapId);
      			}
-
      		},
 
      		_destroyMap: function (mapId) {
@@ -1006,7 +1158,9 @@
      				if (mapId == currentMap.id) {
      					mapIndex = index;
      					isMapExist = true;
-     					dijit.registry.byId("legendContent" + currentMap.id).destroy();
+     					if (dijit.registry.byId("legendContent" + currentMap.id)) {
+     						dijit.registry.byId("legendContent" + currentMap.id).destroy();
+     					}
      					currentMap.destroy();
      				}
      			});
@@ -1018,37 +1172,47 @@
      		_showModuleSettingDialog: function (moduleType, isNewModule, moduleContainer, moduleKey) {
      			var label, dialogTitle, moduleInfo, moduleData, divModuleSetting, divTextEditor, inputContainer, _self = this, moduleAttr = {}, moduleInputs = [];
 
-     			moduleInfo = dojo.appConfigData.ModuleDefaultsConfig;
-     			dialogTitle = dojoString.substitute(nls.settingDialogTitle, { modType: moduleType.charAt(0).toUpperCase() + moduleType.slice(1) });
+     			moduleInfo = lang.clone(dojo.appConfigData.ModuleDefaultsConfig);
+     			moduleIconPath = dojo.appConfigData.DefaultModuleIcons[moduleType].path;
+     			dialogTitle = '<img class="esriSettingModuleIcon" src=' + moduleIconPath + '>' + dojoString.substitute(nls.settingDialogTitle, { modType: moduleType.charAt(0).toUpperCase() + moduleType.slice(1) });
 
      			if (!isNewModule) {
      				moduleData = this._getConfigData(dojo.moduleData[this.currentBookIndex]);
      				moduleAttr = moduleData[moduleKey];
-     				dialogTitle += ": " + moduleKey;
+     				if (!moduleAttr) {
+     					this._removeClass(query(".esriEditIcon")[0], "disableEditing");
+     					return 0;
+     				}
      			}
      			if (moduleInfo.hasOwnProperty(moduleType)) {
      				divModuleSetting = domConstruct.create("div", { "class": "esriModuleSettings" }, null);
 
      				for (var key in moduleInfo[moduleType]) {
      					if (isNewModule) {
-     						moduleAttr[key] = key;
+     						moduleAttr[key] = moduleInfo[moduleType][key];
      					}
      					moduleSettingContent = domConstruct.create("div", { "class": "esriModuleContent" }, divModuleSetting);
      					label = domConstruct.create("div", { "class": "esriSettingLabel" }, moduleSettingContent);
 
      					var labelValue = key.charAt(0).toUpperCase() + key.slice(1);
      					labelValue = labelValue.replace("_", ' ');
+     					if (key == "height") {
+     						labelValue += '(px)';
+     					}
      					domAttr.set(label, "innerHTML", labelValue);
-     					if (key == "text") {
-     						divTextEditor = domConstruct.create("div", { "id": "textArea", class: "esriTextArea" }, moduleSettingContent);
+     					if (key == "text" && moduleKey !== "title") {
      						if (dijit.byId("textEditor")) {
      							dijit.byId("textEditor").destroy();
      						}
+
+     						divTextEditor = domConstruct.create("div", { "class": "esriTextArea" }, moduleSettingContent);
      						inputContainer = new editor({
      							height: '250px',
-     							extraPlugins: [],
-     							id: "textEditor",
-     							class: "esriSettingInput"
+     							required: true,
+     							plugins: ['bold', 'italic', 'underline', 'subscript', 'superscript', '|', 'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight'],
+     							extraPlugins: ['createLink', { name: 'fontName', plainText: true }, { name: 'fontSize', plainText: true}],
+     							"class": "esriSettingInput",
+     							id: "textEditor"
      						}, divTextEditor);
      						inputContainer.startup();
 
@@ -1056,8 +1220,18 @@
      						domAttr.set(inputContainer.domNode, "inputKey", key);
      						moduleInputs.push(inputContainer);
 
+     					} else if (key == "HTML") {
+     						divTextEditor = domConstruct.create("div", { "class": "esriTextArea" }, moduleSettingContent);
+     						divTextArea = new Textarea({
+     							value: moduleAttr[key],
+     							"class": "esriSettingInput"
+     						}, divTextEditor);
+     						divTextArea.startup();
+     						domAttr.set(divTextArea.domNode, "inputKey", key);
+     						moduleInputs.push(divTextArea);
+
      					} else {
-     						if (key == "webmap_id" || key == "id" || key == "photoset_id" || key == "path" || key == "height") {
+     						if (key == "webmap" || key == "id" || key == "photoset_id" || key == "path" || key == "height") {
      							isValidationRequired = true;
      						}
      						else {
@@ -1066,12 +1240,15 @@
      						moduleDivContainer = domConstruct.create("div", { "inputKey": key, "class": "esriSettingInputHolder" }, moduleSettingContent);
      						moduleInputContainer = new dijit.form.ValidationTextBox({
      							required: isValidationRequired,
-     							class: "esriSettingInput"
+     							"class": "esriSettingInput"
      						}, moduleDivContainer);
      						moduleInputContainer.startup();
      						moduleInputs.push(moduleInputContainer);
      						moduleInputContainer.setValue(moduleAttr[key]);
      						domAttr.set(moduleInputContainer.domNode, "inputKey", key);
+     						if (key == "height" && moduleKey === "title") {
+     							moduleInputContainer.textbox.readOnly = true;
+     						}
      					}
      					if (key == "type") {
      						domStyle.set(moduleSettingContent, "display", "none");
@@ -1080,30 +1257,35 @@
 
      				dijit.byId("settingDialog").titleNode.innerHTML = dialogTitle;
      				dijit.byId("settingDialog").setContent(divModuleSetting);
-     				btns = domConstruct.create("div", { class: "esriButtonContainer" }, divModuleSetting);
+     				btns = domConstruct.create("div", { "class": "esriButtonContainer" }, divModuleSetting);
      				btnSave = domConstruct.create("div", { "moduleKey": moduleKey, "class": "esriSettingSave", "type": isNewModule, "innerHTML": "Save" }, btns);
      				on(btnSave, "click", function () {
-     					for (var i = 0; i < moduleInputs.length; i++) {
-     						if (moduleInputs[i].value == "" && moduleInputs[i].required) {
-     							alert(nls.fieldIsEmpty);
-     							return;
-     						}
-     					}
-     					var mKey = domAttr.get(this, "moduleKey");
-     					var isNewModule = domAttr.get(this, "type");
-     					if (isNewModule) {
-     						_self._createNewModule(moduleContainer, moduleType, mKey, moduleInputs);
-     						domAttr.set(this, "type", false);
-     					} else {
-     						_self._updateExistingModule(moduleType, mKey, moduleContainer, moduleInputs);
-     					}
-
+     					_self._validateInputFields(this, moduleContainer, moduleType, moduleInputs);
      				});
      			}
      			dijit.byId("settingDialog").show();
      		},
 
-     		_updateExistingModule: function (moduleType, moduleKey, moduleContainer, moduleInputs) {
+     		_validateInputFields: function (btnNode, moduleContainer, moduleType, moduleInputs) {
+
+     			var moduleKey, isNewModule, isModuleValid;
+     			for (var i = 0; i < moduleInputs.length; i++) {
+     				if (moduleInputs[i].value == "" && moduleInputs[i].required) {
+     					alert(nls.fieldIsEmpty);
+     					return;
+     				}
+     			}
+     			moduleKey = domAttr.get(btnNode, "moduleKey");
+     			isNewModule = domAttr.get(btnNode, "type");
+     			if (isNewModule) {
+     				this._createNewModule(moduleContainer, moduleType, moduleKey, moduleInputs);
+     				domAttr.set(btnNode, "type", false);
+     			} else {
+     				this._updateExistingModule(moduleContainer, moduleType, moduleKey, moduleInputs);
+     			}
+     		},
+
+     		_updateExistingModule: function (moduleContainer, moduleType, moduleKey, moduleInputs) {
 
      			var moduleIndex, inputFields, moduleData, moduleAttr, pageModule, divText;
      			moduleIndex = domAttr.get(moduleContainer, "moduleIndex");
@@ -1121,14 +1303,30 @@
      					moduleAttr[attr] = moduleData[attr];
      				}
      			}
+     			bookListData = this._getConfigData(dojo.bookListData.Books[this.currentBookIndex]);
      			moduleIndex = domAttr.get(moduleContainer, "moduleIndex");
-     			pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "pageM" }, moduleContainer);
-     			domAttr.set(pageModule, "type", moduleType);
-     			this._reRenderModuleContent(moduleType, pageModule, moduleAttr, moduleIndex);
+     			if (moduleKey == "title" && this.currentIndex !== 0) {
+     				this._createTitleModule(moduleAttr, moduleContainer);
+     				bookListData.title = moduleAttr["text"];
+     				this.mapBookDetails[this.selectedMapBook][this.currentIndex][moduleKey] = moduleAttr["text"];
+     				this._updateTOC();
+     			} else {
+     				pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "divPageModule" }, moduleContainer);
+     				domAttr.set(pageModule, "type", moduleType);
+     				this._renderModuleContent(moduleType, pageModule, moduleAttr);
+     			}
      			dijit.byId("settingDialog").hide();
      		},
 
-     		_reRenderModuleContent: function (moduleType, pageModule, moduleData, moduleIndex) {
+     		_createTitleModule: function (moduleData, pageTitleHolder) {
+     			var divText = domConstruct.create("div", { "class": "esriGeorgiaFont esriPageTitle", "innerHTML": moduleData[moduleData.type] }, pageTitleHolder);
+     			domStyle.set(divText, "height", moduleData["height"] + 'px');
+     			this._createEditMenu(pageTitleHolder, moduleData.uid);
+     		},
+
+     		_renderModuleContent: function (moduleType, pageModule, moduleData) {
+
+     			var moduleIndex = domAttr.get(pageModule.parentElement, "moduleIndex");
      			switch (moduleType) {
      				case "webmap":
      					{
@@ -1160,12 +1358,7 @@
      						this._renderTOCContent(pageModule);
      						break;
      					}
-     				case "text":
-     					{
-     						this._createTextModule(moduleData, pageModule);
-     						break;
-     					}
-     				case "html":
+     				default:
      					{
      						this._createTextModule(moduleData, pageModule);
      						break;
@@ -1173,45 +1366,62 @@
      			}
 
      		},
+
      		_createTextModule: function (moduleData, pageModule) {
-     			divText = domConstruct.create("div", { "class": "esriText", "innerHTML": moduleData[moduleData.type] }, pageModule);
+     			var bookPages, divText;
+     			divText = domConstruct.create("div", { "innerHTML": moduleData[moduleData.type] }, pageModule);
      			domStyle.set(divText, "height", moduleData["height"] + 'px');
      			if (moduleData.uid == "author") {
      				domClass.add(divText, "esriArialFont esriMapBookAuthor");
+     				dojo.bookListData.Books[this.currentBookIndex].author = moduleData.text;
+     				query('.esriBookAuthor')[this.currentBookIndex].innerHTML = moduleData.text;
+     			} else if (moduleData.uid == "title") {
+     				domClass.add(divText, "esriGeorgiaFont esriPageTitle esriTitleFontSize");
+     				dojo.bookListData.Books[this.currentBookIndex].title = moduleData.text;
+     				this.mapBookDetails[this.selectedMapBook][this.currentIndex].title = moduleData.text;
+     				query('.esriBookTitle')[this.currentBookIndex].innerHTML = moduleData.text;
+     				query('.esriMapBookList')[this.currentBookIndex].value = moduleData.text;
+     				bookPages = lang.clone(this.mapBookDetails[this.selectedMapBook]);
+     				delete this.mapBookDetails[this.selectedMapBook];
+     				this.selectedMapBook = moduleData.text;
+     				this.mapBookDetails[this.selectedMapBook] = bookPages;
+
      			} else {
-     				if (moduleData.uid == "title") {
-     					domClass.add(divText, "esriGeorgiaFont esriPageTitle esriTitleFontSize");
-     				} else {
-     					domClass.add(divText, "esriArialFont");
-     				}
-     				this._createEditMenu(pageModule.parentElement, moduleData.uid);
+     				domClass.add(divText, "esriArialFont esriText");
      			}
+     			this._createEditMenu(pageModule.parentElement, moduleData.uid);
+
      		},
+
      		_createNewModule: function (targetContainer, moduleType, index, moduleInputs) {
      			var columnIndex, inputFields, moduleData, divModuleContent, inputKey, moduleAttr, bookList, newModuleKey, newModuleIndex;
 
-     			columnIndex = parseInt(targetContainer.node.id.charAt(4));
-     			newModuleIndex = index + '' + columnIndex + '' + this.currentIndex + "new";
+     			columnIndex = parseInt(domAttr.get(targetContainer.node, "columnIndex"));
+     			newModuleIndex = index + '' + columnIndex + '' + this.currentIndex + "new" + '' + this.currentBookIndex;
      			inputFields = query('.esriSettingInput');
      			moduleData = {};
      			for (var j = 0; j < inputFields.length; j++) {
      				inputKey = domAttr.get(inputFields[j], "inputKey");
      				moduleData[inputKey] = moduleInputs[j].value;
      			}
-     			newModuleKey = Date.now();
+     			newModuleKey = ((new Date()).getTime()).toString();
      			moduleData["uid"] = newModuleKey;
      			moduleData["type"] = moduleType;
 
-     			divModuleContent = domConstruct.create("div", { class: "esriEditableModeContent esriMapBookColContent dojoDndItem esriLayoutDiv" + columnIndex }, null);
+     			divModuleContent = domConstruct.create("div", { "class": "esriEditableModeContent esriMapBookColContent dojoDndItem esriLayoutDiv" + columnIndex }, null);
      			domAttr.set(divModuleContent, "moduleIndex", newModuleIndex);
-     			pageModule = domConstruct.create("div", { "moduleIndex": newModuleIndex, "class": "pageM" }, divModuleContent);
+     			pageModule = domConstruct.create("div", { "moduleIndex": newModuleIndex, "class": "divPageModule" }, divModuleContent);
      			domAttr.set(divModuleContent, "type", moduleType);
-     			this._reRenderModuleContent(moduleType, pageModule, moduleData, newModuleIndex);
+     			this._renderModuleContent(moduleType, pageModule, moduleData);
      			this.currentNode.appendChild(divModuleContent);
      			bookList = this._getConfigData(dojo.bookListData.Books[this.currentBookIndex]);
      			moduleAttr = this._getConfigData(dojo.moduleData[this.currentBookIndex]);
+     			if (!bookList.content[columnIndex]) {
+     				bookList.content[columnIndex] = [];
+     			}
      			bookList.content[columnIndex].splice(this.currentNode.index, 0, newModuleKey);
      			moduleAttr[newModuleKey] = moduleData;
+     			this.mapBookDetails[this.selectedMapBook][this.currentIndex].content = bookList.content;
      			dijit.byId("settingDialog").hide();
      		},
 
@@ -1222,13 +1432,15 @@
      			} else if (this.currentIndex == 1) {
      				data = configData.ContentPage;
      			} else {
-     				data = configData.BookPages[this.currentIndex - 2];
+     				if (configData.BookPages.length > (this.currentIndex - 2)) {
+     					data = configData.BookPages[this.currentIndex - 2];
+     				}
      			}
      			return data;
      		},
 
      		_updateTOC: function () {
-     			var updatedTOC, oldTOC, parent;
+     			var oldTOC;
      			oldTOC = query('.esriMapBookColContent .esriTOCcontainer')[0];
      			if (oldTOC) {
      				this._renderTOCContent(oldTOC.parentElement);
@@ -1241,49 +1453,55 @@
      			var divMapModuleHolder, mapContent, mapTitle, mapContentBtns, mapContentImgs, imgViewFullMap, imgLegend, mapCaption, loadingIndicator, loadingIndicatorImage, _self = this;
      			var divFullMapView, cPage;
      			divMapModuleHolder = domConstruct.create("div", { "class": "mapModule" }, pageModule);
-     			if (pageContentModule.title) {
-     				mapTitle = domConstruct.create("div", { "class": "esriModuleTitle" }, null);
-     				domAttr.set(mapTitle, "innerHTML", pageContentModule.title);
-     				divMapModuleHolder.appendChild(mapTitle);
-     			}
-     			mapContentBtns = domConstruct.create("div", { "id": "divMapContainer" + moduleIndex, "class": "esriMapContainer" }, divMapModuleHolder);
-     			domStyle.set(mapContentBtns, "height", pageContentModule.height + 'px');
-     			mapContent = domConstruct.create("div", { "id": "map" + moduleIndex }, mapContentBtns);
-     			domClass.add(mapContent, "esriCTFullHeightWidth");
-
-     			mapContentImgs = domConstruct.create("div", { "class": "mapContentImgs" }, null);
-     			imgViewFullMap = domConstruct.create("span", { "index": moduleIndex, "title": nls.fullScreen, "class": "imgfullMapView" }, mapContentImgs);
-     			imgLegendData = domConstruct.create("span", { "index": moduleIndex, "title": nls.legendTitle, "class": "imgLegend" }, mapContentImgs);
-     			loadingIndicator = domConstruct.create("div", { id: "loadingmap" + moduleIndex, "class": "mapLoadingIndicator" }, mapContent);
-     			loadingIndicatorImage = domConstruct.create("div", { "class": "mapLoadingIndicatorImage" }, loadingIndicator);
-
-     			on(imgLegendData, "click", function (evt) {
-     				_self._toggleLegendContainer(evt);
-     			});
-     			divFullMapView = domConstruct.create("div", { "class": "esriFullMap", "id": "viewFull" + moduleIndex }, null);
-     			cPage = dom.byId("mapBookPagesUList").children[_self.currentIndex];
-     			cPage.appendChild(divFullMapView);
-
-     			on(imgViewFullMap, "click", function (evt) {
-     				if (domClass.contains(dom.byId("divContentListPanel"), "esriContentPanelOpened")) {
-     					domClass.remove(dom.byId("divContentListPanel"), "esriContentPanelOpened");
-     					domClass.remove(query(".esriTocIcon")[0], "esriHeaderIconSelected");
+     			if (pageContentModule.webmap) {
+     				if (pageContentModule.title) {
+     					mapTitle = domConstruct.create("div", { "class": "esriModuleTitle" }, null);
+     					domAttr.set(mapTitle, "innerHTML", pageContentModule.title);
+     					divMapModuleHolder.appendChild(mapTitle);
      				}
-     				_self._viewFullMap(evt);
-     			});
+     				mapContentBtns = domConstruct.create("div", { "id": "divMapContainer" + moduleIndex, "class": "esriMapContainer" }, divMapModuleHolder);
+     				domStyle.set(mapContentBtns, "height", pageContentModule.height + 'px');
+     				mapContent = domConstruct.create("div", { "id": "map" + moduleIndex }, mapContentBtns);
+     				domClass.add(mapContent, "esriCTFullHeightWidth");
 
-     			if (pageContentModule.caption) {
-     				mapCaption = domConstruct.create("div", { "class": "esriModuleCaption" }, null);
-     				domAttr.set(mapCaption, "innerHTML", pageContentModule.caption);
-     				divMapModuleHolder.appendChild(mapCaption);
+     				mapContentImgs = domConstruct.create("div", { "class": "mapContentImgs" }, null);
+     				imgViewFullMap = domConstruct.create("span", { "index": moduleIndex, "title": nls.fullScreen, "class": "imgfullMapView" }, mapContentImgs);
+     				imgLegendData = domConstruct.create("span", { "index": moduleIndex, "title": nls.legendTitle, "class": "imgLegend" }, mapContentImgs);
+     				loadingIndicator = domConstruct.create("div", { id: "loadingmap" + moduleIndex, "class": "mapLoadingIndicator" }, mapContent);
+     				loadingIndicatorImage = domConstruct.create("div", { "class": "mapLoadingIndicatorImage" }, loadingIndicator);
+
+     				on(imgLegendData, "click", function (evt) {
+     					_self._toggleLegendContainer(evt);
+     				});
+     				divFullMapView = domConstruct.create("div", { "class": "esriFullMap", "id": "viewFull" + moduleIndex }, null);
+     				cPage = dom.byId("mapBookPagesUList").children[_self.currentIndex];
+     				cPage.appendChild(divFullMapView);
+
+     				on(imgViewFullMap, "click", function (evt) {
+     					if (domClass.contains(dom.byId("divContentListPanel"), "esriContentPanelOpened")) {
+     						domClass.remove(dom.byId("divContentListPanel"), "esriContentPanelOpened");
+     						domClass.remove(query(".esriTocIcon")[0], "esriHeaderIconSelected");
+     					}
+     					_self._viewFullMap(evt);
+     				});
+
+     				if (pageContentModule.caption) {
+     					mapCaption = domConstruct.create("div", { "class": "esriModuleCaption" }, null);
+     					domAttr.set(mapCaption, "innerHTML", pageContentModule.caption);
+     					divMapModuleHolder.appendChild(mapCaption);
+     				}
+     				_self._renderWebMapContent(pageContentModule, mapContent.id, mapContentImgs, pageModule.parentElement);
+     			} else {
+     				domStyle.set(divMapModuleHolder, "height", pageContentModule.height + 'px');
+
      			}
-     			_self._renderWebMapContent(pageContentModule, mapContent.id, mapContentImgs);
      			_self._createEditMenu(pageModule.parentElement, pageContentModule.uid);
+
      		},
 
      		_viewFullMap: function (evt) {
      			var _self = this, containerId, divFullMap, zoomSlider, divCustomMap, timeSlider, mapContainer;
-     			containerId = domAttr.get(evt.currentTarget, "index");
+     			containerId = domAttr.get(evt.srcElement, "index");
      			mapContainer = dom.byId("map" + containerId);
      			divFullMap = dom.byId("viewFull" + containerId);
      			zoomSlider = query('.esriSimpleSlider', mapContainer)[0];
@@ -1333,7 +1551,7 @@
      		},
 
      		_toggleLegendContainer: function (evt) {
-     			var containerId = "legendContentmap" + domAttr.get(evt.currentTarget, "index")
+     			var containerId = "legendContentmap" + domAttr.get(evt.srcElement, "index")
      			if (domClass.contains(dom.byId(containerId), "esriLegendContainerOpen")) {
      				domClass.remove(dom.byId(containerId), "esriLegendContainerOpen");
      			} else {
@@ -1345,6 +1563,9 @@
      			var _self = this, innerDiv, imgModule, imgImg, imageContainer, imageHeight, imageWidth;
      			innerDiv = domConstruct.create("div", { "id": "innerDiv" + "Img" + moduleIndex, "style": 'height:' + pageContentModule.height + 'px; width:' + pageContentModule.height + 'px', "class": "innerDiv" }, pageModule);
      			imgModule = domConstruct.create("img", { "class": "esriImageModule", "style": 'height:' + pageContentModule.height + 'px; width:' + pageContentModule.width + 'px', "src": pageContentModule.path }, innerDiv);
+     			if (pageContentModule.path == '') {
+     				domAttr.set(innerDiv, "innerHTML", "Image");
+     			}
      			imgModule.path = pageContentModule.path;
      			on(imgModule, "click", function (evt) {
      				var dialog = new dojox.image.LightboxDialog({});
@@ -1415,77 +1636,95 @@
      			homeBtn.startup();
      		},
 
-     		_renderWebMapContent: function (currentModuleContent, mapId, mapContentImgs) {
-     			var _self = this;
+     		_renderWebMapContent: function (currentModuleContent, mapId, mapContentImgs, moduleContainer) {
+     			var _self = this, webmapUrl;
 
+     			webmapUrl = urlUtils.urlToObject(currentModuleContent.webmap);
+     			if (webmapUrl.query) {
+     				if (webmapUrl.query['webmap']) {
+     					webmapUrl.path = webmapUrl.query['webmap'];
+     				} else if (webmapUrl.query['id']) {
+     					webmapUrl.path = webmapUrl.query['id'];
+     				}
+     			}
      			_self._destroyMap(mapId);
-     			arcgisUtils.createMap(currentModuleContent.webmap_id, mapId, {
-     				mapOptions: {
-     					slider: true
-     				},
-     				ignorePopups: false
-     			}).then(function (response) {
-     				response.map.root.appendChild(mapContentImgs);
-     				_self.webmapArray.push(response.map);
-     				response.map.on("layers-add-result", function () {
-     					initSlider();
-     				});
-     				response.map.infoWindow.popupWindow = false;
-     				response.map.infoWindow.set("highlight", false);
-     				response.map.infoWindow.hideHighlight();
-     				domStyle.set(dom.byId("loading" + mapId), "display", "none");
-
-     				_self._createLegend(response.map);
-     				_self._createHomeButton(response.map);
-     				if ("ontouchstart" in window) {
-     					touch.over(dom.byId(mapId), function () {
-     						response.map.resize();
-     						response.map.reposition();
+     			if (webmapUrl.path) {
+     				arcgisUtils.createMap(webmapUrl.path, mapId, {
+     					mapOptions: {
+     						slider: true
+     					},
+     					ignorePopups: false
+     				}).then(function (response) {
+     					response.map.root.appendChild(mapContentImgs);
+     					_self.webmapArray.push(response.map);
+     					response.map.on("layers-add-result", function () {
+     						_self._initTimeSlider(response);
      					});
-     				}
-     				else {
-     					on(dom.byId(mapId), "mouseover", function () {
-     						response.map.resize();
-     						response.map.reposition();
-     					});
-     				}
-     				function initSlider() {
-     					if (response.map.getLayer(response.map.layerIds[1]).timeInfo) {
-     						sliderDiv = domConstruct.create("div", { "id": "Slider" + mapId, "class": "esriSliderDemo" }, response.map.root);
-     						var timeSlider = new TimeSlider({
-     							style: "width: 100%;"
-     						}, dom.byId("Slider" + mapId));
-     						response.map.setTimeSlider(timeSlider);
-     						timeSlider._sliderToTimeExtent();
+     					response.map.infoWindow.popupWindow = false;
+     					response.map.infoWindow.set("highlight", false);
+     					response.map.infoWindow.hideHighlight();
+     					domStyle.set(dom.byId("loading" + mapId), "display", "none");
 
-     						var timeExtent = new TimeExtent();
-     						timeExtent.startTime = response.map.getLayer(response.map.layerIds[1]).timeInfo.timeExtent.startTime;
-     						timeExtent.endTime = response.map.getLayer(response.map.layerIds[1]).timeInfo.timeExtent.endTime;
-     						timeSlider.setThumbCount(2);
-     						timeSlider.createTimeStopsByTimeInterval(timeExtent, 1, response.map.getLayer(response.map.layerIds[1]).timeInfo.defaultTimeIntervalUnits);
-     						timeSlider.setThumbIndexes([0, 1]);
-     						timeSlider.setThumbMovingRate(2000);
-     						timeSlider.startup();
-
-     						//add labels for every other time stop
-     						var labels = array.map(timeSlider.timeStops, function (timeStop, i) {
-     							if (i % 2 === 0) {
-     								return timeStop.getUTCFullYear();
-     							} else {
-     								return "";
-     							}
+     					_self._createLegend(response.map);
+     					_self._createHomeButton(response.map);
+     					if ("ontouchstart" in window) {
+     						touch.over(dom.byId(mapId), function () {
+     							response.map.resize();
+     							response.map.reposition();
      						});
-     						timeSlider.setLabels(labels);
+     					}
+     					else {
+     						on(dom.byId(mapId), "mouseover", function () {
+     							response.map.resize();
+     							response.map.reposition();
+     						});
+     					}
+     				}, function (error) {
+     					alert(nls.errorMessages.invalidMapUrl);
+     					if (_self.isEditModeEnable) {
+     						domClass.add(query(".esriEditIcon")[0], "disableEditing");
+     						_self._showModuleSettingDialog("webmap", false, moduleContainer, currentModuleContent.uid);
+     					}
+     				});
+     			}
+     		},
+
+     		_initTimeSlider: function (response) {
+     			var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent;
+     			webmap = response.map;
+     			showTimeSlider = false;
+     			itemData = response.itemInfo.itemData;
+     			for (var i = 0; i < itemData.operationalLayers.length; i++) {
+     				if (itemData.operationalLayers[i].layerObject.timeInfo) {
+     					if (!(itemData.operationalLayers[i].timeAnimation == false)) {
+     						showTimeSlider = true;
+     						break;
      					}
      				}
-     			}, function (error) {
-     				alert(error.toString());
-     			});
+     			}
+
+     			if (showTimeSlider) {
+     				if (dijit.byId("Slider" + webmap.id)) {
+     					dijit.byId("Slider" + webmap.id).destroy();
+     				}
+     				sliderDiv = domConstruct.create("div", { "id": "Slider" + webmap.id, "class": "esriSliderDemo" }, webmap.root);
+     				timeSlider = new TimeSlider({
+     					style: "width: 100%;"
+     				}, dom.byId("Slider" + webmap.id));
+     				webmap.setTimeSlider(timeSlider);
+     				webmapTimeSlider = itemData.widgets.timeSlider;
+     				timeExtent = new TimeExtent();
+     				timeExtent.startTime = new Date(webmapTimeSlider.properties.startTime);
+     				timeExtent.endTime = new Date(webmapTimeSlider.properties.endTime);
+     				timeSlider.setThumbCount(webmapTimeSlider.properties.thumbCount);
+     				timeSlider.createTimeStopsByTimeInterval(timeExtent, webmapTimeSlider.properties.timeStopInterval.interval, webmapTimeSlider.properties.timeStopInterval.units);
+     				timeSlider.startup();
+     			}
      		},
 
      		_renderTOCContent: function (parentNode, moduleData) {
-     			var _self = this, tocContent, anchorTag, divPageNo, divPageTitle;
-     			var tocContent = query('.esriTOCcontainer', parentNode)[0];
+     			var _self = this, tocContent, anchorTag, divPageNo, divPageTitle, tocContent;
+     			tocContent = query('.esriTOCcontainer', parentNode)[0];
      			if (tocContent) {
      				domConstruct.destroy(tocContent);
      			}
@@ -1495,15 +1734,8 @@
      				anchorTag = domConstruct.create("div", { "class": "esriContentListDiv" }, null);
      				divPageTitle = domConstruct.create("div", { "value": pageIndex, "class": "esriTitleListDiv" }, anchorTag);
      				divPageNo = domConstruct.create("div", { "value": pageIndex, "class": "esriTitleIndexDiv" }, anchorTag);
-     				if (pageIndex == 0) {
-     					title = query(".esriMapBookTitle")[0].innerHTML;
-     				}
-     				else if (pageIndex == 1) {
-     					title = nls.contentsPageTitle;
-     				}
-     				else {
-     					title = _self.mapBookDetails[_self.selectedMapBook][pageIndex].title;
-     				}
+
+     				title = _self.mapBookDetails[_self.selectedMapBook][pageIndex].title;
      				domAttr.set(divPageTitle, "innerHTML", title);
      				if (pageIndex > 1) {
      					domAttr.set(divPageNo, "innerHTML", (pageIndex - 1));

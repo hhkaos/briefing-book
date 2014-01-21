@@ -39,7 +39,7 @@ function () {
 					"type": "webmap",
 					"title": "esri webmap",
 					"caption": "esri webmap caption",
-					"webmap_id": "8a567ebac15748d39a747649a2e86cf4",
+					"webmap": "8a567ebac15748d39a747649a2e86cf4",
 					"uid": "bm-map1345762252",
 					"height": 420
 				}
@@ -55,7 +55,7 @@ function () {
 					"type": "webmap",
 					"title": "Population Change Estimates",
 					"caption": "Estimated population increases for U.S. states from 2010 to 2011",
-					"webmap_id": "afdb5314831a4ff49a5102a039618020",
+					"webmap": "afdb5314831a4ff49a5102a039618020",
 					"height": 220,
 					"uid": "bm-mapcontent1345762252"
 				},
@@ -72,11 +72,17 @@ function () {
 				}
 			},
 			BookPages: [{
+				"title": {
+					"text": "Mostly Text Layout",
+					"type": "text",
+					"uid": "title",
+					"height": 30
+				},
 				"bm-1345762252": {
 					"type": "webmap",
 					"title": "esri webmap",
 					"caption": "esri webmap caption",
-					"webmap_id": "4778fee6371d4e83a22786029f30c7e1",
+					"webmap": "4778fee6371d4e83a22786029f30c7e1",
 					"uid": "bm-1345762252",
 					"height": 275
 				},
@@ -93,11 +99,17 @@ function () {
 					"height": 300
 				}
 			}, {
+				"title": {
+					"text": "Mostly Visual Layout 1",
+					"type": "text",
+					"uid": "title",
+					"height": 30
+				},
 				"bm-1345762253": {
 					"type": "webmap",
 					"title": "Population Change Estimates",
 					"caption": "Estimated population increases for U.S. states from 2010 to 2011",
-					"webmap_id": "8c59dfba1f9b46ca88331f1a830a0ee9",
+					"webmap": "87a6bb2178044d8e96abbf0166e3bba3",
 					"height": "400",
 					"uid": "bm-1345762253"
 				},
@@ -108,11 +120,17 @@ function () {
 					"height": 80
 				}
 			}, {
+				"title": {
+					"text": "Mostly Visual Layout 2",
+					"type": "text",
+					"uid": "title",
+					"height": 30
+				},
 				"bm-mapcontent1345762253": {
 					"type": "webmap",
 					"title": "esri webmap",
 					"caption": "This map shows the traffic conditions you can expect at this time of day in this city.",
-					"webmap_id": "306eba7e8bc242d39f7347ff70a5f960",
+					"webmap": "306eba7e8bc242d39f7347ff70a5f960",
 					"uid": "bm-mapcontent1345762253",
 					"height": 410
 				},
@@ -123,6 +141,12 @@ function () {
 					"height": 450
 				}
 			}, {
+				"title": {
+					"text": "Mostly Visual Layout 3",
+					"type": "text",
+					"uid": "title",
+					"height": 30
+				},
 				"bm-1345762241": {
 					"caption": "Very Strange Eyes",
 					"id": "Xujhimh5eWs",
@@ -171,5 +195,5 @@ function () {
 			}]
 
 		}]
-	}
+	};
 });

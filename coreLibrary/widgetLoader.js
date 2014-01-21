@@ -21,79 +21,19 @@ define([
     "dojo/_base/declare",
     "dijit/_WidgetBase",
     "widgets/appHeader/appHeader",
-    "dojo/_base/array",
-    "dojo/_base/lang",
-    "dojo/Deferred",
-    "dojo/promise/all",
-    "dojo/i18n!nls/localizedStrings",
+	"dojo/i18n!nls/localizedStrings",
     "widgets/mapBookCollection/mapBookCollection",
     "dojo/domReady!"
-    ],
-function (declare, _WidgetBase, appHeader, array, lang, Deferred, all, nls, mapBookCollection) {
-
-  
-    return declare([_WidgetBase], {
-        nls: nls,
-
-        /**
-        * load widgets specified in Header Widget Settings of configuration file
-        *
-        * @class
-        * @name coreLibrary/widgetLoader
-        */
-        startup: function () {
-            var widgets = {},
-            deferredArray = [];
-            //            var mapInstance = this._initializeMap();
-            //            /**
-            //            * create an object with widgets specified in Header Widget Settings of configuration file
-            //            * @param {array} dojo.configData.AppHeaderWidgets Widgets specified in configuration file
-            //            */
-            array.forEach(dojo.appConfigData.AppHeaderWidgets, function (widgetConfig, index) {
-                var deferred = new Deferred();
-                widgets[widgetConfig.WidgetPath] = null;
-                require([widgetConfig.WidgetPath], function (widget) {
-
-                    widgets[widgetConfig.WidgetPath] = new widget({ map: widgetConfig.MapInstanceRequired ? mapInstance : undefined, title: widgetConfig.Title });
-
-                    deferred.resolve(widgetConfig.WidgetPath);
-                });
-                deferredArray.push(deferred.promise);
-            });
-            all(deferredArray).then(lang.hitch(this, function () {
-                try {
-                    /**
-                    * create application header
-                    */
-                    this._createApplicationHeader(widgets);
-
-                } catch (ex) {
-                alert(nls.errorMessages.widgetNotLoaded);
-                }
-            }));
-        },
-
-        /**
-        * create map object
-        * @return {object} Current map instance
-        * @memberOf coreLibrary/widgetLoader
-        */
-        _initializeMap: function () {
-            var map = new Map(),
-               mapInstance = map.getMapInstance();
-            return mapInstance;
-        },
-
-        /**
-        * create application header
-        * @param {object} widgets Contain widgets to be displayed in header panel
-        * @memberOf coreLibrary/widgetLoader
-        */
-        _createApplicationHeader: function (widgets) {
-            var MapBookCollection = new mapBookCollection();
-            var applicationHeader = new appHeader();
-
-        }
-
+    ], function (declare, _WidgetBase, appHeader, nls, mapBookCollection) {
+    	return declare([_WidgetBase], {
+    		nls: nls,
+    		startup: function () {
+    			try {
+    				var MapBookCollection = new mapBookCollection();
+    				var applicationHeader = new appHeader();
+    			} catch (ex) {
+    				alert(nls.errorMessages.widgetNotLoaded);
+    			}
+    		}
+    	});
     });
-});

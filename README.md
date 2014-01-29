@@ -52,5 +52,5 @@ limitations under the License.
 A copy of the license is available in the repository's
 [LICENSE.txt](https://raw.github.com/Esri/briefing-book/master/LICENSE.txt) file.
 
-[](Esri Tags: Local-Government Local Government Briefing Book)
+[](Esri Tags: Local-Government Local Government Briefing Book State-Government State Government)
 [](Esri Language: JavaScript)

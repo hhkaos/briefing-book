@@ -5,7 +5,7 @@ The application will also be used to modify existing contents and re-publish it 
 A prototype developed by Esri will be used in concert with the specifications to guide application development.
 Briefing/Map Book will be accessed from browsers on tablets and desktops.
 
-[Image of Briefing Book application](https://raw.github.com/Esri/briefing-book/master/briefing-book.png "Briefing Book application")
+[Image of Briefing Book application](briefing-book.png "Briefing Book application")
 
 ## Features
 

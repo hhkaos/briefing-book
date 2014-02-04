@@ -14,16 +14,18 @@
     "dijit/_WidgetBase",
     "dijit/_TemplatedMixin",
     "dijit/_WidgetsInTemplateMixin",
-    "dojo/i18n!nls/localizedStrings"
+    "dojo/i18n!nls/localizedStrings",
+    "widgets/downloadBook/downloadBook",
+    "../mapBookCollection/mapbookUtility"
+
 ],
-     function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls) {
-     	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
+     function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, downloadBook, mapbookUtility) {
+     	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, downloadBook, mapbookUtility], {
      		templateString: template,
      		nls: nls,
-
      		postCreate: function () {
      			var _self = this;
-     			var applicationHeaderDiv, paginationDiv, homeButtonDiv, tocIconDiv, downloadBookIcon, newBookIcon, refreshIcon;
+     			var applicationHeaderDiv, paginationDiv, homeButtonDiv, deleteBookIcon, tocIconDiv, downloadBookIcon, newBookIcon, refreshIcon;
 
      			if ("ontouchstart" in window) {
      				dojo.appConfigData.AuthoringMode = false;
@@ -40,6 +42,7 @@
      					domClass.remove(query('.esriTocIcon')[0], "esriHeaderIconSelected");
      					domStyle.set(query(".esriEditIcon")[0], "display", "none");
      					domStyle.set(query(".esriDeleteIcon")[0], "display", "none");
+     					domStyle.set(query('.esriDeleteBookIcon')[0], "display", "block");
      					domStyle.set(query(".esriDownloadIcon")[0], "display", "block");
      					domStyle.set(query(".esriNewBookIcon")[0], "display", "block");
      					domStyle.set(query(".esriRefreshIcon")[0], "display", "block");
@@ -62,14 +65,25 @@
 
      			if (dojo.appConfigData.AuthoringMode) {
      				newBookIcon = domConstruct.create("div", { "class": "esriNewBookIcon", "title": nls.addBookTitle }, this.applicationHeaderWidgetsContainer);
+     				deleteBookIcon = domConstruct.create("div", { "class": "esriDeleteBookIcon", "title": nls.removeBookTitle }, this.applicationHeaderWidgetsContainer);
      				downloadBookIcon = domConstruct.create("div", { "class": "esriDownloadIcon", "title": nls.downloadBookShelf }, this.applicationHeaderWidgetsContainer);
      				refreshIcon = domConstruct.create("div", { "class": "esriRefreshIcon", "title": nls.refreshBookTitle }, this.applicationHeaderWidgetsContainer);
      				editPageIcon = domConstruct.create("div", { "class": "esriEditIcon", "style": "display:none", "title": nls.editTitle }, this.applicationHeaderWidgetsContainer);
      				deletePageIcon = domConstruct.create("div", { "class": "esriDeleteIcon", "style": "display:none", "title": nls.deleteTitle }, this.applicationHeaderWidgetsContainer);
      				this.own(on(refreshIcon, "click", function () {
-     					parent.location.reload();
+     					var reloadApp = confirm(nls.confirmAppReloading);
+     					if (reloadApp) {
+     						parent.location.reload();
+     					}
      				}));
 
+     				this.own(on(deleteBookIcon, "click", function () {
+     					var enableDeleting = true;
+     					if (domClass.contains(query('.esriDeleteBookIcon')[0], "esriHeaderIconSelected")) {
+     						enableDeleting = false;
+     					}
+     					_self._toggleDeleteBookOption(enableDeleting);
+     				}));
      				this.own(on(deletePageIcon, "click", function () {
      					var deletePage = confirm(nls.confirmPageDeleting);
      					if (deletePage) {
@@ -83,6 +97,9 @@
 
      				this.own(on(newBookIcon, "click", function () {
      					_self._addNewBook();
+     				}));
+     				this.own(on(downloadBookIcon, "click", function () {
+     					_self._createConfigFiles();
      				}));
      			}
 
@@ -99,15 +116,18 @@
 
      		_addNewBook: function () {
      			var bookIndex, newBook, newBookModule;
-     			domConstruct.empty(dom.byId("mapBookContent"));
      			bookIndex = dojo.bookListData.Books.length;
      			newBook = {};
      			newBook.title = nls.mapbookDefaultTitle + bookIndex;
      			newBook.author = "Author";
      			newBookModule = {};
-     			newBookModule["title"] = newBook.title;
      			dojo.moduleData[bookIndex] = newBookModule;
-     			dojo.bookListData.Books.push(newBook);
+     			dojo.bookListData.Books[bookIndex] = newBook;
+     			domClass.add(query(".esriEditIcon")[0], "esriHeaderIconSelected");
+     			if (dojo.bookListData.Books.length > 0) {
+     				domStyle.set(query('.esriDeleteBookIcon')[0], "display", "block");
+     				domStyle.set(query('.esriDownloadIcon')[0], "display", "block");
+     			}
      			topic.publish("addBookHandler", bookIndex);
      		},
 
@@ -146,7 +166,6 @@
      					domClass.remove(container, "esriContentPanelOpened");
      					domClass.remove(btnNode, "esriHeaderIconSelected");
      				} else {
-
      					domClass.add(container, "esriContentPanelOpened");
      					domClass.add(btnNode, "esriHeaderIconSelected");
      				}

@@ -40,7 +40,7 @@ require([
             esriConfig.defaults.io.timeout = 600000;
             dojo.appConfigData = appConfig;
             dojo.bookListData = bookList;
-            dojo.moduleData = moduleData.BookDetails;
+            dojo.moduleData = moduleData.Books;
             var applicationWidgetLoader = new widgetLoader();
             applicationWidgetLoader.startup();
 

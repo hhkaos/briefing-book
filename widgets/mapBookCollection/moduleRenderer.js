@@ -115,13 +115,19 @@
   			pageContentModule["uid"] = newModuleKey;
   			arrContent[newModuleKey] = pageContentModule;
   			if (currentModuleContent !== "TOC") {
-  				if (pageContentModule[pageContentModule.type]) {
-  					domAttr.set(pageModule, "innerHTML", pageContentModule[pageContentModule.type]);
+  				if (currentModuleContent == "title") {
+  					this._createTextModule(pageContentModule, pageModule)
+  				} else if (currentModuleContent == "logo") {
+  					this._createLogo(pageContentModule, pageModule);
   				} else {
-  					domAttr.set(pageModule, "innerHTML", currentModuleContent.charAt(0).toUpperCase() + currentModuleContent.slice(1));
+  					if (pageContentModule[pageContentModule.type]) {
+  						domAttr.set(pageModule, "innerHTML", pageContentModule[pageContentModule.type]);
+  					} else {
+  						domAttr.set(pageModule, "innerHTML", currentModuleContent.charAt(0).toUpperCase() + currentModuleContent.slice(1));
+  					}
+  					this._createEditMenu(pageModule.parentElement, newModuleKey);
+  					domStyle.set(pageModule, "height", pageContentModule.height + "px");
   				}
-  				this._createEditMenu(pageModule.parentElement, newModuleKey);
-  				domStyle.set(pageModule, "height", pageContentModule.height + "px");
   			} else {
   				this._renderTOCContent(pageModule);
   			}
@@ -195,7 +201,8 @@
 
   		_createLogo: function (pageContentModule, pageModule) {
   			var divLogo = domConstruct.create("div", {}, pageModule);
-  			domAttr.set(divLogo, "innerHTML", "<img src=" + pageContentModule.URL + " height=" + pageContentModule.height + ">");
+  			domAttr.set(divLogo, "innerHTML", "<img src=" + pageContentModule.URL + " />");
+  			domStyle.set(divLogo, "height", pageContentModule.height + 'px');
   			this._createEditMenu(pageModule.parentElement, pageContentModule.uid);
   		},
 
@@ -241,7 +248,7 @@
   		_createWebmapModule: function (pageContentModule, pageModule, moduleIndex) {
   			var divMapModuleHolder, mapContent, mapContentBtns, mapContentImgs, btnViewFullMap, loadingIndicator, loadingIndicatorImage, _self = this;
   			divMapModuleHolder = domConstruct.create("div", { "class": "mapModule" }, pageModule);
-  			if (pageContentModule.webmap) {
+  			if (pageContentModule.URL) {
   				this._createModuleHeaderTitle(divMapModuleHolder, pageContentModule);
   				mapContentBtns = domConstruct.create("div", { "id": "divMapContainer" + moduleIndex, "class": "esriMapContainer" }, divMapModuleHolder);
   				domStyle.set(mapContentBtns, "height", pageContentModule.height + 'px');
@@ -271,7 +278,7 @@
   		_renderWebMapContent: function (currentModuleContent, mapId, mapContentImgs, moduleContainer) {
   			var _self = this, webmapUrl;
 
-  			webmapUrl = urlUtils.urlToObject(currentModuleContent.webmap);
+  			webmapUrl = urlUtils.urlToObject(currentModuleContent.URL);
   			if (webmapUrl.query) {
   				if (webmapUrl.query['webmap']) {
   					webmapUrl.path = webmapUrl.query['webmap'];
@@ -331,10 +338,14 @@
   				divMapModuleHolder.appendChild(mapCaption);
   			}
   		},
+
   		_createFullViewMap: function (btnViewFullMap, moduleIndex) {
-  			var divFullMapView, currentPage, _self = this;
+  			var divFullMapView, currentPage, _self = this, fullMapIndex = this.currentIndex;
   			divFullMapView = domConstruct.create("div", { "class": "esriFullMap", "id": "viewFull" + moduleIndex }, null);
-  			currentPage = dom.byId("mapBookPagesUList").children[this.currentIndex];
+  			if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent" && this.currentIndex !== 0) {
+  				fullMapIndex--;
+  			}
+  			currentPage = dom.byId("mapBookPagesUList").children[fullMapIndex];
   			currentPage.appendChild(divFullMapView);
 
   			on(btnViewFullMap, "click", function (evt) {
@@ -369,8 +380,6 @@
   				embed += '<div class="esriModuleTitle">' + pageContentModule.title + '</div>';
   			}
   			var videoURL = pageContentModule.URL.match(/.com/);
-  			//	var videoURLQuery = urlUtils.urlToObject(pageContentModule.URL).query;
-  			//videoURL = pageContentModule.URL
   			switch (pageContentModule.provider) {
   				case "vimeo":
   					if (videoURL) {
@@ -413,7 +422,11 @@
   				anchorTag = domConstruct.create("div", { "value": pageIndex, "class": "esriContentListDiv" }, null);
   				divPageTitle = domConstruct.create("div", { "value": pageIndex, "class": "esriTitleListDiv" }, anchorTag);
   				divPageNo = domConstruct.create("div", { "value": pageIndex, "class": "esriTitleIndexDiv" }, anchorTag);
-  				title = _self.mapBookDetails[_self.selectedMapBook][pageIndex].title;
+  				if (_self.mapBookDetails[_self.selectedMapBook][pageIndex] == "EmptyContent") {
+  					title = nls.contentsPageTitle;
+  				} else {
+  					title = _self.mapBookDetails[_self.selectedMapBook][pageIndex].title;
+  				}
   				domAttr.set(divPageTitle, "innerHTML", title);
   				if (pageIndex > 1) {
   					domAttr.set(divPageNo, "innerHTML", (pageIndex - 1));
@@ -421,9 +434,11 @@
   				tocContent.appendChild(anchorTag);
   				on(anchorTag, "click", function (evt) {
   					if (!domClass.contains(this.parentElement.parentElement.parentElement, "esriEditableModeContent")) {
-  						_self._gotoPage(this.value);
-  						evt.cancelBubble = true;
-  						evt.cancelable = true;
+  						if (_self.mapBookDetails[_self.selectedMapBook][this.value] !== "EmptyContent") {
+  							_self._gotoPage(this.value);
+  							evt.cancelBubble = true;
+  							evt.cancelable = true;
+  						}
   					}
   					evt.stopPropagation();
   				});
@@ -463,25 +478,24 @@
   		},
 
   		_createEditMenu: function (pageContentHolder, moduleId) {
-  			var _self = this, divEditIcon, columnIndex, divEditOption, divDeleteIcon, moduleContainer;
-
+  			var _self = this, moduleType, divEditIcon, columnIndex, deleteModuleFlag, editModuleIcon, divEditOption, divDeleteIcon, moduleContainer;
+  			moduleType = domAttr.get(pageContentHolder, "type");
   			divEditOption = domConstruct.create("div", { "class": "esriEditContentOption" }, null);
   			pageContentHolder.appendChild(divEditOption);
   			columnIndex = domAttr.get(pageContentHolder, "columnIndex");
   			if (!(this.currentIndex == 0 && columnIndex === "0" || moduleId === "title")) {
   				divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": nls.editMentDeleteTitle }, divEditOption);
-  				domAttr.set(divDeleteIcon, "type", domAttr.get(pageContentHolder, "type"));
+  				domAttr.set(divDeleteIcon, "type", moduleType);
   				on(divDeleteIcon, "click", function () {
-  					var deleteModuleFlag = confirm(nls.confirmModuleDeleting);
+  					deleteModuleFlag = confirm(nls.confirmModuleDeleting);
   					if (deleteModuleFlag) {
   						moduleContainer = this.parentElement.parentElement;
   						_self._deleteModule(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
-
   					}
   				});
   			}
   			divEditIcon = domConstruct.create("div", { "key": moduleId, "class": "esriEditModuleIcon", "title": nls.editMentEditTitle }, divEditOption);
-  			domAttr.set(divEditIcon, "type", domAttr.get(pageContentHolder, "type"));
+  			domAttr.set(divEditIcon, "type", moduleType);
 
   			on(divEditIcon, "click", function (evt) {
   				moduleContainer = this.parentElement.parentElement;

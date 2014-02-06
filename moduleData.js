@@ -39,7 +39,7 @@
   					"type": "webmap",
   					"title": "esri webmap",
   					"caption": "esri webmap caption",
-  					"webmap": "8a567ebac15748d39a747649a2e86cf4",
+  					"URL": "http://www.arcgis.com/home/webmap/viewer.html?webmap=8a567ebac15748d39a747649a2e86cf4",
   					"uid": "bm-map1345762252",
   					"height": 420
   				}
@@ -55,7 +55,7 @@
   					"type": "webmap",
   					"title": "Population Change Estimates",
   					"caption": "Estimated population increases for U.S. states from 2010 to 2011",
-  					"webmap": "afdb5314831a4ff49a5102a039618020",
+  					"URL": "http://www.arcgis.com/home/webmap/viewer.html?webmap=afdb5314831a4ff49a5102a039618020",
   					"height": 220,
   					"uid": "bm-mapcontent1345762252"
   				},
@@ -82,7 +82,7 @@
   					"type": "webmap",
   					"title": "esri webmap",
   					"caption": "esri webmap caption",
-  					"webmap": "4778fee6371d4e83a22786029f30c7e1",
+  					"URL": "http://www.arcgis.com/home/webmap/viewer.html?webmap=4778fee6371d4e83a22786029f30c7e1",
   					"uid": "bm-1345762252",
   					"height": 275
   				},
@@ -109,7 +109,7 @@
   					"type": "webmap",
   					"title": "Population Change Estimates",
   					"caption": "Estimated population increases for U.S. states from 2010 to 2011",
-  					"webmap": "87a6bb2178044d8e96abbf0166e3bba3",
+  					"URL": "http://www.arcgis.com/home/webmap/viewer.html?webmap=87a6bb2178044d8e96abbf0166e3bba3",
   					"height": "400",
   					"uid": "bm-1345762253"
   				},
@@ -130,7 +130,7 @@
   					"type": "webmap",
   					"title": "esri webmap",
   					"caption": "This map shows the traffic conditions you can expect at this time of day in this city.",
-  					"webmap": "306eba7e8bc242d39f7347ff70a5f960",
+  					"URL": "http://www.arcgis.com/home/webmap/viewer.html?webmap=306eba7e8bc242d39f7347ff70a5f960",
   					"uid": "bm-mapcontent1345762253",
   					"height": 410
   				},

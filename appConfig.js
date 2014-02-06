@@ -33,7 +33,7 @@
 				content: [
 								 ["title", "text", "author", "logo"], ["webmap"]
 						],
-				height: [[40, 100, 60, 100], [300]],
+				height: [[40, 100, 60, 50], [300]],
 				type: "CoverPage"
 
 			},
@@ -119,7 +119,7 @@
 										 ["webmap", "text"],
 										 ["text"]
 									],
-								height: [[230, 30], [350]]
+								height: [[230, 60], [335]]
 							}
 				],
 			ModuleDefaultsConfig: {
@@ -127,7 +127,7 @@
 					type: "webmap",
 					title: "Webmap title",
 					caption: "The webmap caption",
-					webmap: '',
+					URL: '',
 					height: 230								// in pixel
 				},
 				"title": {
@@ -177,7 +177,7 @@
 				},
 				"logo": {
 					type: "logo",
-					URL: "",
+					URL: "themes/images/logo-default.jpg",
 					height: 50							// in pixel
 				},
 				"TOC": {

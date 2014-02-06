@@ -1,22 +1,25 @@
 ﻿define([
     "dojo/_base/declare",
-	"dojo/dom-construct",
+    "dojo/dom-construct",
     "dojo/dom-attr",
     "dojo/dom-style",
     "dojo/dom-class",
     "dojo/dom",
     "dojo/on",
     "dojo/query",
-	"dijit/Editor",
-	"dijit/form/Textarea",
-	"esri/dijit/HomeButton",
+    "dijit/Editor",
+    "dijit/form/Textarea",
+    "dijit/_editor/plugins/FontChoice",
+    "dijit/_editor/plugins/LinkDialog",
+    "dijit/_editor/plugins/TextColor",
+    "esri/dijit/HomeButton",
     "esri/dijit/Legend",
-	"esri/dijit/TimeSlider",
-	"esri/TimeExtent",
-	"../mapBookCollection/mapbookUtility",
-	"dojo/parser"
+    "esri/dijit/TimeSlider",
+    "esri/TimeExtent",
+    "../mapBookCollection/mapbookUtility",
+    "dojo/parser"
 ],
-  function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Editor, Textarea, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
+  function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Editor, Textarea, FontChoice, LinkDialog, TextColor, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
   	return declare([mapbookUtility], {
 
   		_createLegend: function (map) {
@@ -52,8 +55,8 @@
   			dijitInputContainer = new Editor({
   				height: '250px',
   				required: true,
-  				plugins: ['bold', 'italic', 'underline', 'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight'],
-  				extraPlugins: ['createLink', { name: 'fontName', plainText: true }, { name: 'fontSize', plainText: true}],
+  				plugins: ['bold', 'italic', 'underline','foreColor', 'hiliteColor',  'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight', 'createLink'],
+  				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontName", generic: true }, { name: "fontSize", plainText: true}],
   				"class": "esriSettingInput",
   				id: "textEditor"
   			}, divInputContainer);

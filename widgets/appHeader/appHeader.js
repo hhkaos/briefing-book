@@ -15,12 +15,11 @@
     "dijit/_TemplatedMixin",
     "dijit/_WidgetsInTemplateMixin",
     "dojo/i18n!nls/localizedStrings",
-    "widgets/downloadBook/downloadBook",
     "../mapBookCollection/mapbookUtility"
 
 ],
-     function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, downloadBook, mapbookUtility) {
-     	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, downloadBook, mapbookUtility], {
+    function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, mapbookUtility) {
+    	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, mapbookUtility], {
      		templateString: template,
      		nls: nls,
      		postCreate: function () {
@@ -99,7 +98,6 @@
      					_self._addNewBook();
      				}));
      				this.own(on(downloadBookIcon, "click", function () {
-     					_self._createConfigFiles();
      				}));
      			}
 
@@ -118,8 +116,8 @@
      			var bookIndex, newBook, newBookModule;
      			bookIndex = dojo.bookListData.Books.length;
      			newBook = {};
-     			newBook.title = nls.mapbookDefaultTitle + bookIndex;
-     			newBook.author = "Author";
+    			newBook.title = nls.mapbookDefaultTitle;
+    			newBook.author = nls.authorName;
      			newBookModule = {};
      			dojo.moduleData[bookIndex] = newBookModule;
      			dojo.bookListData.Books[bookIndex] = newBook;

@@ -1,14 +1,14 @@
 ﻿define([
     "dojo/_base/declare",
-	"dojo/_base/array",
-	"dojo/dom-construct",
+    "dojo/_base/array",
+    "dojo/dom-construct",
     "dojo/dom-attr",
     "dojo/dom-style",
     "dojo/dom-class",
     "dojo/dom",
     "dojo/on",
-	"dojo/query",
-	"dojo/parser"
+    "dojo/query",
+    "dojo/parser"
 ],
   function (declare, array, domConstruct, domAttr, domStyle, domClass, dom, on, query) {
   	return declare([], {

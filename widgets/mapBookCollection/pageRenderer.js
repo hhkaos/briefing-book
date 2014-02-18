@@ -1,17 +1,17 @@
 ﻿define([
     "dojo/_base/declare",
-	"dojo/_base/array",
-	"dojo/_base/lang",
-	"dojo/dom-construct",
+    "dojo/_base/array",
+    "dojo/_base/lang",
+    "dojo/dom-construct",
     "dojo/dom-attr",
     "dojo/dom-style",
     "dojo/dom-class",
     "dojo/dom",
     "dojo/on",
-	"dojo/query",
-	"dojo/i18n!nls/localizedStrings",
-	"dijit/Dialog",
-	"dojo/parser"
+    "dojo/query",
+    "dojo/i18n!nls/localizedStrings",
+    "dijit/Dialog",
+    "dojo/parser"
 ],
   function (declare, array, lang, domConstruct, domAttr, domStyle, domClass, dom, on, query, nls, Dialog) {
   	return declare([], {
@@ -42,6 +42,7 @@
   				draggable: false
   			});
   			settingDialog.startup();
+  			settingDialog.closeButtonNode.title = nls.closeButtonTitle;
   			settingDialog.hide();
   			this._renderEditPage();
   		},
@@ -140,13 +141,13 @@
   			var selectedTempIndex, newPage = {}, pageIndex, flag = false, currentPageIndex = this.currentIndex;
 
   			selectedTempIndex = parseInt(domAttr.get(query('.selectedTemplate')[0], "index"));
-  			pageIndex = this.mapBookDetails[this.selectedMapBook].length;
+  			pageIndex = this.mapBookDetails[this.currentBookIndex].length;
 
   			if (isBookPageLayout) {
   				if (!dojo.bookListData.Books[this.currentBookIndex].ContentPage) {
-  					if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent") {
+  					if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent") {
   					} else {
-  						this.mapBookDetails[this.selectedMapBook].push("EmptyContent")
+  						this.mapBookDetails[this.currentBookIndex].push("EmptyContent")
   						pageIndex++;
   					}
   				}
@@ -157,9 +158,9 @@
   					flag = true;
   				}
   				newPage.title = "Page " + (pageIndex - 1);
-  				newPage.index = this.mapBookDetails[this.selectedMapBook].length;
+  				newPage.index = this.mapBookDetails[this.currentBookIndex].length;
   			} else {
-  				if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent") {
+  				if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent") {
   					flag = true;
   				}
   				newPage = dojo.appConfigData.ContentPageLayouts[selectedTempIndex];
@@ -194,7 +195,7 @@
   		_reArrangePageList: function (currentPageIndex) {
   			var currentListItemIndex = this.currentIndex;
   			var refListItemIndex = currentPageIndex;
-  			if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent") {
+  			if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent") {
   				currentListItemIndex--;
   				refListItemIndex--;
   			}
@@ -204,7 +205,7 @@
 
   			bookPages = dojo.moduleData[this.currentBookIndex].BookPages;
   			bookListdata = dojo.bookListData.Books[this.currentBookIndex].BookPages;
-  			mapBookDetails = this.mapBookDetails[this.selectedMapBook];
+  			mapBookDetails = this.mapBookDetails[this.currentBookIndex];
   			mapBookDetails.splice(currentPageIndex, 0, mapBookDetails[this.currentIndex]);
   			bookPages.splice(currentPageIndex - 2, 0, bookPages[this.currentIndex - 2]);
   			bookListdata.splice(currentPageIndex - 2, 0, bookListdata[this.currentIndex - 2]);
@@ -221,7 +222,7 @@
 
   		_deletePage: function () {
   			var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this, pageIndex = this.currentIndex;
-  			if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent") {
+  			if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent") {
   				pageIndex--;
   			}
   			selectedPage = dom.byId('mapBookPagesUList').children[pageIndex];
@@ -230,10 +231,10 @@
   			moduleData = dojo.moduleData[this.currentBookIndex].BookPages[this.currentIndex - 2];
   			bookPageIndex = this.currentIndex - 2;
   			pageModuleContent = query('.esriMapBookColContent', selectedPage);
-  			this.mapBookDetails[this.selectedMapBook].splice(bookPageIndex + 2, 1);
+  			this.mapBookDetails[this.currentBookIndex].splice(bookPageIndex + 2, 1);
   			dojo.bookListData.Books[this.currentBookIndex].BookPages.splice(bookPageIndex, 1);
   			for (var i = bookPageIndex; i < bookPages.length - 1; i++) {
-  				this.mapBookDetails[this.selectedMapBook][i].index = i;
+  				this.mapBookDetails[this.currentBookIndex][i].index = i;
   			}
   			array.forEach(pageModuleContent, function (node) {
   				if (domAttr.get(node, "type") == "webmap") {

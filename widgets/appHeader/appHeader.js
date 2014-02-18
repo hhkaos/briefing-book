@@ -20,11 +20,11 @@
 ],
     function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, mapbookUtility) {
     	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, mapbookUtility], {
-     		templateString: template,
+		templateString: template,
      		nls: nls,
      		postCreate: function () {
      			var _self = this;
-     			var applicationHeaderDiv, paginationDiv, homeButtonDiv, deleteBookIcon, tocIconDiv, downloadBookIcon, newBookIcon, refreshIcon;
+    			var applicationHeaderDiv, reloadApp, paginationDiv, homeButtonDiv, deleteBookIcon, tocIconDiv, downloadBookIcon, newBookIcon, refreshIcon;
 
      			if ("ontouchstart" in window) {
      				dojo.appConfigData.AuthoringMode = false;
@@ -35,14 +35,11 @@
      			homeButtonDiv = domConstruct.create("div", { "class": "esrihomeButtonIcon", "title": nls.homeTitle }, this.applicationHeaderWidgetsContainer);
      			this.own(on(homeButtonDiv, "click", function () {
      				if (dojo.appConfigData.AuthoringMode) {
-     					if (_self._disableEditing()) {
-     						return 0;
-     					}
+     					_self._disableEditing();
      					domClass.remove(query('.esriTocIcon')[0], "esriHeaderIconSelected");
      					domStyle.set(query(".esriEditIcon")[0], "display", "none");
      					domStyle.set(query(".esriDeleteIcon")[0], "display", "none");
      					domStyle.set(query('.esriDeleteBookIcon')[0], "display", "block");
-     					domStyle.set(query(".esriDownloadIcon")[0], "display", "block");
      					domStyle.set(query(".esriNewBookIcon")[0], "display", "block");
      					domStyle.set(query(".esriRefreshIcon")[0], "display", "block");
      				}
@@ -65,7 +62,7 @@
      			if (dojo.appConfigData.AuthoringMode) {
      				newBookIcon = domConstruct.create("div", { "class": "esriNewBookIcon", "title": nls.addBookTitle }, this.applicationHeaderWidgetsContainer);
      				deleteBookIcon = domConstruct.create("div", { "class": "esriDeleteBookIcon", "title": nls.removeBookTitle }, this.applicationHeaderWidgetsContainer);
-     				downloadBookIcon = domConstruct.create("div", { "class": "esriDownloadIcon", "title": nls.downloadBookShelf }, this.applicationHeaderWidgetsContainer);
+    				downloadBookIcon = domConstruct.create("div", { "class": "esriDownloadIcon", "style": "display:none", "title": nls.downloadBookShelf }, this.applicationHeaderWidgetsContainer);
      				refreshIcon = domConstruct.create("div", { "class": "esriRefreshIcon", "title": nls.refreshBookTitle }, this.applicationHeaderWidgetsContainer);
      				editPageIcon = domConstruct.create("div", { "class": "esriEditIcon", "style": "display:none", "title": nls.editTitle }, this.applicationHeaderWidgetsContainer);
      				deletePageIcon = domConstruct.create("div", { "class": "esriDeleteIcon", "style": "display:none", "title": nls.deleteTitle }, this.applicationHeaderWidgetsContainer);
@@ -97,8 +94,6 @@
      				this.own(on(newBookIcon, "click", function () {
      					_self._addNewBook();
      				}));
-     				this.own(on(downloadBookIcon, "click", function () {
-     				}));
      			}
 
      			tocIconDiv = domConstruct.create("div", { "class": "esriTocIcon", "title": nls.tocTitle }, this.applicationHeaderWidgetsContainer);
@@ -124,18 +119,14 @@
      			domClass.add(query(".esriEditIcon")[0], "esriHeaderIconSelected");
      			if (dojo.bookListData.Books.length > 0) {
      				domStyle.set(query('.esriDeleteBookIcon')[0], "display", "block");
-     				domStyle.set(query('.esriDownloadIcon')[0], "display", "block");
      			}
      			topic.publish("addBookHandler", bookIndex);
      		},
 
      		_toggleEditMode: function (editBtn) {
      			domStyle.set(query(".esrihomeButtonIcon")[0], "display", "block");
-     			domStyle.set(query(".esriDownloadIcon")[0], "display", "block");
      			if (domStyle.get(query(".esriMapBookEditPage")[0], "display") == "block") {
-     				if (this._disableEditing()) {
-     					return 0;
-     				}
+    				this._disableEditing();
      			} else {
      				this._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
      				topic.publish("editMapBookHandler", true);
@@ -145,14 +136,9 @@
 
      		_disableEditing: function () {
      			var editButton = query(".esriEditIcon")[0];
-     			if (!domClass.contains(editButton, "disableEditing")) {
-     				domClass.remove(editButton, "esriHeaderIconSelected");
-     				topic.publish("editMapBookHandler", false);
-     				return false;
-     			} else {
-     				alert(nls.errorMessages.moduleFieldsEmpty);
-     				return true;
-     			}
+     			domClass.remove(editButton, "esriHeaderIconSelected");
+     			topic.publish("editMapBookHandler", false);
+     			return false;
      		},
 
      		_toggleContainer: function (container, btnNode, hideContainer) {

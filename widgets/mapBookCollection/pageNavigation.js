@@ -70,7 +70,7 @@
   				currentClass = isSlideLeft ? "esriPrevDisabled" : "esriNextDisabled";
   				if (!domClass.contains(currentObj, currentClass)) {
   					isSlideLeft ? this.currentIndex-- : this.currentIndex++;
-  					if (this.mapBookDetails[this.selectedMapBook][this.currentIndex] == "EmptyContent") {
+  					if (this.mapBookDetails[this.currentBookIndex][this.currentIndex] == "EmptyContent") {
   						isSlideLeft ? this.currentIndex = 0 : this.currentIndex++;
   					}
   					this._slideBookPage();
@@ -80,8 +80,8 @@
 
   		_setArrowVisibility: function () {
   			var selectedPageIndex = this.currentIndex;
-  			var totalPageLength = this.mapBookDetails[this.selectedMapBook].length;
-  			if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent") {
+  			var totalPageLength = this.mapBookDetails[this.currentBookIndex].length;
+  			if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent") {
   				totalPageLength--;
   				selectedPageIndex--;
   			}
@@ -106,7 +106,7 @@
   		_slideBookPage: function () {
   			var pageWidth, left;
   			pageWidth = domStyle.get(query(".esriMapBookPageListItem")[0], "width");
-  			if (this.mapBookDetails[this.selectedMapBook][1] == "EmptyContent" && this.currentIndex !== 0) {
+  			if (this.mapBookDetails[this.currentBookIndex][1] == "EmptyContent" && this.currentIndex !== 0) {
   				left = (this.currentIndex - 1) * Math.ceil(pageWidth);
   			} else {
   				left = (this.currentIndex) * Math.ceil(pageWidth);
@@ -128,7 +128,7 @@
   					domStyle.set(query(".esriDeleteIcon")[0], "display", "block");
   				}
   				domStyle.set(query(".esriFooterDiv")[0], "display", "block");
-  				pageNavigationTitle = dojo.string.substitute(nls.page + " ${pageIndex} " + nls.of + " ${totalPages}", { pageIndex: this.currentIndex - 1, totalPages: (this.mapBookDetails[this.selectedMapBook].length - 2) });
+  				pageNavigationTitle = dojo.string.substitute(nls.page + " ${pageIndex} " + nls.of + " ${totalPages}", { pageIndex: this.currentIndex - 1, totalPages: (this.mapBookDetails[this.currentBookIndex].length - 2) });
   				domAttr.set(dom.byId("esriPaginationSpan"), "innerHTML", pageNavigationTitle);
   			} else {
   				if (query(".esriDeleteIcon")[0]) {
@@ -141,7 +141,7 @@
 
   		_highlightSelectedPage: function () {
   			var preSelectedPage, bookPageList, sliderContentWidth, totalUlistWidth;
-  			if (this.mapBookDetails[this.selectedMapBook][this.currentIndex] == "EmptyContent") {
+  			if (this.mapBookDetails[this.currentBookIndex][this.currentIndex] == "EmptyContent") {
   				this.currentIndex++;
   			}
   			preSelectedPage = query('.esriPageSelected');

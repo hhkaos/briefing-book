@@ -48,21 +48,32 @@
   		},
 
   		_createTextEditor: function (moduleSettingContent, moduleAttr, key) {
-  			var divInputContainer, dijitInputContainer;
+  			var divInputContainer, dijitInputContainer, fontFamily, fontSize;
   			this._destroyExistingNode(dijit.byId("textEditor"), true);
   			divInputContainer = domConstruct.create("div", { "class": "esriTextArea" }, moduleSettingContent);
 
   			dijitInputContainer = new Editor({
   				height: '250px',
   				required: true,
-  				plugins: ['bold', 'italic', 'underline','foreColor', 'hiliteColor',  'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight', 'createLink'],
-  				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontName", generic: true }, { name: "fontSize", plainText: true}],
+  				plugins: ['bold', 'italic', 'underline', 'foreColor', 'hiliteColor', 'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight', 'createLink'],
+  				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontName", generic: true }, { name: "dijit/_editor/plugins/FontChoice", command: "fontSize", plainText: true}],
   				"class": "esriSettingInput",
   				id: "textEditor"
   			}, divInputContainer);
   			dijitInputContainer.startup();
   			dijitInputContainer.setValue(moduleAttr[key]);
   			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
+  			dijitInputContainer.onLoadDeferred.then(function (data) {
+  				setTimeout(function () {
+  					dijit.byId("textEditor")._plugins[12].button.select.textbox.readOnly = true;
+  					dijit.byId("textEditor")._plugins[11].button.select.textbox.readOnly = true;
+  					if (!dijit.byId("textEditor").value.match('font face')) {
+  						fontFamily = domStyle.get(dijit.byId("textEditor").domNode, 'font-family');
+  						dijit.byId("textEditor").execCommand('selectAll');
+  						dijit.byId("textEditor").execCommand('fontName', fontFamily.toLowerCase());
+  					}
+  				}, 300);
+  			});
   			return dijitInputContainer;
   		},
 
@@ -90,6 +101,11 @@
   			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
   			if (key == "height" && moduleAttr.uid == "title") {
   				dijitInputContainer.textbox.readOnly = true;
+  			}
+  			if (key == "height" || key == "width") {
+  				dijitInputContainer.set("regExp", '[\\d]+');
+  			} else {
+  				dijitInputContainer.set("regExp", "^[\\W 0-9a-zA-Z_ ]+");
   			}
   			return dijitInputContainer;
   		},

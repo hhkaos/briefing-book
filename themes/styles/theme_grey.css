@@ -211,7 +211,7 @@
 .esriNextImage {
 	float: right;
 	background-image: url('../images/right-arrow-grey.png');
-	width: 60px;
+	width: 57px;
 	background-repeat: no-repeat;
 	text-align: center;
 	height: 93px;
@@ -223,25 +223,29 @@
 
 .esriNextDisabled {
 	background-image: url('../images/right-arrow-disable.png') !important;
+	cursor: default !important;
 }
 
 .esriPrevDisabledEditMode {
 	background-image: url('../images/left-arrow-disable.png') !important;
+	cursor: default !important;
 }
 
 .esriNextDisabledEditMode {
 	background-image: url('../images/right-arrow-disable.png') !important;
+	cursor: default !important;
 }
 
 .esriPrevDisabled {
 	float: left;
 	background-image: url('../images/left-arrow-disable.png') !important;
+	cursor: default !important;
 }
 
 .esriPreviousImage {
 	float: left;
 	background-image: url('../images/left-arrow-grey.png');
-	width: 60px;
+	width: 57px;
 	background-repeat: no-repeat;
 	text-align: center;
 	height: 93px;
@@ -543,7 +547,8 @@ ol.list li a {
 }
 
 .esriArialFont {
-	font-size: 14px;
+	font-size: 14px !important;
+	font-family: Sans-Serif !important;
 }
 
 .esriGeorgiaFont {
@@ -713,6 +718,7 @@ ol.list li a {
 
 #divContentList {
 	padding: 5px 0px;
+	overflow-y: auto;
 }
 
 #mapBookScrollContent {
@@ -1000,8 +1006,11 @@ h2 {
 	position: absolute;
 	float: left;
 	z-index: 0;
+	cursor: pointer;
 }
-
+.esriEditableModeContent .esriImageModule {
+	cursor: move !important;
+}
 .imgImg {
 	position: absolute;
 	height: 100px;
@@ -1202,8 +1211,13 @@ h2 {
 	font-weight: bold;
 	color: Black;
 	padding: 5px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
-
+.esriMapBookAuthor div, .esriMapBookAuthor p {
+	display: inline-block;
+}
 /*--------------------------Page Slider Style-----------------------------------*/
 
 .esriPageSliderContent {
@@ -1259,20 +1273,24 @@ h2 {
 	background: url('../images/left-arrow-grey.png') no-repeat center center;
 	height: 100px;
 	width: 40px;
+	cursor: pointer;
 }
 
 .esriLeftArrowDisable {
 	background: url('../images/left-arrow-disable.png') no-repeat center center !important;
+	cursor: default !important;
 }
 
 .esriRightArrowDisable {
 	background: url('../images/right-arrow-disable.png') no-repeat center center !important;
+	cursor: default !important;
 }
 
 .esriRightArrowIcon {
 	background: url('../images/right-arrow-grey.png') no-repeat center center;
 	height: 100px;
 	width: 40px;
+	cursor: pointer;
 }
 
 .esriPageSelected {
@@ -1509,6 +1527,7 @@ h2 {
 .claro .dijitEditor {
 	float: left;
 	margin-bottom: 15px;
+	margin-top: 10px;
 	width: 99%;
 }
 
@@ -1528,7 +1547,8 @@ h2 {
 	margin: 0px 5px;
 	text-align: center;
 }
-.claro .dijitTextArea {
+
+.esriModuleContent .dijitTextArea {
 	height: 100px !important;
 	font-size: 13px;
 	color: #6e6e6e;
@@ -1563,6 +1583,9 @@ h2 {
 	float: none !important;
 	border: none !important;
 	width: 100% !important;
+	color: inherit !important;
+	width: 100% !important;
+	font-family: inherit !important;
 }
 
 .esriEditableModeContent .dijitExpandingTextArea {

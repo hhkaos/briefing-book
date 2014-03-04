@@ -19,32 +19,31 @@
 //============================================================================================================================//
 
 require([
-        "coreLibrary/widgetLoader",
-        "application/appConfig",
-        "application/bookList",
-        "application/moduleData",
-        "esri/config",
-        "dojo/domReady!"
-    ], function (widgetLoader, appConfig, bookList, moduleData,esriConfig, domReady) {
+    "coreLibrary/widgetLoader",
+    "application/appConfig",
+    "application/moduleData",
+    "esri/config",
+    "dojo/domReady!"
+    ], function (widgetLoader, appConfig, moduleData, esriConfig, domReady) {
 
-        //========================================================================================================================//
+    	//========================================================================================================================//
 
-        try {
+    	try {
 
-            /**
-            * load application configuration settings from configuration file
-            * create an object of widget loader class
-            */
-            esriConfig.defaults.io.proxyUrl = "proxy.ashx";
-            esriConfig.defaults.io.alwaysUseProxy = false;
-            esriConfig.defaults.io.timeout = 600000;
-            dojo.appConfigData = appConfig;
-            dojo.bookListData = bookList;
-            dojo.moduleData = moduleData.Books;
-            var applicationWidgetLoader = new widgetLoader();
-            applicationWidgetLoader.startup();
+    		/**
+    		* load application configuration settings from configuration file
+    		* create an object of widget loader class
+    		*/
+    		esriConfig.defaults.io.proxyUrl = "proxy.ashx";
+    		esriConfig.defaults.io.alwaysUseProxy = false;
+    		esriConfig.defaults.io.timeout = 600000;
+    		dojo.appConfigData = appConfig;
+    		dojo.bookInfo = [];
+    		dojo.bookInfo.push(moduleData);
+    		var applicationWidgetLoader = new widgetLoader();
+    		applicationWidgetLoader.startup();
 
-        } catch (ex) {
-            alert(ex.message);
-        }
+    	} catch (ex) {
+    		alert(ex.message);
+    	}
     });

@@ -39,6 +39,10 @@
 	.esriTemplateContainer {
 		width: 33.3%;
 	}
+
+	.esriMapBookHeader {
+		width: 50% !important;
+	}
 }
 
 @media screen and (min-width: 768px) and (max-width: 1080px) {
@@ -84,6 +88,13 @@
 	.esriTemplateContainer {
 		width: 50%;
 	}
+
+	.esriMapBookHeader {
+		width: 36% !important;
+	}
+	.esriMapBookTitle {
+		width: 70% !important;
+	}
 }
 
 @media screen and (min-width: 641px) and (max-width:767px) {
@@ -128,6 +139,12 @@
 	}
 	.esriTemplateContainer {
 		width: 50%;
+	}
+	.esriMapBookTitle {
+		width: 60% !important;
+	}
+	.esriMapBookHeader {
+		width: 30% !important;
 	}
 }
 
@@ -181,6 +198,10 @@
 	.esriTemplateContainer {
 		width: 100%;
 	}
+
+	.esriMapBookHeader {
+		width: 40% !important;
+	}
 }
 
 @media screen and (max-width:1280px) {
@@ -199,9 +220,18 @@
 	.esriBookContainer {
 		width: 50% !important;
 	}
+	.esriMapBookTitle {
+		width: 14% !important;
+	}
 }
 @media screen and (max-width:320px) {
 	.esriBookContainer {
 		width: 100% !important;
+	}
+	.esriMapBookTitle {
+		width: 10% !important;
+	}
+	.esriMapBookHeader {
+		width: 10% !important;
 	}
 }

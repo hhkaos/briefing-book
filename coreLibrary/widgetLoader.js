@@ -21,16 +21,21 @@ define([
     "dojo/_base/declare",
     "dijit/_WidgetBase",
     "widgets/appHeader/appHeader",
-	"dojo/i18n!nls/localizedStrings",
+    "dojo/i18n!nls/localizedStrings",
     "widgets/mapBookCollection/mapBookCollection",
+	"widgets/mapBookConfigLoader/mapBookConfigLoader",
     "dojo/domReady!"
-    ], function (declare, _WidgetBase, appHeader, nls, mapBookCollection) {
+    ], function (declare, _WidgetBase, appHeader, nls, mapBookCollection, mapBookConfigLoader) {
     	return declare([_WidgetBase], {
     		nls: nls,
     		startup: function () {
+    			var mapbookLoader, MapBookCollection, applicationHeader;
     			try {
-    				var MapBookCollection = new mapBookCollection();
-    				var applicationHeader = new appHeader();
+    				mapbookLoader = new mapBookConfigLoader();
+    				mapbookLoader.startup().then(function (response) {
+    					MapBookCollection = new mapBookCollection();
+    					applicationHeader = new appHeader();
+    				});
     			} catch (ex) {
     				alert(nls.errorMessages.widgetNotLoaded);
     			}

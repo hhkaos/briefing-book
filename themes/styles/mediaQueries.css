@@ -5,7 +5,6 @@
 		width: 100%;
 		margin: 0px auto;
 		height: 100%;
-		background: #e5f1f9;
 	}
 
 	.esriMapBookContainer {
@@ -15,14 +14,12 @@
 	}
 
 	.esriNext {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
 	}
 
 	.esriPrevious {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
@@ -39,7 +36,13 @@
 	.esriSettingLabel {
 		width: 29%;
 	}
+	.esriTemplateContainer {
+		width: 33.3%;
+	}
 
+	.esriMapBookHeader {
+		width: 50% !important;
+	}
 }
 
 @media screen and (min-width: 768px) and (max-width: 1080px) {
@@ -48,7 +51,6 @@
 		width: 100%;
 		margin: 0px auto;
 		height: 100%;
-		background: #e5f1f9;
 	}
 
 	.esriMapBookContainer {
@@ -58,14 +60,12 @@
 	}
 
 	.esriNext {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
 	}
 
 	.esriPrevious {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
@@ -85,6 +85,16 @@
 	.esriSettingLabel {
 		width: 29%;
 	}
+	.esriTemplateContainer {
+		width: 50%;
+	}
+
+	.esriMapBookHeader {
+		width: 36% !important;
+	}
+	.esriMapBookTitle {
+		width: 70% !important;
+	}
 }
 
 @media screen and (min-width: 641px) and (max-width:767px) {
@@ -99,18 +109,15 @@
 		width: 87%;
 		margin: 0px auto;
 		float: left;
-		background: #e5f1f9;
 	}
 
 	.esriNext {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
 	}
 
 	.esriPrevious {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
@@ -130,6 +137,15 @@
 	.esriSettingLabel {
 		width: 34%;
 	}
+	.esriTemplateContainer {
+		width: 50%;
+	}
+	.esriMapBookTitle {
+		width: 60% !important;
+	}
+	.esriMapBookHeader {
+		width: 30% !important;
+	}
 }
 
 @media screen and (max-width:640px) {
@@ -148,14 +164,12 @@
 	}
 
 	.esriNext {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
 	}
 
 	.esriPrevious {
-		background: #e5f1f9;
 		float: left;
 		height: 100%;
 		width: 6%;
@@ -181,6 +195,13 @@
 	.esriSettingLabel {
 		width: 39%;
 	}
+	.esriTemplateContainer {
+		width: 100%;
+	}
+
+	.esriMapBookHeader {
+		width: 40% !important;
+	}
 }
 
 @media screen and (max-width:1280px) {
@@ -199,9 +220,18 @@
 	.esriBookContainer {
 		width: 50% !important;
 	}
+	.esriMapBookTitle {
+		width: 14% !important;
+	}
 }
 @media screen and (max-width:320px) {
 	.esriBookContainer {
 		width: 100% !important;
+	}
+	.esriMapBookTitle {
+		width: 10% !important;
+	}
+	.esriMapBookHeader {
+		width: 10% !important;
 	}
 }

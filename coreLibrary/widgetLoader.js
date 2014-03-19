@@ -23,9 +23,10 @@ define([
     "widgets/appHeader/appHeader",
     "dojo/i18n!nls/localizedStrings",
     "widgets/mapBookCollection/mapBookCollection",
-	"widgets/mapBookConfigLoader/mapBookConfigLoader",
+    "widgets/mapBookConfigLoader/mapBookConfigLoader",
+    "widgets/selectWebmap/selectWebmap",
     "dojo/domReady!"
-    ], function (declare, _WidgetBase, appHeader, nls, mapBookCollection, mapBookConfigLoader) {
+	], function (declare, _WidgetBase, appHeader, nls, mapBookCollection, mapBookConfigLoader, selectWebmap) {
     	return declare([_WidgetBase], {
     		nls: nls,
     		startup: function () {
@@ -35,6 +36,7 @@ define([
     				mapbookLoader.startup().then(function (response) {
     					MapBookCollection = new mapBookCollection();
     					applicationHeader = new appHeader();
+					selectWebmap = new selectWebmap();
     				});
     			} catch (ex) {
     				alert(nls.errorMessages.widgetNotLoaded);

@@ -43,6 +43,13 @@
 	.esriMapBookHeader {
 		width: 50% !important;
 	}
+
+	.esriMapInfoLabel {
+		width: 65% !important;
+	}
+	.esriMapInfo {
+		width: 70% !important;
+	}
 }
 
 @media screen and (min-width: 768px) and (max-width: 1080px) {
@@ -95,6 +102,12 @@
 	.esriMapBookTitle {
 		width: 70% !important;
 	}
+	.esriMapInfoLabel {
+		width: 55% !important;
+	}
+	.esriMapInfo {
+		width: 70% !important;
+	}
 }
 
 @media screen and (min-width: 641px) and (max-width:767px) {
@@ -141,10 +154,16 @@
 		width: 50%;
 	}
 	.esriMapBookTitle {
-		width: 60% !important;
+		display: none !important;
 	}
 	.esriMapBookHeader {
 		width: 30% !important;
+	}
+	.esriMapInfoLabel {
+		width: 41% !important;
+	}
+	.esriMapInfo {
+		width: 65% !important;
 	}
 }
 
@@ -201,6 +220,9 @@
 
 	.esriMapBookHeader {
 		width: 40% !important;
+	}
+	.esriMapBookTitle {
+		display: none !important;
 	}
 }
 

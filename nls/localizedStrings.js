@@ -26,7 +26,7 @@ define({
 		editTitle: "Edit Book",
 		deleteTitle: "Delete Page",
 		removeBookTitle: "Remove Book",
-		tocTitle: "TOC",
+		tocTitle: "Contents",
 		addPageText: "Add",
 		cancelText: "Cancel",
 		addBookTitle: "New Book",
@@ -58,7 +58,7 @@ define({
 		mapbookDefaultTitle: "Briefing Book Title Goes Here",
 		confirmPageDeleting: "This page will be removed. Click Ok to confirm.",
 		confirmCopyOfSelectedBook: "Do you want to copy this book?",
-		confirmDeletingOfSelectedBook: "${bookName} will be removed. Click Ok to confirm removal.",
+		confirmDeletingOfSelectedBook: "${bookName} will be removed. Click 'OK' to confirm removal.",
 		confirmAppReloading: "Briefing book gallery will be reloaded and you may lose the edits.",
 		validateBookOwner: "You do not have permission to edit this book.",
 		validateOrganizationUser: "You are not the member of this Organization.",
@@ -66,8 +66,15 @@ define({
 		signInText: "Sign In",
 		signOutText: "Sign Out",
 		unitInPixel: " (px)",
-		validateUnSavedEdits: 'This book has unsaved edits.  Click "Cancel" to stay on this page and click "Save" icon to save this book. Click "OK" to continue to bookshelf. \nWarning: If you do not save this book, all edits done in this session may be lost.',
+		unLockBookTitle: "Unlocked Book",
+		lockBookTitle: "Locked Book",
+		selectedWebmapText: "Currently displaying <b>${webmapName}</b>. Click 'Select map' to choose a different webmap",
+		selectWebmapBtnText: "Select map",
+		selectWebmapDialogTitle: "Select Webmap",
+		searchWebmapPlaceHolder: "Enter search term",
+		validateUnSavedEdits: 'There are unsaved changes in this book. Click "Cancel" to stay on this page. Click "OK" to continue without saving. \nWarning: If you do not save this book, all edits done in this session may be lost.',
 		bookNotSaved: 'This book is not saved yet. Click "Save" icon to save this book.',
+		webmapCountStatus: "${start} - ${end} of ${total}",
 		errorMessages: {
 			widgetNotLoaded: "widget not loaded",
 			contentPageRequired: "Content Page Required",
@@ -83,5 +90,5 @@ define({
 			webmapError: "An error occurred while loading the webmap"
 		}
 	},
-	ar: true, fr: true, it: true
+	es: true, fr: true, it: true
 });

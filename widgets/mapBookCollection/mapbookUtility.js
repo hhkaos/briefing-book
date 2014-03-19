@@ -177,19 +177,14 @@
 			}
 		},
 		_toggleDnd: function (isEditModeEnable) {
-			var pageIndex, columnIndex;
 			array.forEach(this.DNDArray, function (dndCont) {
 				if (isEditModeEnable) {
-					pageIndex = domAttr.get(dndCont.node.parentElement, "pageIndex");
-					columnIndex = domAttr.get(dndCont.node, "columnIndex");
-					if (!(pageIndex === "0" && columnIndex === "0")) {
 						dndCont.delay = 0;
 						dndCont.checkAcceptance = function (source, nodes) {
 							if (nodes[0].dndType !== "carousalPage") {
 								return true;
 							}
 						};
-					}
 				} else {
 					dndCont.delay = 1000;
 					dndCont.checkAcceptance = function (source, nodes) {
@@ -200,13 +195,16 @@
 		},
 
 		_toggleDeleteBookOption: function (isEnable) {
-			var selectedBookIndex, closeBtns;
+			var selectedBookIndex, closeBtns, bookTitle;
+			bookTitle = query('.esriBookTitlediv');
 			closeBtns = query('.esriBookclose');
-			array.forEach(closeBtns, function (deleteBtn) {
+			array.forEach(closeBtns, function (deleteBtn, index) {
 				selectedBookIndex = domAttr.get(deleteBtn.parentElement, "index");
 				if (isEnable && dojo.bookInfo[selectedBookIndex].BookConfigData.owner == dojo.currentUser) {
+					domClass.add(bookTitle[index], "esriBookTitledivchange");
 					domStyle.set(deleteBtn, "display", "block");
 				} else {
+					domClass.remove(bookTitle[index], "esriBookTitledivchange");
 					domStyle.set(deleteBtn, "display", "none");
 				}
 			});
@@ -245,8 +243,8 @@
 			this._renderTOCContent(dom.byId("divContentList"));
 		},
 
-		_setBookPageIndex: function (bookListdata) {
-			for (var i = 0; i < bookPages.length; i++) {
+		_setBookPageIndex: function (bookListdata, bookPagesLength) {
+			for (var i = 0; i < bookPagesLength; i++) {
 				bookListdata[i].index = i + 2;
 			}
 		},

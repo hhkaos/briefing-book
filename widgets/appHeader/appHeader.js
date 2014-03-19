@@ -40,6 +40,8 @@
 		},
 
 		_createApplicationHeader: function () {
+			this._setApplicationLogo();
+			this._setApllicationFavicon();
 			this._createHomeIcon();
 			this._createNewBookIcon();
 			this._createDeleteBookIcon();
@@ -49,18 +51,25 @@
 			this._createSaveBookIcon();
 			this._createDeletePageIcon();
 			this._createTOCIcon();
+			this._createSignInBtn();
+        	},
 
-			this.own(on(dom.byId("userLogIn"), "click", function () {
-				topic.publish("toggleUserLogInHandler");
-			}));
-		},
+        _setApplicationLogo: function () {
+            domStyle.set(this.applicationLogoIcon, "background-image", 'url(' + dojo.appConfigData.ApplicationIcon + ')');
+        },
+
+        _setApllicationFavicon: function () {
+            if (dom.byId('appFavicon')) {
+                domAttr.set(dom.byId('appFavicon'), "href", dojo.appConfigData.ApplicationFavicon);
+            }
+        },
 
 		_createHomeIcon: function () {
-			var homeButtonDiv, confirmHomePageView = true, _self = this;
+       		        var homeButtonDiv, confirmHomePageView, _self = this;
 			homeButtonDiv = domConstruct.create("div", { "class": "esrihomeButtonIcon", "style": "display:none", "title": nls.homeTitle }, this.applicationHeaderWidgetsContainer);
 
 			this.own(on(homeButtonDiv, "click", function () {
-				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId !== nls.defaultItemId) {
+   			             confirmHomePageView = true;
 					if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists) {
 						confirmHomePageView = confirm(nls.validateUnSavedEdits);
 					}
@@ -71,9 +80,6 @@
 							_self._disableEditing();
 						}
 						_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
-					}
-				} else {
-					alert(nls.bookNotSaved);
 				}
 			}));
 		},
@@ -101,17 +107,18 @@
 		},
 
 		_createCopyBookIcon: function () {
-			var copyBookIcon, confirmCopy = true;
+            		var copyBookIcon, confirmCopy = true, _self = this;
 
 			copyBookIcon = domConstruct.create("div", { "class": "esriCopyBookIcon", "title": nls.copyBookShelf }, this.applicationHeaderWidgetsContainer);
 			this.own(on(copyBookIcon, "click", function () {
-				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId !== nls.defaultItemId) {
+               		_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
+        	        if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists) {
+                	    confirmCopy = confirm(nls.validateUnSavedEdits);
+           		  } else {
 					confirmCopy = confirm(nls.confirmCopyOfSelectedBook);
+          		      }
 					if (confirmCopy) {
 						topic.publish("copySelectedBookHandler");
-					}
-				} else {
-					alert(nls.bookNotSaved);
 				}
 			}));
 		},
@@ -137,21 +144,24 @@
 			}));
 		},
 		_createSaveBookIcon: function () {
-			var saveBookIcon;
+      		      var saveBookIcon, _self = this;
 
 			saveBookIcon = domConstruct.create("div", { "class": "esriSaveIcon", "title": nls.saveBookShelf }, this.applicationHeaderWidgetsContainer);
 			this.own(on(saveBookIcon, "click", function () {
+            		_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
 				topic.publish("saveBookHandler");
 			}));
 		},
 
 		_createDeletePageIcon: function () {
-			var deletePageIcon;
+          		var deletePageIcon, _self = this;
 
 			deletePageIcon = domConstruct.create("div", { "class": "esriDeleteIcon", "style": "display:none", "title": nls.deleteTitle }, this.applicationHeaderWidgetsContainer);
 			this.own(on(deletePageIcon, "click", function () {
+            		_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
 				confirmDeleting = confirm(nls.confirmPageDeleting);
 				if (confirmDeleting) {
+                			dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
 					topic.publish("deletePageHandler");
 				}
 			}));
@@ -166,12 +176,21 @@
 			}));
 		},
 
+        _createSignInBtn: function () {
+            var divSignIn, _self = this;
+            divSignIn = domConstruct.create("div", { "id": "userLogIn", "class": "esriLogInIcon", "title": nls.signInText }, this.applicationHeaderWidgetsContainer);
+            this.own(on(divSignIn, "click", function () {
+                _self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
+                topic.publish("toggleUserLogInHandler");
+            }));
+        },
 		_addNewBook: function () {
 			var bookIndex, newBook;
 
 			bookIndex = dojo.bookInfo.length;
 			newBook = {};
 			newBook.title = nls.mapbookDefaultTitle;
+			newBook.UnSaveEditsExists = true;
 			topic.publish("_getFullUserNameHandler", newBook);
 			newBook.owner = dojo.currentUser;
 			newBook.itemId = nls.defaultItemId;

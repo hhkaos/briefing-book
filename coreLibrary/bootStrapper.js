@@ -20,11 +20,10 @@
 
 require([
     "coreLibrary/widgetLoader",
-    "application/appConfig",
-    "application/moduleData",
+    "application/config",
     "esri/config",
     "dojo/domReady!"
-    ], function (widgetLoader, appConfig, moduleData, esriConfig, domReady) {
+    ], function (widgetLoader, config, esriConfig, domReady) {
 
     	//========================================================================================================================//
 
@@ -37,9 +36,8 @@ require([
     		esriConfig.defaults.io.proxyUrl = "proxy.ashx";
     		esriConfig.defaults.io.alwaysUseProxy = false;
     		esriConfig.defaults.io.timeout = 600000;
-    		dojo.appConfigData = appConfig;
+    		dojo.appConfigData = config;
     		dojo.bookInfo = [];
-    		dojo.bookInfo.push(moduleData);
     		var applicationWidgetLoader = new widgetLoader();
     		applicationWidgetLoader.startup();
 

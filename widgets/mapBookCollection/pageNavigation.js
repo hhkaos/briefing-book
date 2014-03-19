@@ -122,7 +122,7 @@
 		_setPageNavigation: function () {
 			var pageNavigationTitle;
 			if (this.currentIndex >= 2) {
-				if (dojo.appConfigData.AuthoringMode) {
+				if (dojo.appConfigData.AuthoringMode && this.isEditModeEnable) {
 					domStyle.set(query(".esriDeleteIcon")[0], "display", "block");
 				}
 				domStyle.set(query(".esriFooterDiv")[0], "display", "block");

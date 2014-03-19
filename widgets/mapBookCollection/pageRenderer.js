@@ -250,9 +250,7 @@
 			bookPages.splice(this.currentIndex - 1, 1);
 			bookListdata.splice(this.currentIndex - 1, 1);
 
-			for (var i = currentPageIndex - 2; i < bookPages.length; i++) {
-				bookListdata[i].index = i + 2;
-			}
+			this._setBookPageIndex(bookListdata, bookPages.length);
 			this.currentIndex = currentPageIndex;
 		},
 

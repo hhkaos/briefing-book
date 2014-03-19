@@ -10,7 +10,8 @@
 	"dojo/store/Memory",
 	"dijit/Editor",
 	"dijit/form/ComboBox",
-	 "dijit/form/Textarea",
+	"dijit/form/Textarea",
+	"dijit/form/ValidationTextBox",
 	"dijit/_editor/plugins/FontChoice",
 	"dijit/_editor/plugins/LinkDialog",
 	"dijit/_editor/plugins/TextColor",
@@ -20,7 +21,7 @@
 	"esri/TimeExtent",
 	"../mapBookCollection/mapbookUtility",
 	"dojo/parser"
-], function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Memory, Editor, ComboBox, Textarea, FontChoice, LinkDialog, TextColor, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
+], function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Memory, Editor, ComboBox, Textarea, ValidationTextBox, FontChoice, LinkDialog, TextColor, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
 	return declare([mapbookUtility], {
 
 		_createLegend: function (map) {
@@ -57,26 +58,23 @@
 				height: '250px',
 				required: true,
 				plugins: ['bold', 'italic', 'underline', 'foreColor', 'hiliteColor', 'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight', 'createLink'],
-				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontName", generic: true }, { name: "dijit/_editor/plugins/FontChoice", command: "fontSize", plainText: true}],
+				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontSize", plainText: true }, { name: "dijit/_editor/plugins/FontChoice", command: "fontName", custom: ["Arial", "Courier New", "Garamond", "sans-serif", "Tahoma", "Times New Roman", "Verdana"]}],
 				"class": "esriSettingInput",
 				id: "textEditor"
 			}, divInputContainer);
 			dijitInputContainer.startup();
 			dijitInputContainer.setValue(moduleAttr[key]);
 			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
-			dijitInputContainer.onChange = function (data) {
-
-			};
 			dijitInputContainer.onLoadDeferred.then(function (data) {
 				setTimeout(function () {
 					dijit.byId("textEditor")._plugins[12].button.select.textbox.readOnly = true;
 					dijit.byId("textEditor")._plugins[11].button.select.textbox.readOnly = true;
 					dijit.byId("textEditor").editNode.noWrap = true;
-					if (!dijit.byId("textEditor").value.match('font-familiy')) {
+					if (!dijit.byId("textEditor").value.match('<font')) {
 						fontFamily = domStyle.get(dijit.byId("textEditor").domNode, 'font-family');
 						if (fontFamily) {
 							dijit.byId("textEditor").execCommand('selectAll');
-							dijit.byId("textEditor").execCommand('fontName', fontFamily.toLowerCase());
+							dijit.byId("textEditor").execCommand('fontName', "sans-serif");
 						}
 					}
 				}, 300);
@@ -123,21 +121,13 @@
 		_createTextBox: function (moduleSettingContent, moduleAttr, key, isValidationRequired) {
 			var divInputContainer, dijitInputContainer;
 			divInputContainer = domConstruct.create("div", { "inputKey": key, "class": "esriSettingInputHolder" }, moduleSettingContent);
-			dijitInputContainer = new dijit.form.ValidationTextBox({
+			dijitInputContainer = new ValidationTextBox({
 				required: isValidationRequired,
 				"class": "esriSettingInput"
 			}, divInputContainer);
 			dijitInputContainer.startup();
 			dijitInputContainer.setValue(moduleAttr[key]);
 			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
-			if (key == "height" && moduleAttr.uid == "title") {
-				dijitInputContainer.textbox.readOnly = true;
-			}
-			if (key == "height" || key == "width") {
-				dijitInputContainer.set("regExp", '[\\d]+');
-			} else {
-				dijitInputContainer.set("regExp", "^[\\W 0-9a-zA-Z_ ]+");
-			}
 			return dijitInputContainer;
 		},
 

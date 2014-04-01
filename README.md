@@ -5,7 +5,7 @@ The application will also be used to modify existing contents and re-publish it 
 A prototype developed by Esri will be used in concert with the specifications to guide application development.
 Briefing/Map Book will be accessed from browsers on tablets and desktops.
 
-[Image of Briefing Book application](https://raw.github.com/Esri/briefing-book/master/briefing-book.png "Briefing Book application")
+[Image of Briefing Book application](briefing-book.png "Briefing Book application")
 
 ## Features
 
@@ -20,7 +20,7 @@ Briefing/Map Book will be accessed from browsers on tablets and desktops.
 
 ## Resources
 
-Learn more about Esri's [ArcGIS for Local Government maps and apps](http://resources.arcgis.com/en/communities/local-government/).
+Learn more about Esri's [ArcGIS for Local Government maps and apps](http://solutions.arcgis.com/local-government/).
 
 Show me a list of other [Local Government GitHub repositories](http://esri.github.io/#Local-Government).
 
@@ -50,7 +50,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 A copy of the license is available in the repository's
-[LICENSE.txt](https://raw.github.com/Esri/briefing-book/master/LICENSE.txt) file.
+[LICENSE.txt](LICENSE.txt) file.
 
-[](Esri Tags: Local-Government Local Government Briefing Book)
+[](Esri Tags: Local-Government Local Government Briefing Book State-Government State Government)
 [](Esri Language: JavaScript)

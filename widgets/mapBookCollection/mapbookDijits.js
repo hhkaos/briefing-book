@@ -10,7 +10,8 @@
 	"dojo/store/Memory",
 	"dijit/Editor",
 	"dijit/form/ComboBox",
-	 "dijit/form/Textarea",
+	"dijit/form/Textarea",
+	"dijit/form/ValidationTextBox",
 	"dijit/_editor/plugins/FontChoice",
 	"dijit/_editor/plugins/LinkDialog",
 	"dijit/_editor/plugins/TextColor",
@@ -20,7 +21,7 @@
 	"esri/TimeExtent",
 	"../mapBookCollection/mapbookUtility",
 	"dojo/parser"
-], function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Memory, Editor, ComboBox, Textarea, FontChoice, LinkDialog, TextColor, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
+], function (declare, domConstruct, domAttr, domStyle, domClass, dom, on, query, Memory, Editor, ComboBox, Textarea, ValidationTextBox, FontChoice, LinkDialog, TextColor, HomeButton, LegendDijit, TimeSlider, TimeExtent, mapbookUtility) {
 	return declare([mapbookUtility], {
 
 		_createLegend: function (map) {
@@ -57,54 +58,27 @@
 				height: '250px',
 				required: true,
 				plugins: ['bold', 'italic', 'underline', 'foreColor', 'hiliteColor', 'indent', 'outdent', 'justifyLeft', 'justifyCenter', 'justifyRight', 'createLink'],
-				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontName", generic: true }, { name: "dijit/_editor/plugins/FontChoice", command: "fontSize", plainText: true}],
+				extraPlugins: [{ name: "dijit/_editor/plugins/FontChoice", command: "fontSize", plainText: true }, { name: "dijit/_editor/plugins/FontChoice", command: "fontName", custom: ["Arial", "Courier New", "Garamond", "sans-serif", "Tahoma", "Times New Roman", "Verdana"]}],
 				"class": "esriSettingInput",
 				id: "textEditor"
 			}, divInputContainer);
 			dijitInputContainer.startup();
 			dijitInputContainer.setValue(moduleAttr[key]);
 			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
-			dijitInputContainer.onChange = function (data) {
-
-			};
 			dijitInputContainer.onLoadDeferred.then(function (data) {
 				setTimeout(function () {
 					dijit.byId("textEditor")._plugins[12].button.select.textbox.readOnly = true;
 					dijit.byId("textEditor")._plugins[11].button.select.textbox.readOnly = true;
 					dijit.byId("textEditor").editNode.noWrap = true;
-					if (!dijit.byId("textEditor").value.match('font-familiy')) {
+					if (!dijit.byId("textEditor").value.match('<font')) {
 						fontFamily = domStyle.get(dijit.byId("textEditor").domNode, 'font-family');
 						if (fontFamily) {
 							dijit.byId("textEditor").execCommand('selectAll');
-							dijit.byId("textEditor").execCommand('fontName', fontFamily.toLowerCase());
+							dijit.byId("textEditor").execCommand('fontName', "sans-serif");
 						}
 					}
 				}, 300);
 			});
-			return dijitInputContainer;
-		},
-
-		_createComboBox: function (moduleSettingContent, moduleAttr, key) {
-			var divInputContainer, dijitInputContainer;
-			divInputContainer = domConstruct.create("div", { "class": "esriComboBox" }, moduleSettingContent);
-
-			var stateStore = new Memory({
-				data: [{ name: "Esri", value: "esri" },
-					   { name: "Vimeo", value: "vimeo" },
-					   { name: "Youtube", value: "youtube"}]
-			});
-			if (moduleAttr[key].trim() == "") {
-				moduleAttr[key] = stateStore.data[0].name;
-			}
-			dijitInputContainer = new ComboBox({
-				store: stateStore,
-				value: moduleAttr[key],
-				searchAttr: "name",
-				"class": "esriSettingInput"
-			}, divInputContainer);
-			dijitInputContainer.startup();
-			dijitInputContainer.textbox.readOnly = true;
-			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
 			return dijitInputContainer;
 		},
 
@@ -123,34 +97,28 @@
 		_createTextBox: function (moduleSettingContent, moduleAttr, key, isValidationRequired) {
 			var divInputContainer, dijitInputContainer;
 			divInputContainer = domConstruct.create("div", { "inputKey": key, "class": "esriSettingInputHolder" }, moduleSettingContent);
-			dijitInputContainer = new dijit.form.ValidationTextBox({
+			dijitInputContainer = new ValidationTextBox({
 				required: isValidationRequired,
 				"class": "esriSettingInput"
 			}, divInputContainer);
 			dijitInputContainer.startup();
 			dijitInputContainer.setValue(moduleAttr[key]);
 			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
-			if (key == "height" && moduleAttr.uid == "title") {
-				dijitInputContainer.textbox.readOnly = true;
-			}
-			if (key == "height" || key == "width") {
-				dijitInputContainer.set("regExp", '[\\d]+');
-			} else {
-				dijitInputContainer.set("regExp", "^[\\W 0-9a-zA-Z_ ]+");
-			}
 			return dijitInputContainer;
 		},
 
 		_createTimeSlider: function (response) {
-			var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, sliderDiv;
+			var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, sliderDiv, esriLogo, layeIndex;
 			webmap = response.map;
 			showTimeSlider = false;
 			itemData = response.itemInfo.itemData;
-			for (var i = 0; i < itemData.operationalLayers.length; i++) {
-				if (itemData.operationalLayers[i].layerObject.timeInfo) {
-					if (!(itemData.operationalLayers[i].timeAnimation == false)) {
-						showTimeSlider = true;
-						break;
+			for (layeIndex = 0; layeIndex < itemData.operationalLayers.length; layeIndex++) {
+				if (itemData.operationalLayers[layeIndex].layerObject.timeInfo) {
+					if (!(itemData.operationalLayers[layeIndex].timeAnimation === false)) {
+						if (itemData.widgets && itemData.widgets.timeSlider) {
+							showTimeSlider = true;
+							break;
+						}
 					}
 				}
 			}
@@ -163,11 +131,17 @@
 				webmap.setTimeSlider(timeSlider);
 				webmapTimeSlider = itemData.widgets.timeSlider;
 				timeExtent = new TimeExtent();
-				timeExtent.startTime = new Date(webmapTimeSlider.properties.startTime);
-				timeExtent.endTime = new Date(webmapTimeSlider.properties.endTime);
+				if (webmapTimeSlider.properties.startTime) {
+					timeExtent.startTime = new Date(webmapTimeSlider.properties.startTime);
+				}
+				if (webmapTimeSlider.properties.endTime) {
+					timeExtent.endTime = new Date(webmapTimeSlider.properties.endTime);
+				}
 				timeSlider.setThumbCount(webmapTimeSlider.properties.thumbCount);
 				timeSlider.createTimeStopsByTimeInterval(timeExtent, webmapTimeSlider.properties.timeStopInterval.interval, webmapTimeSlider.properties.timeStopInterval.units);
 				timeSlider.startup();
+				esriLogo = query('.esriControlsBR', dom.byId(webmap.id))[0];
+				domStyle.set(esriLogo, "bottom", "50px");
 			}
 		}
 

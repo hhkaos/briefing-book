@@ -6,13 +6,18 @@
 		ApplicationName: "Briefing Book Gallery",
 
 		// Set application icon path
-		ApplicationIcon: "",
+		ApplicationIcon: "themes/images/mapbookIcon.png",
 
 		// Set application Favicon path
-		ApplicationFavicon: "images/favicon.ico",
+		ApplicationFavicon: "themes/images/mapBookFavIco.ico",
 
 		// Set application mode. Set to false for Public interface. Set to true for Admin interface
 		AuthoringMode: false, 	//false:      Public mode and true:      Editable mode
+
+		//Set theme for application
+		ApplicationTheme: "grey", // grey||blue.css
+
+		BriefingBookCoverIcon: "themes/images/map-book-bg-grey.png",
 
 		//video url for YouTube
 		YouTubeVideoUrl: "http://www.youtube.com/embed/",
@@ -23,17 +28,26 @@
 		//video url for Vimeo
 		VimeoVideoUrl: "http://player.vimeo.com/video/",
 
-
-		PortalURL: "http://arcgis4localgov2.maps.arcgis.com",
+		//portal url
+		PortalURL: "http://arcgis4localgov2.maps.arcgis.com/",
 
 		//tag for searching briefing book config
 		ConfigSearchTag: 'BriefingBookConfigItem',
 
+		//cookie/local storage name  for storing user credential
+		Credential: "esri_briefingbook_credential",
+
+		//max webmap count
+		MaxWebMapCount: 100,
+
+		//display no of webmap thumbnail in' Select webmap' dialog
+		webmapPerPage: 10,
+
 		//Sorting field
-		SortField: 'created', //Values:title | owner | avgRating |numViews| created | modified
+		SortField: 'owner', //Values:title | owner | avgRating |numViews| created | modified
 
 		//sorting order
-		SortOrder: 'desc', //Values: asc | desc
+		SortOrder: 'asc', //Values: asc | desc
 
 		/* module Defaults contains default settings for each and every module */
 		/* cover page layout contains layout for index page*/
@@ -44,7 +58,7 @@
 			columnWidth: [50, 50],
 			content: [
 								 ["title", "subtitle", "author", "date", "logo"], ["webmap"]
-						],
+			],
 			height: [[40, 100, 60, 50], [300]],
 			type: "CoverPage"
 
@@ -52,39 +66,39 @@
 		/* content page layout contains layout for content page*/
 		ContentPageLayouts: [
 						 {
-						 	Name: "ContentLayout1",
-						 	columnWidth: [50, 50],
-						 	columns: 2,
-						 	templateIcon: "themes/images/contentLayout1.png",
-						 	selectedTemplateIcon: "themes/images/contentLayout1-select.png",
-						 	content: [
-										["text", "TOC"], ["webmap"]
-						 		],
-						 	height: [[50, 200], [250]],
-						 	type: "ContentPage"
+							Name: "ContentLayout1",
+							columnWidth: [50, 50],
+							columns: 2,
+							templateIcon: "themes/images/contentLayout1.png",
+							selectedTemplateIcon: "themes/images/contentLayout1-select.png",
+							content: [
+										 ["text", "TOC"], ["webmap"]
+							 ],
+							height: [[50, 200], [250]],
+							type: "ContentPage"
 						 }, {
-						 	Name: "ContentLayout2",
-						 	columns: 2,
-						 	columnWidth: [50, 50],
-						 	templateIcon: "themes/images/contentLayout2.png",
-						 	selectedTemplateIcon: "themes/images/contentLayout2-select.png",
-						 	content: [
-										 ["webmap", "text"], ["TOC"]
-						 		],
-						 	height: [[300, 100], [400]]
+							Name: "ContentLayout2",
+							columns: 2,
+							columnWidth: [50, 50],
+							templateIcon: "themes/images/contentLayout2.png",
+							selectedTemplateIcon: "themes/images/contentLayout2-select.png",
+							content: [
+										  ["webmap", "text"], ["TOC"]
+							 ],
+							height: [[300, 100], [400]]
 						 }, {
-						 	Name: "ContentLayout3",
-						 	columns: 2,
-						 	columnWidth: [50, 50],
-						 	templateIcon: "themes/images/contentLayout3.png",
-						 	selectedTemplateIcon: "themes/images/contentLayout3-select.png",
-						 	content: [
-										 ["TOC"],
-										 ["text", "webmap"]
-						 		],
-						 	height: [[300], [50, 250]]
+							Name: "ContentLayout3",
+							columns: 2,
+							columnWidth: [50, 50],
+							templateIcon: "themes/images/contentLayout3.png",
+							selectedTemplateIcon: "themes/images/contentLayout3-select.png",
+							content: [
+										  ["TOC"],
+										  ["text", "webmap"]
+							 ],
+							height: [[300], [50, 250]]
 						 }
-				],
+		],
 		/* book page layout contains layout for different pages of books */
 		BookPageLayouts: [
 							{
@@ -96,7 +110,7 @@
 								content: [
 										["text"],
 										["webmap"]
-									],
+								],
 								height: [[250], [250]]
 							}, {
 								Name: "MostlyText",
@@ -107,7 +121,7 @@
 								content: [
 										 ["webmap", "text"],
 										 ["text"]
-									],
+								],
 								height: [[230, 30], [300]]
 
 							}, {
@@ -118,7 +132,7 @@
 								selectedTemplateIcon: "themes/images/temp3-select.png",
 								content: [
 										 ["webmap", "text"]
-									],
+								],
 								height: [[250, 50]]
 
 							}, {
@@ -130,12 +144,13 @@
 								content: [
 										 ["webmap", "text"],
 										 ["text"]
-									],
+								],
 								height: [[230, 60], [335]]
 							}
-				],
+		],
 		ModuleDefaultsConfig: {
 			"webmap": {
+				map: '',
 				type: "webmap",
 				title: "Webmap title goes here",
 				caption: "Webmap caption goes here",
@@ -168,7 +183,6 @@
 				type: "video",
 				title: "Video title",
 				caption: "The video caption",
-				provider: '',
 				URL: '',
 				height: 250							// in pixel
 			},
@@ -183,16 +197,10 @@
 				columns: 5,
 				height: 250							// in pixel
 			},
-			"page": {
-				title: "Untitled Page",
-				shortTitle: "Untitled",
-				cols: 2,
-				height: ''							// in pixel
-			},
 			"logo": {
 				type: "logo",
 				URL: "themes/images/logo-default.jpg",
-				height: 50							// in pixel
+				height: 50							  // in pixel
 			},
 			"TOC": {
 				type: "TOC",

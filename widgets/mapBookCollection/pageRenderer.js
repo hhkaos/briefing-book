@@ -1,36 +1,34 @@
 ﻿define([
-    "dojo/_base/declare",
-    "dojo/_base/array",
-    "dojo/_base/lang",
-    "dojo/dom-construct",
-    "dojo/dom-attr",
-    "dojo/dom-style",
-    "dojo/dom-class",
-    "dojo/dom",
-    "dojo/on",
-    "dojo/query",
-    "dojo/i18n!nls/localizedStrings",
-    "dijit/Dialog",
-    "dojo/parser"
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dojo/_base/lang",
+	"dojo/dom-construct",
+	"dojo/dom-attr",
+	"dojo/dom-style",
+	"dojo/dom-class",
+	"dojo/dom",
+	"dojo/on",
+	"dojo/query",
+	"dojo/i18n!nls/localizedStrings",
+	"dijit/Dialog",
+	"dojo/parser"
 ], function (declare, array, lang, domConstruct, domAttr, domStyle, domClass, dom, on, query, nls, Dialog) {
 	return declare([], {
-
 		_renderPages: function (pages) {
-			var page, mapBookUList, settingDialog;
+			var page, mapBookUList, settingDialog, pageIndex;
 			mapBookUList = domConstruct.create("ul", { "id": "mapBookPagesUList", "class": "esriMapBookUList" }, null);
 			dom.byId("esriMapPages").appendChild(mapBookUList);
 			if (pages.length >= 1) {
 				domStyle.set(query(".esriPrevious")[0], "visibility", "visible");
 				domStyle.set(query(".esriNext")[0], "visibility", "visible");
-				if (pages.length == 1) {
+				if (pages.length === 1) {
 					domClass.replace(this.mapBookNextPage, "esriNextDisabled", "esriNext");
 				}
-				for (var i = 0; i < pages.length; i++) {
-					if (pages[i] == "EmptyContent") {
-					} else {
-						page = pages[i];
-						page.index = i;
-						this._renderPage(pages[i]);
+				for (pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+					if (pages[pageIndex] !== "EmptyContent") {
+						page = pages[pageIndex];
+						page.index = pageIndex;
+						this._renderPage(pages[pageIndex]);
 					}
 				}
 			}
@@ -46,7 +44,7 @@
 		},
 
 		_renderPage: function (page) {
-			var _self = this, listItem, pageHeight, currentPage;
+			var _self = this, listItem, pageHeight, currentPage, currentPageContainer;
 			listItem = domConstruct.create("li", { "class": "esriMapBookPageListItem" }, null);
 			dom.byId("mapBookPagesUList").appendChild(listItem);
 			this.currentIndex = page.index;
@@ -69,6 +67,8 @@
 				}
 			}
 			domStyle.set(currentPageContainer, "height", pageHeight + 'px');
+			this._setColumnHeight(currentPageContainer);
+
 		},
 
 		_createCoverPage: function () {
@@ -80,28 +80,29 @@
 			defaultTitle.text = dojo.bookInfo[dojo.currentBookIndex].BookConfigData.title;
 			coverPage = lang.clone(dojo.appConfigData.CoverPageLayout);
 			coverPage.title = defaultTitle.text;
-			dojo.bookInfo[dojo.currentBookIndex].BookConfigData["CoverPage"] = coverPage;
-			dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData["CoverPage"] = {};
+			dojo.bookInfo[dojo.currentBookIndex].BookConfigData.CoverPage = coverPage;
+			dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData.CoverPage = {};
 			this._removeClass(this.mapBookNextPage, "esriNextDisabled");
 			return coverPage;
 		},
 
 		_renderEditPage: function () {
-			var divEditPage, isModuleValid, divEditPageHeader, divEditPageList, imgEditCoverPage, imgEditContentPage, divAddNewPage, tempContHeight, divEditPageBody, divPageSlider, _self = this;
+			var divEditPage, isModuleValid, divEditPageHeader, divEditPageList, imgOptionList, imgEditCoverPage, imgEditContentPage, divAddNewPage,
+			tempContHeight, divEditPageBody, divPageSlider, _self = this;
 
 			divEditPage = domConstruct.create("div", { "class": "esriMapBookEditPage" }, dom.byId('esriMapPages'));
 			divEditPageHeader = domConstruct.create("div", { "class": "esriEditPageHeader" }, divEditPage);
 			divEditPageList = domConstruct.create("div", { "class": "esriEditPageOptionList" }, divEditPageHeader);
 			if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.CoverPage) {
-				optionListimg = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
-				imgEditCoverPage = domConstruct.create("div", { "index": 0, "class": "esriEditPageImg esriBookPage esriPageSelected", "style": "background:url('themes/images/coverpage.png')" }, optionListimg);
+				imgOptionList = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
+				imgEditCoverPage = domConstruct.create("div", { "index": 0, "class": "esriEditPageImg esriBookPage esriPageSelected", "style": "background:url('themes/images/coverpage.png')" }, imgOptionList);
 				imgEditCoverPage.innerHTML = "Cover Page";
 				on(imgEditCoverPage, "click", function () {
 					_self._gotoPage(0);
 				});
 			}
-			optionListimg = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
-			imgEditContentPage = domConstruct.create("div", { "index": 1, "class": "esriEditPageImg esriBookPage", "style": "background:url('themes/images/content-temp.png')" }, optionListimg);
+			imgOptionList = domConstruct.create("div", { "class": "esriEditPageOptionListImg" }, divEditPageList);
+			imgEditContentPage = domConstruct.create("div", { "index": 1, "class": "esriEditPageImg esriBookPage", "style": "background:url('themes/images/content-temp.png')" }, imgOptionList);
 			imgEditContentPage.innerHTML = "Content Page";
 			on(imgEditContentPage, "click", function () {
 				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.ContentPage) {
@@ -163,7 +164,7 @@
 			});
 			divEditPageFooter = domConstruct.create("div", { "class": "esriEditPageFooter" }, divEditPageBodyContent);
 			divAddPage = domConstruct.create("div", { "isBookPageLayout": isBookPageLayout, "class": "esriAddBtn", "innerHTML": nls.addPageText }, divEditPageFooter);
-			divCancel = domConstruct.create("div", { "class": "esriCancelBtn", "innerHTML": nls.cancelText }, divEditPageFooter);
+			divCancel = domConstruct.create("div", { "class": "esriCancelBtn", "innerHTML": nls.cancelButtonText }, divEditPageFooter);
 			on(divAddPage, "click", function () {
 				_self._createNewPageLayout(this);
 			});
@@ -182,9 +183,8 @@
 
 			if (isBookPageLayout) {
 				if (!dojo.bookInfo[dojo.currentBookIndex].BookConfigData.ContentPage) {
-					if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent") {
-					} else {
-						this.mapBookDetails[dojo.currentBookIndex].push("EmptyContent")
+					if (this.mapBookDetails[dojo.currentBookIndex][1] !== "EmptyContent") {
+						this.mapBookDetails[dojo.currentBookIndex].push("EmptyContent");
 						pageIndex++;
 					}
 				}
@@ -197,7 +197,7 @@
 				newPage.title = "Page " + (pageIndex - 1);
 				newPage.index = this.mapBookDetails[dojo.currentBookIndex].length;
 			} else {
-				if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent") {
+				if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
 					flag = true;
 				}
 				newPage = dojo.appConfigData.ContentPageLayouts[selectedTempIndex];
@@ -231,7 +231,7 @@
 		_reArrangePageList: function (currentPageIndex) {
 			var currentListItemIndex = this.currentIndex;
 			var refListItemIndex = currentPageIndex;
-			if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent") {
+			if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
 				currentListItemIndex--;
 				refListItemIndex--;
 			}
@@ -250,15 +250,13 @@
 			bookPages.splice(this.currentIndex - 1, 1);
 			bookListdata.splice(this.currentIndex - 1, 1);
 
-			for (var i = currentPageIndex - 2; i < bookPages.length; i++) {
-				bookListdata[i].index = i + 2;
-			}
+			this._setBookPageIndex(bookListdata, bookPages.length);
 			this.currentIndex = currentPageIndex;
 		},
 
 		_deletePage: function () {
-			var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this, pageIndex = this.currentIndex;
-			if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent") {
+			var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this, moduleData, pageIndex = this.currentIndex, index;
+			if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
 				pageIndex--;
 			}
 			selectedPage = dom.byId('mapBookPagesUList').children[pageIndex];
@@ -269,11 +267,11 @@
 			pageModuleContent = query('.esriMapBookColContent', selectedPage);
 			this.mapBookDetails[dojo.currentBookIndex].splice(bookPageIndex + 2, 1);
 			dojo.bookInfo[dojo.currentBookIndex].BookConfigData.BookPages.splice(bookPageIndex, 1);
-			for (var i = bookPageIndex; i < bookPages.length - 1; i++) {
-				this.mapBookDetails[dojo.currentBookIndex][i].index = i;
+			for (index = bookPageIndex; index < bookPages.length - 1; index++) {
+				this.mapBookDetails[dojo.currentBookIndex][index].index = index;
 			}
 			array.forEach(pageModuleContent, function (node) {
-				if (domAttr.get(node, "type") == "webmap") {
+				if (domAttr.get(node, "type") === "webmap") {
 					var moduleIndex = domAttr.get(node, "moduleIndex");
 					_self._destroyMap("map" + moduleIndex);
 				}
@@ -283,7 +281,10 @@
 			dom.byId('mapBookPagesUList').removeChild(selectedPage);
 			this._createPageSlider();
 			this._setSliderWidth();
-			this._gotoPage(pageIndex - 1);
+			if (this.mapBookDetails[dojo.currentBookIndex][pageIndex] === "EmptyContent") {
+				this.currentIndex--;
+			}
+			this._gotoPage(this.currentIndex - 1);
 			this._updateTOC();
 		}
 

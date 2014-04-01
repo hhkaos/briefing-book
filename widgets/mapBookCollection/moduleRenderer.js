@@ -202,11 +202,11 @@
 		},
 
 		_createLogo: function (pageContentModule, pageModule) {
-			var moduleIndex = "resizable" + domAttr.get(pageModule.parentElement, "moduleIndex");
-			var divLogo = domConstruct.create("div", { "id": moduleIndex }, pageModule);
-			domAttr.set(divLogo, "innerHTML", "<img src=" + pageContentModule.URL + " />");
-			domStyle.set(divLogo, "height", pageContentModule.height + 'px');
-			this._createEditMenu(pageModule.parentElement, pageContentModule.uid, divLogo);
+			var moduleIndex, divLogo, divImage;
+			moduleIndex = "resizable" + domAttr.get(pageModule.parentElement, "moduleIndex");
+			divLogo = domConstruct.create("div", { "class": "innerDiv", "id": moduleIndex }, pageModule);
+			divImage = domConstruct.create("img", { "class": "esriLogoIcon", "id": "img" + moduleIndex, "src": pageContentModule.URL, "style": 'height:' + pageContentModule.height + 'px;width:auto' }, divLogo);
+			this._createEditMenu(pageModule.parentElement, pageContentModule.uid, divImage);
 		},
 
 		_createTitleModule: function (moduleData, pageTitleHolder) {
@@ -384,17 +384,23 @@
 	},
 
 	_renderVideoContent: function (pageContentModule, pageModule) {
-		var embed = '', urlParam = pageContentModule.URL, resizableFrame = false;
+		var embed = '', videoProvider = null, urlParam = pageContentModule.URL, resizableFrame = false;
 		if (pageContentModule.title) {
 			embed += '<div class="esriModuleTitle">' + pageContentModule.title + '</div>';
 		}
 		if (dojo.isString(pageContentModule.URL) && pageContentModule.URL.trim() !== "") {
+			if (pageContentModule.URL.match("vimeo")) {
+				videoProvider = "vimeo";
+			} else if (pageContentModule.URL.match("youtube")) {
+				videoProvider = "youtube";
+			} else if (pageContentModule.URL.match("esri")) {
+				videoProvider = "esri";
+			}
 			var videoURL = pageContentModule.URL.match(/.com/);
 			if (videoURL) {
 				videoURL = urlUtils.urlToObject(pageContentModule.URL);
 			}
-
-			switch (pageContentModule.provider.toLowerCase()) {
+			switch (videoProvider) {
 				case "vimeo":
 					if (videoURL) {
 						urlParam = pageContentModule.URL.split('/');
@@ -518,12 +524,13 @@
 		}
 
 		columnIndex = domAttr.get(pageContentHolder, "columnIndex");
-		if (!(this.currentIndex == 0 && columnIndex === "0" || moduleId === "title")) {
+		if (moduleId !== "title") {
 			divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": nls.editMentDeleteTitle }, divEditOption);
 			domAttr.set(divDeleteIcon, "type", moduleType);
 			on(divDeleteIcon, "click", function () {
 				deleteModuleFlag = confirm(nls.confirmModuleDeleting);
 				if (deleteModuleFlag) {
+					dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
 					moduleContainer = this.parentElement.parentElement;
 					_self._deleteModule(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
 				}

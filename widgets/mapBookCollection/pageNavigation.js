@@ -1,12 +1,12 @@
 ﻿define([
-    "dojo/_base/declare",
+	"dojo/_base/declare",
 	"dojo/dom-construct",
-    "dojo/dom-attr",
-    "dojo/dom-style",
-    "dojo/dom-class",
-    "dojo/dom",
+	"dojo/dom-attr",
+	"dojo/dom-style",
+	"dojo/dom-class",
+	"dojo/dom",
 	"dojo/dnd/Source",
-    "dojo/on",
+	"dojo/on",
 	"dojo/query",
 	"dojo/i18n!nls/localizedStrings",
 	"dojo/parser"
@@ -14,7 +14,8 @@
 	return declare([], {
 
 		_createPageSlider: function () {
-			var divPageSlider, dndPageList = [], divPageSliderLeft, divPageSliderContent, divPageSliderRight, listItem, divPage, ulist, bookPagesLength, _self = this;
+			var divPageSlider, dndPageList = [], divPageSliderLeft, divPageSliderContent, divPageSliderRight, listItem,
+				divPage, ulist, bookPagesLength, uListDndCont, divLeftArrowIcon, divRightArrowIcon, bookPageIndex, _self = this;
 			divPageSlider = query('.esriPageSliderContainer')[0];
 			if (divPageSlider) {
 				domConstruct.empty(divPageSlider);
@@ -39,11 +40,11 @@
 				});
 				_self.pageIndex = 0;
 				ulist = domConstruct.create("ul", { "dndContType": "pageCarousal", "class": "esriPageSliderUlist" }, divPageSliderContent);
-				var uListDndCont = new dndSource(ulist, { accept: ["carousalPage"] });
-				for (var i = 0; i < bookPagesLength; i++) {
+				uListDndCont = new dndSource(ulist, { accept: ["carousalPage"] });
+				for (bookPageIndex = 0; bookPageIndex < bookPagesLength; bookPageIndex++) {
 					listItem = domConstruct.create("li", { "class": "esriPageSliderListItem" }, null);
-					domAttr.set(listItem, "index", i + 2);
-					divPage = domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": i + 2, "innerHTML": "Page " + (i + 1) }, listItem);
+					domAttr.set(listItem, "index", bookPageIndex + 2);
+					divPage = domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": bookPageIndex + 2, "innerHTML": "Page " + (bookPageIndex + 1) }, listItem);
 					on(listItem, "click", function (evt) {
 						_self._gotoPage(parseInt(domAttr.get(this, "index")));
 					});
@@ -55,7 +56,7 @@
 					domClass.add(id, "carousalPage");
 				});
 				uListDndCont.sync();
-				if (bookPagesLength == 0) {
+				if (bookPagesLength === 0) {
 					domStyle.set(divPageSlider, "display", "none");
 				} else {
 					domStyle.set(divPageSlider, "display", "inline-block");
@@ -64,11 +65,17 @@
 		},
 
 		_handlePageNavigation: function (currentObj, isSlideLeft) {
+			var currentClass, totalPageLength;
+			totalPageLength = this.mapBookDetails[dojo.currentBookIndex].length;
 			if (this.isNavigationEnabled) {
 				currentClass = isSlideLeft ? "esriPrevDisabled" : "esriNextDisabled";
 				if (!domClass.contains(currentObj, currentClass)) {
-					isSlideLeft ? this.currentIndex-- : this.currentIndex++;
-					if (this.mapBookDetails[dojo.currentBookIndex][this.currentIndex] == "EmptyContent") {
+					if (totalPageLength - 1 === this.currentIndex && !(isSlideLeft)) {
+						this.currentIndex = 0;
+					} else {
+						isSlideLeft ? this.currentIndex-- : this.currentIndex++;
+					}
+					if (this.mapBookDetails[dojo.currentBookIndex][this.currentIndex] === "EmptyContent") {
 						isSlideLeft ? this.currentIndex = 0 : this.currentIndex++;
 					}
 					this._slideBookPage();
@@ -77,24 +84,17 @@
 		},
 
 		_setArrowVisibility: function () {
-			var selectedPageIndex = this.currentIndex;
 			var totalPageLength = this.mapBookDetails[dojo.currentBookIndex].length;
-			if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent") {
+			if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
 				totalPageLength--;
-				selectedPageIndex--;
 			}
-			if (this.currentIndex == 0) {
+			if (this.currentIndex === 0) {
 				if (totalPageLength > 1) {
 					this._removeClass(this.mapBookNextPage, "esriNextDisabled");
 				} else {
 					domClass.add(this.mapBookNextPage, "esriNextDisabled");
 				}
 				domClass.add(this.mapBookPreviousPage, "esriPrevDisabled");
-			}
-			else if (selectedPageIndex === totalPageLength - 1) {
-				domClass.add(this.mapBookNextPage, "esriNextDisabled");
-				this._removeClass(this.mapBookPreviousPage, "esriPrevDisabled");
-
 			} else {
 				this._removeClass(this.mapBookNextPage, "esriNextDisabled");
 				this._removeClass(this.mapBookPreviousPage, "esriPrevDisabled");
@@ -104,7 +104,7 @@
 		_slideBookPage: function () {
 			var pageWidth, left;
 			pageWidth = domStyle.get(query(".esriMapBookPageListItem")[0], "width");
-			if (this.mapBookDetails[dojo.currentBookIndex][1] == "EmptyContent" && this.currentIndex !== 0) {
+			if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent" && this.currentIndex !== 0) {
 				left = (this.currentIndex - 1) * Math.ceil(pageWidth);
 			} else {
 				left = (this.currentIndex) * Math.ceil(pageWidth);
@@ -139,7 +139,7 @@
 
 		_highlightSelectedPage: function () {
 			var preSelectedPage, bookPageList, sliderContentWidth, totalUlistWidth;
-			if (this.mapBookDetails[dojo.currentBookIndex][this.currentIndex] == "EmptyContent") {
+			if (this.mapBookDetails[dojo.currentBookIndex][this.currentIndex] === "EmptyContent") {
 				this.currentIndex++;
 			}
 			preSelectedPage = query('.esriPageSelected');
@@ -151,7 +151,7 @@
 				if (bookPageList[this.currentIndex]) {
 					domClass.add(bookPageList[this.currentIndex], "esriPageSelected");
 				}
-				if (domStyle.get(query(".esriPageSliderContainer")[0], "display") == "inline-block") {
+				if (domStyle.get(query(".esriPageSliderContainer")[0], "display") === "inline-block") {
 					if (query('.esriPageSliderListItem')[0]) {
 						sliderContentWidth = domStyle.get(query('.esriPageSliderContent')[0], 'width');
 						totalUlistWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width") * (bookPageList.length - 2);
@@ -165,10 +165,10 @@
 
 		_slidePage: function (isSlideLeft, pageNo) {
 			var pageWidth, pageUList, sliderLeft = 0;
-			if (domStyle.get(query(".esriPageSliderContainer")[0], "display") == "inline-block") {
+			if (domStyle.get(query(".esriPageSliderContainer")[0], "display") === "inline-block") {
 				pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
 				pageUList = query('.esriPageSliderUlist')[0];
-				if (isSlideLeft) { this.pageIndex++; } else { this.pageIndex-- };
+				isSlideLeft ? this.pageIndex++ : this.pageIndex--;
 				sliderLeft = this.pageIndex * pageWidth;
 				domStyle.set(pageUList, "margin-left", sliderLeft + 'px');
 				pageUList.style.marginLeft = sliderLeft + 'px';
@@ -177,16 +177,16 @@
 		},
 
 		_setSliderArrows: function () {
-			var sliderleft, pageUlistWidth, sliderContentWidth, pageWidth, pageUList;
+			var sliderleft, pageUlistWidth, sliderContentWidth, pageWidth, pageUList, uListChild;
 			if (query('.esriPageSliderContent')[0]) {
 				sliderContentWidth = domStyle.get(query('.esriPageSliderContent')[0], 'width');
 				pageUList = query('.esriPageSliderUlist')[0];
 				uListChild = query('.esriPageSliderUlist')[0].children.length;
-				if (domStyle.get(query(".esriPageSliderContainer")[0], "display") == "inline-block") {
+				if (domStyle.get(query(".esriPageSliderContainer")[0], "display") === "inline-block") {
 					pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
 					pageUlistWidth = pageWidth * pageUList.childElementCount;
 					sliderleft = pageWidth * this.pageIndex;
-					if (this.pageIndex == 0) {
+					if (this.pageIndex === 0) {
 						domClass.add(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
 						if (sliderContentWidth < pageUlistWidth) {
 							this._removeClass(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");

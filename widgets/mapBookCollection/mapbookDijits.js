@@ -82,30 +82,6 @@
 			return dijitInputContainer;
 		},
 
-		_createComboBox: function (moduleSettingContent, moduleAttr, key) {
-			var divInputContainer, dijitInputContainer;
-			divInputContainer = domConstruct.create("div", { "class": "esriComboBox" }, moduleSettingContent);
-
-			var stateStore = new Memory({
-				data: [{ name: "Esri", value: "esri" },
-					   { name: "Vimeo", value: "vimeo" },
-					   { name: "Youtube", value: "youtube"}]
-			});
-			if (moduleAttr[key].trim() == "") {
-				moduleAttr[key] = stateStore.data[0].name;
-			}
-			dijitInputContainer = new ComboBox({
-				store: stateStore,
-				value: moduleAttr[key],
-				searchAttr: "name",
-				"class": "esriSettingInput"
-			}, divInputContainer);
-			dijitInputContainer.startup();
-			dijitInputContainer.textbox.readOnly = true;
-			domAttr.set(dijitInputContainer.domNode, "inputKey", key);
-			return dijitInputContainer;
-		},
-
 		_createTextArea: function (moduleSettingContent, moduleAttr, key) {
 			var divInputContainer, dijitInputContainer;
 			divInputContainer = domConstruct.create("div", { "class": "esriTextArea" }, moduleSettingContent);
@@ -132,15 +108,17 @@
 		},
 
 		_createTimeSlider: function (response) {
-			var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, sliderDiv;
+			var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, sliderDiv, esriLogo, layeIndex;
 			webmap = response.map;
 			showTimeSlider = false;
 			itemData = response.itemInfo.itemData;
-			for (var i = 0; i < itemData.operationalLayers.length; i++) {
-				if (itemData.operationalLayers[i].layerObject.timeInfo) {
-					if (!(itemData.operationalLayers[i].timeAnimation == false)) {
-						showTimeSlider = true;
-						break;
+			for (layeIndex = 0; layeIndex < itemData.operationalLayers.length; layeIndex++) {
+				if (itemData.operationalLayers[layeIndex].layerObject.timeInfo) {
+					if (!(itemData.operationalLayers[layeIndex].timeAnimation === false)) {
+						if (itemData.widgets && itemData.widgets.timeSlider) {
+							showTimeSlider = true;
+							break;
+						}
 					}
 				}
 			}
@@ -153,11 +131,17 @@
 				webmap.setTimeSlider(timeSlider);
 				webmapTimeSlider = itemData.widgets.timeSlider;
 				timeExtent = new TimeExtent();
-				timeExtent.startTime = new Date(webmapTimeSlider.properties.startTime);
-				timeExtent.endTime = new Date(webmapTimeSlider.properties.endTime);
+				if (webmapTimeSlider.properties.startTime) {
+					timeExtent.startTime = new Date(webmapTimeSlider.properties.startTime);
+				}
+				if (webmapTimeSlider.properties.endTime) {
+					timeExtent.endTime = new Date(webmapTimeSlider.properties.endTime);
+				}
 				timeSlider.setThumbCount(webmapTimeSlider.properties.thumbCount);
 				timeSlider.createTimeStopsByTimeInterval(timeExtent, webmapTimeSlider.properties.timeStopInterval.interval, webmapTimeSlider.properties.timeStopInterval.units);
 				timeSlider.startup();
+				esriLogo = query('.esriControlsBR', dom.byId(webmap.id))[0];
+				domStyle.set(esriLogo, "bottom", "50px");
 			}
 		}
 

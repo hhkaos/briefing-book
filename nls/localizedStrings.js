@@ -28,7 +28,6 @@ define({
 		removeBookTitle: "Remove Book",
 		tocTitle: "Contents",
 		addPageText: "Add",
-		cancelText: "Cancel",
 		addBookTitle: "New Book",
 		saveBookShelf: "Save Book",
 		copyBookShelf: "Copy Book",
@@ -37,6 +36,9 @@ define({
 		pageRequireMessage: "Page Title is required",
 		page: "Page",
 		of: "of",
+		okButtonText: "OK",
+		saveButtonText: "Save",
+		cancelButtonText: "Cancel",
 		closeButtonTitle: "Close",
 		untitled: "Untitled",
 		legendTitle: "Legend",
@@ -75,8 +77,15 @@ define({
 		validateUnSavedEdits: 'There are unsaved changes in this book. Click "Cancel" to stay on this page. Click "OK" to continue without saving. \nWarning: If you do not save this book, all edits done in this session may be lost.',
 		bookNotSaved: 'This book is not saved yet. Click "Save" icon to save this book.',
 		webmapCountStatus: "${start} - ${end} of ${total}",
+		shareBookTitle: "Share Book",
+		shareBookDialogTitle: "Sharing Options",
+		shareToOrgText: "Organization",
+		shareToEveryoneText: "EveryOne (public)",
+		protectCopyBookText: "Copy protect this book",
+		copyRestricted: "Cannot copy, the owner of this book has protected it from copying.",
 		errorMessages: {
 			widgetNotLoaded: "widget not loaded",
+			updatingItemError: "Updating of selected item is failed",
 			contentPageRequired: "Content Page Required",
 			moduleFieldsEmpty: "Some module fields are not filled",
 			invalidMapUrl: "Invalid webmap url",
@@ -85,9 +94,10 @@ define({
 			addingItemError: "Adding new item is failed",
 			deletingItemError: "Deleting selected item is failed",
 			updaingItemError: "Updating selected item is failed",
-			copyItemError: "Copying in of selected item is failed",
+			copyItemError: "Copying of selected item is failed",
 			contentQueryError: "Failed to load user contents",
-			webmapError: "An error occurred while loading the webmap"
+			webmapError: "An error occurred while loading the webmap",
+			permissionDenied: "You do not have permissions to access this resource or perform this operation."
 		}
 	},
 	es: true, fr: true, it: true

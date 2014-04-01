@@ -14,9 +14,9 @@
 
 		_getConfigData: function (configData) {
 			var data;
-			if (this.currentIndex == 0) {
+			if (this.currentIndex === 0) {
 				data = configData.CoverPage;
-			} else if (this.currentIndex == 1) {
+			} else if (this.currentIndex === 1) {
 				data = configData.ContentPage;
 			} else {
 				if (configData.BookPages.length > (this.currentIndex - 2)) {
@@ -45,7 +45,7 @@
 		_destroyMap: function (mapId) {
 			var mapIndex, isMapExist = false, _self = this;
 			array.forEach(this.webmapArray, function (currentMap, index) {
-				if (mapId == currentMap.id) {
+				if (mapId === currentMap.id) {
 					mapIndex = index;
 					isMapExist = true;
 					_self._destroyExistingNode(dijit.registry.byId("legendContent" + currentMap.id), true);
@@ -89,6 +89,7 @@
 				return false;
 			};
 		},
+
 		_togglePageNavigation: function (enableNavigation) {
 			if (enableNavigation) {
 				this.isNavigationEnabled = true;
@@ -102,7 +103,7 @@
 		},
 
 		_toggleEditPageVisibility: function (isContentPage) {
-			if (domStyle.get(query('.esriEditPageBody')[0], "display") == "none") {
+			if (domStyle.get(query('.esriEditPageBody')[0], "display") === "none") {
 				domStyle.set(query('.esriEditPageBody')[0], "display", "block");
 				domStyle.set(query('.esriMapBookEditPage')[0], "height", "100%");
 				if (isContentPage) {
@@ -127,14 +128,14 @@
 
 		_toggleInfoWindowVisibility: function (divFullMap, mapId, isInfoWindowEnable) {
 			array.some(this.webmapArray, function (currentMap) {
-				if (mapId == currentMap.id) {
+				if (mapId === currentMap.id) {
 					currentMap.infoWindow.popupWindow = isInfoWindowEnable;
 					currentMap.infoWindow.set("highlight", false);
 					currentMap.resize();
 				}
 				if (isInfoWindowEnable) {
 					on(currentMap, "click", function () {
-						if (!currentMap.infoWindow.highlight && domStyle.get(divFullMap, "display") == "block") {
+						if (!currentMap.infoWindow.highlight && domStyle.get(divFullMap, "display") === "block") {
 							currentMap.infoWindow.set("highlight", isInfoWindowEnable);
 						}
 					});
@@ -154,37 +155,26 @@
 			esriLogo = query('.esriControlsBR', mapContainer)[0];
 			divCustomMap = dom.byId("divMapContainer" + containerId);
 
-			if (domStyle.get(divFullMap, "display") == "none") {
+			if (domStyle.get(divFullMap, "display") === "none") {
 				domStyle.set(divFullMap, "display", "block");
 				divFullMap.appendChild(dom.byId("map" + containerId));
-				if (zoomSlider) {
-					domStyle.set(zoomSlider, "display", "block");
-				}
-				if (timeSlider && esriLogo) {
-					domStyle.set(esriLogo, "bottom", "50px");
-				}
 				this._toggleInfoWindowVisibility(divFullMap, mapContainer.id, true);
 			} else {
 				domStyle.set(divFullMap, "display", "none");
 				divCustomMap.appendChild(mapContainer);
-				if (zoomSlider) {
-					domStyle.set(zoomSlider, "display", "none");
-				}
-				if (esriLogo) {
-					domStyle.set(esriLogo, "bottom", "5px");
-				}
 				this._toggleInfoWindowVisibility(divFullMap, mapContainer.id, false);
 			}
 		},
+
 		_toggleDnd: function (isEditModeEnable) {
 			array.forEach(this.DNDArray, function (dndCont) {
 				if (isEditModeEnable) {
-						dndCont.delay = 0;
-						dndCont.checkAcceptance = function (source, nodes) {
-							if (nodes[0].dndType !== "carousalPage") {
-								return true;
-							}
-						};
+					dndCont.delay = 0;
+					dndCont.checkAcceptance = function (source, nodes) {
+						if (nodes[0].dndType !== "carousalPage") {
+							return true;
+						}
+					};
 				} else {
 					dndCont.delay = 1000;
 					dndCont.checkAcceptance = function (source, nodes) {
@@ -197,10 +187,10 @@
 		_toggleDeleteBookOption: function (isEnable) {
 			var selectedBookIndex, closeBtns, bookTitle;
 			bookTitle = query('.esriBookTitlediv');
-			closeBtns = query('.esriBookclose');
+			closeBtns = query('.esriBookClose');
 			array.forEach(closeBtns, function (deleteBtn, index) {
 				selectedBookIndex = domAttr.get(deleteBtn.parentElement, "index");
-				if (isEnable && dojo.bookInfo[selectedBookIndex].BookConfigData.owner == dojo.currentUser) {
+				if (isEnable && dojo.bookInfo[selectedBookIndex].BookConfigData.owner === dojo.currentUser) {
 					domClass.add(bookTitle[index], "esriBookTitledivchange");
 					domStyle.set(deleteBtn, "display", "block");
 				} else {
@@ -219,17 +209,17 @@
 			var configLayout, selectedTemp, _self = this;
 
 			selectedTemp = query('.pageLayoutOption .esriTemplateImage');
-			configLayout = dojo.appConfigData.BookPageLayouts
+			configLayout = dojo.appConfigData.BookPageLayouts;
 
 			array.forEach(selectedTemp, function (template, index) {
-				_self._removeClass(template, "selectedTemplate")
+				_self._removeClass(template, "selectedTemplate");
 				domAttr.set(template, "src", configLayout[index].templateIcon);
 			});
 
 			selectedTemp = query('.contentLayoutOption .esriTemplateImage');
-			configLayout = dojo.appConfigData.ContentPageLayouts
+			configLayout = dojo.appConfigData.ContentPageLayouts;
 			array.forEach(selectedTemp, function (template, index) {
-				_self._removeClass(template, "selectedTemplate")
+				_self._removeClass(template, "selectedTemplate");
 				domAttr.set(template, "src", configLayout[index].templateIcon);
 			});
 		},
@@ -244,8 +234,9 @@
 		},
 
 		_setBookPageIndex: function (bookListdata, bookPagesLength) {
-			for (var i = 0; i < bookPagesLength; i++) {
-				bookListdata[i].index = i + 2;
+			var bookPageIndex;
+			for (bookPageIndex = 0; bookPageIndex < bookPagesLength; bookPageIndex++) {
+				bookListdata[bookPageIndex].index = bookPageIndex + 2;
 			}
 		},
 

@@ -22,8 +22,9 @@ require([
 	"coreLibrary/widgetLoader",
 	"application/config",
 	"esri/config",
+	"esri/arcgis/utils",
 	"dojo/domReady!"
-], function (widgetLoader, config, esriConfig, domReady) {
+], function (widgetLoader, config, esriConfig, arcgisUtils, domReady) {
 
 	//========================================================================================================================//
 
@@ -36,6 +37,7 @@ require([
 		esriConfig.defaults.io.proxyUrl = "proxy.ashx";
 		esriConfig.defaults.io.alwaysUseProxy = false;
 		esriConfig.defaults.io.timeout = 600000;
+		esri.arcgis.utils.arcgisUrl = config.PortalURL + '/sharing/content/items';
 		dojo.appConfigData = config;
 		dojo.bookInfo = [];
 		var applicationWidgetLoader = new widgetLoader();

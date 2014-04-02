@@ -80,7 +80,7 @@ define({
 		shareBookTitle: "Share Book",
 		shareBookDialogTitle: "Sharing Options",
 		shareToOrgText: "Organization",
-		shareToEveryoneText: "EveryOne (public)",
+		shareToEveryoneText: "Everyone (public)",
 		protectCopyBookText: "Copy protect this book",
 		copyRestricted: "Cannot copy, the owner of this book has protected it from copying.",
 		errorMessages: {

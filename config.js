@@ -20,17 +20,19 @@
 		BriefingBookCoverIcon: "themes/images/map-book-bg-grey.png",
 
 		//video url for YouTube
-		YouTubeVideoUrl: "http://www.youtube.com/embed/",
+		YouTubeVideoUrl: "https://www.youtube.com/embed/",
 
 		//video url for Esri
-		EsriVideoUrl: "http://video.esri.com/iframe/",
+		EsriVideoUrl: "https://video.esri.com/iframe/",
 
 		//video url for Vimeo
-		VimeoVideoUrl: "http://player.vimeo.com/video/",
+		VimeoVideoUrl: "https://player.vimeo.com/video/",
 
 		//portal url
-		PortalURL: "http://arcgis4localgov2.maps.arcgis.com/",
+		PortalURL: "http://arcgis4localgov2.maps.arcgis.com",
 
+		//proxy url
+		ProxyURL: "proxy.ashx",
 		//tag for searching briefing book config
 		ConfigSearchTag: 'BriefingBookConfigItem',
 

@@ -32,11 +32,9 @@
 			paginationDiv = domConstruct.create("span", { "id": "esriPaginationSpan" }, this.paginationDiv);
 
 			this._createApplicationHeader();
-
 			document.title = dojo.appConfigData.ApplicationName;
 			domAttr.set(this.mapBookTitle, "innerHTML", dojo.appConfigData.ApplicationName);
 			this._displayHomePage();
-
 		},
 
 		_createApplicationHeader: function () {
@@ -53,7 +51,6 @@
 			this._createDeletePageIcon();
 			this._createTOCIcon();
 			this._createSignInBtn();
-
 		},
 
 		_setApplicationLogo: function () {
@@ -77,6 +74,7 @@
 				}
 				if (confirmHomePageView) {
 					_self._displayHomePage();
+					_self._removeParamFromAppUrl();
 					topic.publish("destroyWebmapHandler");
 					if (dojo.appConfigData.AuthoringMode) {
 						_self._disableEditing();
@@ -132,6 +130,7 @@
 						confirmCopy = confirm(nls.confirmCopyOfSelectedBook);
 					}
 					if (confirmCopy) {
+						_self._removeParamFromAppUrl();
 						topic.publish("copySelectedBookHandler");
 					}
 				} else {
@@ -160,6 +159,7 @@
 				_self._toggleEditMode(this);
 			}));
 		},
+
 		_createSaveBookIcon: function () {
 			var saveBookIcon, _self = this;
 
@@ -186,7 +186,6 @@
 
 		_createTOCIcon: function () {
 			var tocIconDiv, _self = this;
-
 			tocIconDiv = domConstruct.create("div", { "class": "esriTocIcon", "style": "display:none", "title": nls.tocTitle }, this.applicationHeaderWidgetsContainer);
 			this.own(on(tocIconDiv, "click", function () {
 				_self._toggleContainer(dom.byId("divContentListPanel"), this, false);
@@ -197,10 +196,19 @@
 			var divSignIn, _self = this;
 			divSignIn = domConstruct.create("div", { "id": "userLogIn", "class": "esriLogInIcon", "title": nls.signInText }, this.applicationHeaderWidgetsContainer);
 			this.own(on(divSignIn, "click", function () {
+				_self._removeParamFromAppUrl();
 				_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
 				topic.publish("toggleUserLogInHandler");
 			}));
 		},
+
+		_removeParamFromAppUrl: function () {
+			var href = parent.location.href.split('?');
+			if (href.length > 1) {
+				history.pushState({ "id": 1 }, dojo.appConfigData.ApplicationName, href[0]);
+			}
+		},
+
 		_addNewBook: function () {
 			var bookIndex, newBook;
 
@@ -225,6 +233,11 @@
 		_displayHomePage: function () {
 			if ("ontouchstart" in window) {
 				dojo.appConfigData.AuthoringMode = false;
+				if (window.orientation == 90 || window.orientation == -90) {
+					dom.byId("outerLoadingIndicator").innerHTML = '';
+				} else {
+					dom.byId("outerLoadingIndicator").innerHTML = '<div class="esriOrientationBlockedText">' + nls.orientationNotSupported + '</div>';
+				}
 			}
 			domStyle.set(query(".esriEditIcon")[0], "display", "none");
 			domStyle.set(query(".esriDeleteIcon")[0], "display", "none");
@@ -293,3 +306,4 @@
 		}
 	});
 });
+

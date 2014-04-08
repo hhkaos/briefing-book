@@ -126,25 +126,6 @@
 			}
 		},
 
-		_toggleInfoWindowVisibility: function (divFullMap, mapId, isInfoWindowEnable) {
-			array.some(this.webmapArray, function (currentMap) {
-				if (mapId === currentMap.id) {
-					currentMap.infoWindow.popupWindow = isInfoWindowEnable;
-					currentMap.infoWindow.set("highlight", false);
-					currentMap.resize();
-				}
-				if (isInfoWindowEnable) {
-					on(currentMap, "click", function () {
-						if (!currentMap.infoWindow.highlight && domStyle.get(divFullMap, "display") === "block") {
-							currentMap.infoWindow.set("highlight", isInfoWindowEnable);
-						}
-					});
-				} else {
-					currentMap.infoWindow.hide();
-				}
-			});
-		},
-
 		_toggleFullMapView: function (btnNode) {
 			var containerId, divFullMap, zoomSlider, divCustomMap, timeSlider, mapContainer, esriLogo;
 			containerId = domAttr.get(btnNode, "index");
@@ -158,11 +139,9 @@
 			if (domStyle.get(divFullMap, "display") === "none") {
 				domStyle.set(divFullMap, "display", "block");
 				divFullMap.appendChild(dom.byId("map" + containerId));
-				this._toggleInfoWindowVisibility(divFullMap, mapContainer.id, true);
 			} else {
 				domStyle.set(divFullMap, "display", "none");
 				divCustomMap.appendChild(mapContainer);
-				this._toggleInfoWindowVisibility(divFullMap, mapContainer.id, false);
 			}
 		},
 

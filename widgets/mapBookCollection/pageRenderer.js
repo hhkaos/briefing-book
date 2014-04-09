@@ -35,6 +35,7 @@
 			this._destroyExistingNode(dijit.byId("settingDialog"), true);
 			settingDialog = new Dialog({
 				id: "settingDialog",
+				"class": "settingDialog",
 				draggable: false
 			});
 			settingDialog.startup();

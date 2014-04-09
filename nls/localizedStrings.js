@@ -7,7 +7,7 @@
 | you may not use this file except in compliance with the License.
 | You may obtain a copy of the License at
 |
-|    http://www.apache.org/licenses/LICENSE-2.0
+|    https://www.apache.org/licenses/LICENSE-2.0
 |
 | Unless required by applicable law or agreed to in writing, software
 | distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,7 @@ define({
 		refreshBookTitle: "Refresh",
 		editTitle: "Edit Book",
 		deleteTitle: "Delete Page",
+		descriptionNotAvailable: "Description is not available",
 		removeBookTitle: "Remove Book",
 		tocTitle: "Contents",
 		addPageText: "Add",
@@ -83,6 +84,7 @@ define({
 		shareToEveryoneText: "Everyone (public)",
 		protectCopyBookText: "Copy protect this book",
 		copyRestricted: "Cannot copy, the owner of this book has protected it from copying.",
+		orientationNotSupported: "App does not support this orientation",
 		errorMessages: {
 			widgetNotLoaded: "widget not loaded",
 			updatingItemError: "Updating of selected item is failed",
@@ -97,7 +99,7 @@ define({
 			copyItemError: "Copying of selected item is failed",
 			contentQueryError: "Failed to load user contents",
 			webmapError: "An error occurred while loading the webmap",
-			permissionDenied: "You do not have permissions to access this resource or perform this operation."
+			permissionDenied: "You do not have permissions to access this resource."
 		}
 	},
 	es: true, fr: true, it: true

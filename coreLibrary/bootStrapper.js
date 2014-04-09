@@ -34,15 +34,16 @@ require([
 		* load application configuration settings from configuration file
 		* create an object of widget loader class
 		*/
-		esriConfig.defaults.io.proxyUrl = "proxy.ashx";
-		esriConfig.defaults.io.alwaysUseProxy = false;
-		esriConfig.defaults.io.timeout = 600000;
-		esri.arcgis.utils.arcgisUrl = config.PortalURL + '/sharing/content/items';
 		dojo.appConfigData = config;
 		dojo.bookInfo = [];
+		esriConfig.defaults.io.proxyUrl = dojo.appConfigData.ProxyURL;
+		esriConfig.defaults.io.alwaysUseProxy = false;
+		esriConfig.defaults.io.corsDetection = true;
+		esriConfig.defaults.io.corsEnabledServers.push(dojo.appConfigData.PortalURL);
+		esriConfig.defaults.io.timeout = 600000;
+		arcgisUtils.arcgisUrl = dojo.appConfigData.PortalURL + '/sharing/content/items';
 		var applicationWidgetLoader = new widgetLoader();
 		applicationWidgetLoader.startup();
-
 	} catch (ex) {
 		alert(ex.message);
 	}

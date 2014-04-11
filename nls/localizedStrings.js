@@ -7,7 +7,7 @@
 | you may not use this file except in compliance with the License.
 | You may obtain a copy of the License at
 |
-|    https://www.apache.org/licenses/LICENSE-2.0
+|    http://www.apache.org/licenses/LICENSE-2.0
 |
 | Unless required by applicable law or agreed to in writing, software
 | distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,8 @@ define({
 		tocContentsCaption: "Contents",
 		homeTitle: "Home",
 		addPageTitle: "Add Page",
+		alertDialogTitle: "Alert",
+		confirmDialogTitle: "Confirm",
 		downloadBookTitle: "Download Book",
 		refreshBookTitle: "Refresh",
 		editTitle: "Edit Book",
@@ -75,9 +77,11 @@ define({
 		selectWebmapBtnText: "Select map",
 		selectWebmapDialogTitle: "Select Webmap",
 		searchWebmapPlaceHolder: "Enter search term",
-		validateUnSavedEdits: 'There are unsaved changes in this book. Click "Cancel" to stay on this page. Click "OK" to continue without saving. \nWarning: If you do not save this book, all edits done in this session may be lost.',
+		validateUnSavedEdits: 'There are unsaved changes in this book. Click "Cancel" to stay on this page. Click "OK" to continue without saving. <br/> Warning: If you do not save this book, all edits done in this session may be lost.',
 		bookNotSaved: 'This book is not saved yet. Click "Save" icon to save this book.',
 		webmapCountStatus: "${start} - ${end} of ${total}",
+		noWebmapFound: "No webmap found",
+		loadingWebmap: "Loading...",
 		shareBookTitle: "Share Book",
 		shareBookDialogTitle: "Sharing Options",
 		shareToOrgText: "Organization",
@@ -86,6 +90,7 @@ define({
 		copyRestricted: "Cannot copy, the owner of this book has protected it from copying.",
 		orientationNotSupported: "App does not support this orientation",
 		errorMessages: {
+			webmapSearchFailed: "An error occurred while searching the webmap",
 			widgetNotLoaded: "widget not loaded",
 			updatingItemError: "Updating of selected item is failed",
 			contentPageRequired: "Content Page Required",
@@ -99,7 +104,8 @@ define({
 			copyItemError: "Copying of selected item is failed",
 			contentQueryError: "Failed to load user contents",
 			webmapError: "An error occurred while loading the webmap",
-			permissionDenied: "You do not have permissions to access this resource."
+			permissionDenied: "You do not have permissions to access this resource.",
+			shareItemError: "Updating selected item is failed"
 		}
 	},
 	es: true, fr: true, it: true

@@ -514,7 +514,7 @@
 			if (flickUrl.length > 1) {
 				flickrSetId = flickUrl[flickUrl.length - 1];
 			} else {
-				flickrSetId = moduleData.URL
+				flickrSetId = moduleData.URL;
 			}
 			photsetContent = new FlickrBadge({
 				"apikey": moduleData.apiKey,
@@ -534,7 +534,7 @@
 		},
 
 		_createEditMenu: function (pageContentHolder, moduleId, moduleHolder) {
-			var _self = this, resizeHandle, moduleHolderId, resizer, moduleType, divEditIcon, columnIndex, deleteModuleFlag, editModuleIcon, divEditOption, divDeleteIcon, moduleContainer;
+			var _self = this, resizeHandle, moduleHolderId, resizer, deleteBtnNode, moduleType, divEditIcon, columnIndex, deleteModuleFlag, editModuleIcon, divEditOption, divDeleteIcon, moduleContainer;
 			moduleType = domAttr.get(pageContentHolder, "type");
 			domAttr.set(pageContentHolder, "key", moduleId);
 			divEditOption = domConstruct.create("div", { "class": "esriEditContentOption" }, null);
@@ -559,12 +559,14 @@
 				divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": nls.editMentDeleteTitle }, divEditOption);
 				domAttr.set(divDeleteIcon, "type", moduleType);
 				on(divDeleteIcon, "click", function () {
-					deleteModuleFlag = confirm(nls.confirmModuleDeleting);
-					if (deleteModuleFlag) {
-						dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
-						moduleContainer = this.parentElement.parentElement;
-						_self._deleteModule(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
-					}
+					deleteBtnNode = this;
+					_self.alertDialog._setContent(nls.confirmModuleDeleting, 1).then(function (deleteModuleFlag) {
+						if (deleteModuleFlag) {
+							dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
+							moduleContainer = deleteBtnNode.parentElement.parentElement;
+							_self._deleteModule(domAttr.get(deleteBtnNode, "type"), false, moduleContainer, domAttr.get(deleteBtnNode, "key"));
+						}
+					});
 				});
 			}
 			divEditIcon = domConstruct.create("div", { "key": moduleId, "class": "esriEditModuleIcon", "title": nls.editMentEditTitle }, divEditOption);

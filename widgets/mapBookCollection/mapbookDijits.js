@@ -71,7 +71,7 @@
 					dijit.byId("textEditor")._plugins[11].button.select.textbox.readOnly = true;
 					dijit.byId("textEditor").editNode.noWrap = true;
 					if (!dijit.byId("textEditor").value.match('<font')) {
-						fontFamily = domStyle.get(dijit.byId("textEditor").domNode, 'font-family');
+						fontFamily = domStyle.get(dijit.byId("textEditor").domNode, 'fontFamily');
 						if (fontFamily) {
 							dijit.byId("textEditor").execCommand('selectAll');
 							dijit.byId("textEditor").execCommand('fontName', "sans-serif");

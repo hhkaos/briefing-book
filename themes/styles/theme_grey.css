@@ -27,11 +27,24 @@
 	bottom: 5px;
 }
 
+.esriLockPortraitOrientation {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	display: none;
+	background: none #000;
+	opacity: 0.8;
+	color: #fff;
+	font-size: 20px;
+	z-index:999;
+}
+
 .esriOuterLoadingIndicator {
 	position: absolute;
 	height: 100%;
 	width: 100%;
 	opacity: 0.3;
+	filter: alpha(opacity=30);
 	z-index: 99;
 	background: url('../images/loadingIndicator-grey.gif') #dadada no-repeat center center;
 	display: none;
@@ -251,7 +264,7 @@
 
 .esriNextImage {
 	float: right;
-	background-image: url('../images/right-arrow-grey.png');
+	background-image: url('../images/next-arrow-grey.png');
 	width: 57px;
 	background-repeat: no-repeat;
 	text-align: center;
@@ -263,29 +276,29 @@
 }
 
 .esriNextDisabled {
-	background-image: url('../images/right-arrow-disable.png') !important;
+	background-image: url('../images/next-arrow-disable.png') !important;
 	cursor: default !important;
 }
 
 .esriPrevDisabledEditMode {
-	background-image: url('../images/left-arrow-disable.png') !important;
+	background-image: url('../images/pre-arrow-disable.png') !important;
 	cursor: default !important;
 }
 
 .esriNextDisabledEditMode {
-	background-image: url('../images/right-arrow-disable.png') !important;
+	background-image: url('../images/next-arrow-disable.png') !important;
 	cursor: default !important;
 }
 
 .esriPrevDisabled {
 	float: left;
-	background-image: url('../images/left-arrow-disable.png') !important;
+	background-image: url('../images/pre-arrow-disable.png') !important;
 	cursor: default !important;
 }
 
 .esriPreviousImage {
 	float: left;
-	background-image: url('../images/left-arrow-grey.png');
+	background-image: url('../images/pre-arrow-grey.png');
 	width: 57px;
 	background-repeat: no-repeat;
 	text-align: center;
@@ -651,6 +664,7 @@
 
 .esriEditableModeContent:hover .divPageModule, .esriEditableModeContent:hover .map .container, .esriEditableModeContent:hover .esriContentListDiv {
 	opacity: .5;
+	filter: alpha(opacity=50);
 	cursor: move !important;
 }
 
@@ -1234,6 +1248,7 @@ h2 {
 
 .dijitDialogUnderlayWrapper {
 	opacity: 0.6 !important;
+	filter: alpha(opacity=75) !important;
 }
 
 .claro .dijitDialogPaneContent {
@@ -1541,6 +1556,7 @@ h2 {
 .esriWebmapContent {
 	padding: 8px 0px 0px 5px;
 	height: 245px;
+	min-width: 110px;
 }
 
 .esriWebmapThumbnailDiv {
@@ -1738,5 +1754,38 @@ h2 {
 
 .opacityChkBox {
 	opacity: .6;
+	filter: alpha(opacity=60);
+}
+
+/*--------------------------------------------Alert Dialog Styles-----------------------------------------------------*/
+.esriAlertDialog {
+	width: 380px;
+}
+.esriAlertDialogContent {
+	padding: 2px;
+}
+.esriAlertDialogText {
+	width: auto;
+	overflow: hidden;
+	max-height: 120px;
+	min-height: 60px;
+	margin-bottom: 10px;
+	word-break: break-word;
+}
+.esriAlertButtonContainer {
+	display: inline-block;
+	width: 100%;
+	color: #fff;
+}
+.esriAlertOkBtn, .esriAlertCancelBtn {
+	display: inline-block;
+	width: 80px;
+	text-align: center;
+	line-height: 25px;
+	margin: 0px 10px;
+	height: 25px;
+	float: right;
+	background-color: #616161;
+	cursor: pointer;
 }
 

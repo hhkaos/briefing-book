@@ -15,14 +15,18 @@
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
 	"dojo/i18n!nls/localizedStrings",
+	"../alertDialog/alertDialog",
 	"../mapBookCollection/mapbookUtility"
-], function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, mapbookUtility) {
+], function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, alertBox, mapbookUtility) {
 	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, mapbookUtility], {
 		templateString: template,
 		nls: nls,
 		postCreate: function () {
 			var _self = this, applicationHeaderDiv, paginationDiv;
-
+			_self.alertDialog = new alertBox();
+			if (query('.esriOrientationBlockedText')[0]) {
+				query('.esriOrientationBlockedText')[0].innerHTML = nls.orientationNotSupported;
+			}
 			topic.subscribe("authoringModeHandler", function () {
 				_self._displayHomePage();
 				topic.publish("createBookListHandler");
@@ -54,12 +58,15 @@
 		},
 
 		_setApplicationLogo: function () {
-			domStyle.set(this.applicationLogoIcon, "background-image", 'url(' + dojo.appConfigData.ApplicationIcon + ')');
+			domStyle.set(this.applicationLogoIcon, "backgroundImage", 'url(' + dojo.appConfigData.ApplicationIcon + ')');
 		},
 
 		_setApplicationFavicon: function () {
 			if (dom.byId('appFavicon')) {
 				domAttr.set(dom.byId('appFavicon'), "href", dojo.appConfigData.ApplicationFavicon);
+			}
+			if (dom.byId('homeFavicon')) {
+				domAttr.set(dom.byId('homeFavicon'), "href", dojo.appConfigData.AppHomeScreenIcon);
 			}
 		},
 
@@ -70,18 +77,26 @@
 			this.own(on(homeButtonDiv, "click", function () {
 				confirmHomePageView = true;
 				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists) {
-					confirmHomePageView = confirm(nls.validateUnSavedEdits);
-				}
-				if (confirmHomePageView) {
-					_self._displayHomePage();
-					_self._removeParamFromAppUrl();
-					topic.publish("destroyWebmapHandler");
-					if (dojo.appConfigData.AuthoringMode) {
-						_self._disableEditing();
-					}
-					_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
+					_self.alertDialog._setContent(nls.validateUnSavedEdits, 1).then(function (confirmHomePageView) {
+						if (confirmHomePageView) {
+							_self._allowHomePageView();
+						}
+					});
+				} else {
+					_self._allowHomePageView();
 				}
 			}));
+		},
+
+		_allowHomePageView: function () {
+
+			this._displayHomePage();
+			this._removeParamFromAppUrl();
+			topic.publish("destroyWebmapHandler");
+			if (dojo.appConfigData.AuthoringMode) {
+				this._disableEditing();
+			}
+			this._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
 		},
 
 		_createNewBookIcon: function () {
@@ -94,13 +109,13 @@
 		},
 
 		_createShareBookIcon: function () {
-			var shareBookIcon;
+			var shareBookIcon, _self = this;
 			shareBookIcon = domConstruct.create("div", { "class": "esriShareBookIcon", "style": "display:none", "title": nls.shareBookTitle }, this.applicationHeaderWidgetsContainer);
 			this.own(on(shareBookIcon, "click", function () {
 				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId !== nls.defaultItemId) {
 					topic.publish("showShareDialogHandler");
 				} else {
-					alert(nls.bookNotSaved);
+					_self.alertDialog._setContent(nls.bookNotSaved, 0);
 				}
 			}));
 		},
@@ -125,29 +140,36 @@
 				_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
 				if (!dojo.bookInfo[dojo.currentBookIndex].BookConfigData.copyProtected || dojo.bookInfo[dojo.currentBookIndex].BookConfigData.owner === dojo.currentUser) {
 					if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists) {
-						confirmCopy = confirm(nls.validateUnSavedEdits);
+						_self.alertDialog._setContent(nls.validateUnSavedEdits, 1).then(function (confirmCopy) {
+							if (confirmCopy) {
+								_self._removeParamFromAppUrl();
+								topic.publish("copySelectedBookHandler");
+							}
+						});
 					} else {
-						confirmCopy = confirm(nls.confirmCopyOfSelectedBook);
-					}
-					if (confirmCopy) {
-						_self._removeParamFromAppUrl();
-						topic.publish("copySelectedBookHandler");
+						_self.alertDialog._setContent(nls.confirmCopyOfSelectedBook, 1).then(function (confirmCopy) {
+							if (confirmCopy) {
+								_self._removeParamFromAppUrl();
+								topic.publish("copySelectedBookHandler");
+							}
+						});
 					}
 				} else {
-					alert(nls.copyRestricted);
+					_self.alertDialog._setContent(nls.copyRestricted, 0);
 				}
 			}));
 		},
 
 		_createRefreshIcon: function () {
-			var refreshIcon, reloadApp;
+			var refreshIcon, _self = this;
 
 			refreshIcon = domConstruct.create("div", { "class": "esriRefreshIcon", "title": nls.refreshBookTitle }, this.applicationHeaderWidgetsContainer);
 			this.own(on(refreshIcon, "click", function () {
-				reloadApp = confirm(nls.confirmAppReloading);
-				if (reloadApp) {
-					parent.location.reload();
-				}
+				_self.alertDialog._setContent(nls.confirmAppReloading, 1).then(function (flag) {
+					if (flag) {
+						parent.location.reload();
+					}
+				});
 			}));
 		},
 
@@ -171,16 +193,17 @@
 		},
 
 		_createDeletePageIcon: function () {
-			var deletePageIcon, confirmDeleting, _self = this;
+			var deletePageIcon, _self = this;
 
 			deletePageIcon = domConstruct.create("div", { "class": "esriDeleteIcon", "style": "display:none", "title": nls.deleteTitle }, this.applicationHeaderWidgetsContainer);
 			this.own(on(deletePageIcon, "click", function () {
 				_self._toggleContainer(dom.byId("divContentListPanel"), query(".esriTocIcon")[0], true);
-				confirmDeleting = confirm(nls.confirmPageDeleting);
-				if (confirmDeleting) {
-					dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
-					topic.publish("deletePageHandler");
-				}
+				_self.alertDialog._setContent(nls.confirmPageDeleting, 1).then(function (confirmDeleting) {
+					if (confirmDeleting) {
+						dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
+						topic.publish("deletePageHandler");
+					}
+				});
 			}));
 		},
 
@@ -233,11 +256,7 @@
 		_displayHomePage: function () {
 			if ("ontouchstart" in window) {
 				dojo.appConfigData.AuthoringMode = false;
-				if (window.orientation == 90 || window.orientation == -90) {
-					dom.byId("outerLoadingIndicator").innerHTML = '';
-				} else {
-					dom.byId("outerLoadingIndicator").innerHTML = '<div class="esriOrientationBlockedText">' + nls.orientationNotSupported + '</div>';
-				}
+
 			}
 			domStyle.set(query(".esriEditIcon")[0], "display", "none");
 			domStyle.set(query(".esriDeleteIcon")[0], "display", "none");

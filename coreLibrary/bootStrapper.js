@@ -21,10 +21,11 @@
 require([
 	"coreLibrary/widgetLoader",
 	"application/config",
+	"widgets/alertDialog/alertDialog",
 	"esri/config",
 	"esri/arcgis/utils",
 	"dojo/domReady!"
-], function (widgetLoader, config, esriConfig, arcgisUtils, domReady) {
+], function (widgetLoader, config, alertBox, esriConfig, arcgisUtils, domReady) {
 
 	//========================================================================================================================//
 
@@ -36,7 +37,7 @@ require([
 		*/
 		dojo.appConfigData = config;
 		dojo.bookInfo = [];
-		esriConfig.defaults.io.proxyUrl = dojo.appConfigData.ProxyURL;
+		esriConfig.defaults.io.proxyUrl = dojoConfig.baseURL + dojo.appConfigData.ProxyURL;
 		esriConfig.defaults.io.alwaysUseProxy = false;
 		esriConfig.defaults.io.corsDetection = true;
 		esriConfig.defaults.io.corsEnabledServers.push(dojo.appConfigData.PortalURL);
@@ -45,6 +46,7 @@ require([
 		var applicationWidgetLoader = new widgetLoader();
 		applicationWidgetLoader.startup();
 	} catch (ex) {
-		alert(ex.message);
+		this.alertDialog = new alertBox();
+		this.alertDialog._setContent(ex.message, 0);
 	}
 });

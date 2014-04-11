@@ -12,19 +12,20 @@
 	"dojo/query",
 	"dojo/string",
 	"dojo/dnd/Source",
-	"esri/request",
-	"esri/urlUtils",
 	"dojo/text!./templates/mapBookCollectionTemplate.html",
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
 	"dojo/i18n!nls/localizedStrings",
+	"esri/request",
+	"esri/urlUtils",
+	"../alertDialog/alertDialog",
 	"../mapBookCollection/mapbookDijits",
 	"../mapBookCollection/pageNavigation",
 	"../mapBookCollection/moduleRenderer",
 	"../mapBookCollection/pageRenderer",
 	"dojo/parser"
-], function (declare, lang, array, domConstruct, domAttr, domStyle, domClass, dom, on, topic, query, dojoString, dndSource, esriRequest, urlUtils, template, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, mapbookDijits, pageNavigation, moduleRenderer, pageRenderer) {
+], function (declare, lang, array, domConstruct, domAttr, domStyle, domClass, dom, on, topic, query, dojoString, dndSource, template, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, esriRequest, urlUtils, alertBox, mapbookDijits, pageNavigation, moduleRenderer, pageRenderer) {
 	return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, mapbookDijits, pageNavigation, moduleRenderer, pageRenderer], {
 		templateString: template,
 		nls: nls,
@@ -39,6 +40,8 @@
 		isEditModeEnable: false,
 		postCreate: function () {
 			var _self = this;
+			_self.alertDialog = new alertBox();
+
 			topic.subscribe("/dojo/resize/stop", function (resizerObj) {
 				dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists = true;
 				_self._setNewHeight(resizerObj);
@@ -91,11 +94,6 @@
 
 			_self.own(on(window, "orientationchange", function () {
 				_self._resizeMapBook();
-				if (window.orientation == 90 || window.orientation == -90) {
-					dom.byId("outerLoadingIndicator").innerHTML = '';
-				} else {
-					dom.byId("outerLoadingIndicator").innerHTML = '<div class="esriOrientationBlockedText">' + nls.orientationNotSupported + '</div>';
-				}
 			}));
 
 			_self.own(on(this.mapBookPreviousPage, "click", function () {
@@ -123,7 +121,7 @@
 					});
 					if (bookNotExist) {
 						domStyle.set(dom.byId("outerLoadingIndicator"), "display", "block");
-						alert(nls.errorMessages.permissionDenied);
+						this.alertDialog._setContent(nls.errorMessages.permissionDenied, 0);
 					}
 				}
 			}
@@ -177,13 +175,12 @@
 				this._removeClass(query('.esriEditIcon')[0], "esriHeaderIconSelected");
 			}
 			domStyle.set(dom.byId("outerLoadingIndicator"), "display", "none");
+			_self._resizeMapBook();
 		},
 
 		_displaySelectedBookContent: function (book) {
-			dom.byId("esriMapPages").style.display = "block";
 			domStyle.set(dom.byId("esriMapPages"), "display", "block");
 			domStyle.set(dom.byId("mapBookScrollContent"), "display", "none");
-			dom.byId("mapBookScrollContent").style.display = "none";
 			if (dom.byId("divContentList")) {
 				domConstruct.empty(dom.byId("divContentList"));
 			}
@@ -223,10 +220,6 @@
 				}
 				domClass.add(this.mapBookPreviousPage, "esriPrevDisabled");
 			}
-			dom.byId("esriMapPages").style.display = "block";
-			domStyle.set(dom.byId("esriMapPages"), "display", "block");
-			domStyle.set(dom.byId("mapBookScrollContent"), "display", "none");
-			dom.byId("mapBookScrollContent").style.display = "none";
 		},
 
 		_enableMapBookEditing: function () {
@@ -234,7 +227,7 @@
 			if (this.isEditModeEnable && dojo.bookInfo[dojo.currentBookIndex].BookConfigData.owner !== dojo.currentUser) {
 				this.isEditModeEnable = false;
 				domClass.remove(query('.esriEditIcon')[0], "esriHeaderIconSelected");
-				alert(nls.validateBookOwner);
+				this.alertDialog._setContent(nls.validateBookOwner, 0);
 			}
 			this._resizeMapBook();
 			mapBookContents = query('.esriMapBookColContent');
@@ -280,18 +273,18 @@
 		},
 
 		_deleteSeletedBook: function (bookTitle) {
-			var confirmMsg, confirmDeleteBook;
+			var confirmMsg, _self = this;
 			confirmMsg = dojoString.substitute(nls.confirmDeletingOfSelectedBook, { bookName: "'" + bookTitle + "'" });
-			confirmDeleteBook = confirm(confirmMsg);
-
-			if (confirmDeleteBook) {
-				if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId === nls.defaultItemId) {
-					dojo.bookInfo.splice(dojo.currentBookIndex, 1);
-					this._createMapBookList();
-				} else {
-					topic.publish("deleteItemHandler");
+			this.alertDialog._setContent(confirmMsg, 1).then(function (confirmDeleteBook) {
+				if (confirmDeleteBook) {
+					if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId === nls.defaultItemId) {
+						dojo.bookInfo.splice(dojo.currentBookIndex, 1);
+						_self._createMapBookList();
+					} else {
+						topic.publish("deleteItemHandler");
+					}
 				}
-			}
+			});
 			if (dojo.bookInfo.length === 0) {
 				domStyle.set(query('.esriDeleteBookIcon')[0], "display", "none");
 			}
@@ -363,6 +356,7 @@
 				}
 			});
 		},
+
 		_createContentListPanel: function () {
 			domConstruct.create("div", { "class": "esriContentListPanelDiv esriArialFont", "id": "divContentListPanel" }, dom.byId("mapBookContentContainer"));
 			domConstruct.create("div", { "innerHTML": nls.tocContentsCaption, "class": "esriContentListHeaderDiv " }, dom.byId("divContentListPanel"));
@@ -684,7 +678,7 @@
 		},
 
 		_showModuleSettingDialog: function (moduleType, isNewModule, moduleContainer, moduleKey) {
-			var label, dialogTitle, moduleIconPath, moduleInfo, moduleData, divModuleSetting, inputContainer, key, _self = this,
+			var label, dialogTitle, labelValue, moduleIconPath, moduleInfo, moduleData, divModuleSetting, inputContainer, key, _self = this,
 			moduleSettingContent, isValidationRequired, btns, btnSave, moduleAttr = {}, moduleInputs = [];
 
 			moduleInfo = lang.clone(dojo.appConfigData.ModuleDefaultsConfig);
@@ -708,11 +702,8 @@
 					moduleSettingContent = domConstruct.create("div", { "class": "esriModuleContent" }, divModuleSetting);
 					label = domConstruct.create("div", { "class": "esriSettingLabel" }, moduleSettingContent);
 
-					var labelValue = key.charAt(0).toUpperCase() + key.slice(1);
+					labelValue = key.charAt(0).toUpperCase() + key.slice(1);
 					labelValue = labelValue.replace("_", ' ');
-					if (key === "height" || key === "width") {
-						labelValue += nls.unitInPixel;
-					}
 					domAttr.set(label, "innerHTML", labelValue);
 					if (key === "text") {
 						inputContainer = this._createTextEditor(moduleSettingContent, moduleAttr, key);
@@ -769,13 +760,13 @@
 			}
 			for (inputIndex = 0; inputIndex < moduleInputs.length; inputIndex++) {
 				if (moduleInputs[inputIndex].state === "Error") {
-					alert(nls.errorMessages.fieldInputIsNotValid);
+					this.alertDialog._setContent(nls.errorMessages.fieldInputIsNotValid, 0);
 					return;
 				} else if (moduleInputs[inputIndex].required) {
 					inputData = moduleInputs[inputIndex].value;
 					inputData = dojo.isString(inputData) ? lang.trim(inputData) : inputData;
 					if (inputData === "") {
-						alert(nls.fieldIsEmpty);
+						this.alertDialog._setContent(nls.fieldIsEmpty, 0);
 						return;
 					}
 				}

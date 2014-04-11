@@ -19,19 +19,20 @@
 //==================================================================================================================//
 define([
 	"dojo/_base/declare",
-	"dijit/_WidgetBase",
-	"widgets/appHeader/appHeader",
 	"dojo/i18n!nls/localizedStrings",
+	"dijit/_WidgetBase",
+	"widgets/alertDialog/alertDialog",
+	"widgets/appHeader/appHeader",
 	"widgets/mapBookCollection/mapBookCollection",
 	"widgets/mapBookConfigLoader/mapBookConfigLoader",
 	"widgets/selectWebmap/selectWebmap",
 	"widgets/shareBook/shareBook",
 	"dojo/domReady!"
-], function (declare, _WidgetBase, appHeader, nls, mapBookCollection, mapBookConfigLoader, selectWebmap, shareBook) {
+], function (declare, nls, _WidgetBase, alertBox, appHeader, mapBookCollection, mapBookConfigLoader, selectWebmap, shareBook) {
 	return declare([_WidgetBase], {
 		nls: nls,
 		startup: function () {
-			var mapbookLoader, MapBookCollection, applicationHeader, sharebook;
+			var mapbookLoader, MapBookCollection, applicationHeader, sharebook, alertDialog;
 			try {
 				mapbookLoader = new mapBookConfigLoader();
 				mapbookLoader.startup().then(function (response) {
@@ -41,7 +42,8 @@ define([
 					sharebook = new shareBook();
 				});
 			} catch (ex) {
-				alert(nls.errorMessages.widgetNotLoaded);
+				alertDialog = new alertBox();
+				alertDialog._setContent(nls.errorMessages.widgetNotLoaded, 0);
 			}
 		}
 	});

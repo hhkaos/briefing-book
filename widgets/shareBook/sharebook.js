@@ -15,12 +15,15 @@
 	"dojo/i18n!nls/localizedStrings",
 	"esri/arcgis/Portal",
 	"esri/request",
+	"../alertDialog/alertDialog",
 	"dojo/parser"
-], function (declare, array, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, Portal, esriRequest) {
+], function (declare, array, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, Portal, esriRequest, alertBox) {
 	return declare([_WidgetBase], {
 		_portal: null,
 		postCreate: function () {
 			var _self = this;
+			_self.alertDialog = new alertBox();
+
 			topic.subscribe("_getPortal", function (portal) {
 				_self._portal = portal;
 			});
@@ -147,9 +150,9 @@
 				dijit.byId("ShareBookDialog").hide();
 			}, function (err) {
 				if (err.messageCode === "GWM_0003") {
-					alert(nls.errorMessages.permissionDenied);
+					_self.alertDialog._setContent(nls.errorMessages.permissionDenied, 0);
 				} else {
-					alert(nls.errorMessages.shareItemError);
+					_self.alertDialog._setContent(nls.errorMessages.shareItemError, 0);
 				}
 			});
 		}

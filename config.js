@@ -11,8 +11,11 @@
 		// Set application Favicon path
 		ApplicationFavicon: "themes/images/mapBookFavIco.ico",
 
+		// Set application home screen path
+		AppHomeScreenIcon: "themes/images/mapbookHomeIcon-grey.ico",
+
 		// Set application mode. Set to false for Public interface. Set to true for Admin interface
-		AuthoringMode: false, 	//false:      Public mode and true:      Editable mode
+		AuthoringMode: false, //false:      Public mode and true:      Editable mode
 
 		//Set theme for application
 		ApplicationTheme: "grey", // grey||blue.css
@@ -29,10 +32,10 @@
 		VimeoVideoUrl: "https://player.vimeo.com/video/",
 
 		//portal url
-		PortalURL: "http://arcgis4localgov2.maps.arcgis.com",
+		PortalURL: "https://arcgis4localgov2.maps.arcgis.com",
 
 		//proxy url
-		ProxyURL: "proxy.ashx",
+		ProxyURL: "/proxy/proxy.ashx",
 		//tag for searching briefing book config
 		ConfigSearchTag: 'BriefingBookConfigItem',
 

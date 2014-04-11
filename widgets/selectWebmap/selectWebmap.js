@@ -44,7 +44,6 @@
 
 			on(window, "resize", function () {
 				_self._resizeSelectWebmapDialog();
-
 			});
 
 		},
@@ -139,10 +138,12 @@
 				num: dojo.appConfigData.MaxWebMapCount
 			};
 
+			dom.byId("divWebmapContent").innerHTML = nls.loadingWebmap;
 			this._portal.queryItems(queryParams).then(function (response) {
 				_self._createWebMapDialogContent(response);
 			}, function (error) {
 				domStyle.set(dom.byId("outerLoadingIndicator"), "display", "none");
+				dom.byId("divWebmapContent").innerHTML = nls.errorMessages.webmapSearchFailed;
 				console.log(error);
 			});
 		},
@@ -151,7 +152,7 @@
 			var pageIndex, webMapURL, _self = this, webmapIndex, divWebmapPage, divWebmapThumbnail, imgWebmapDescript, imgWebmapThumbnail, pageWidth,
 			paginationFooter, noOfpages, pageContentIndex;
 			this._selectedWebmap = null;
-			webMapURL = dojo.appConfigData.PortalURL + '/home/webmap/viewer.html?webmap='
+			webMapURL = dojo.appConfigData.PortalURL + '/home/webmap/viewer.html?webmap=';
 			domConstruct.empty(dom.byId("divWebmapContent"));
 			noOfpages = Math.ceil(response.results.length / dojo.appConfigData.webmapPerPage);
 			webmapIndex = 0;
@@ -179,7 +180,6 @@
 
 							_self.own(on(divWebmapThumbnail, "click", function () {
 								_self._selectWebmap(this, false);
-
 							}));
 
 							_self.own(on(divWebmapThumbnail, "mouseover", function () {
@@ -211,7 +211,7 @@
 			if (paginationFooter) {
 				if (response.results.length === 0) {
 					domStyle.set(query('.esriPaginationInnerDiv')[0], "display", "none");
-					dom.byId("divWebmapContent").innerHTML = "No webmap found";
+					dom.byId("divWebmapContent").innerHTML = nls.noWebmapFound;
 				} else {
 					domStyle.set(query('.esriPaginationInnerDiv')[0], "display", "block");
 				}

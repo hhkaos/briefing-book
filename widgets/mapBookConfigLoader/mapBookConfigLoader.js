@@ -20,17 +20,20 @@
 	"esri/request",
 	"esri/urlUtils",
 	"esri/IdentityManager",
+	"../alertDialog/alertDialog",
 	"dojo/DeferredList",
 	"dojo/_base/Deferred",
 	"dojo/parser"
-], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, DeferredList, Deferred) {
+], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, alertBox, DeferredList, Deferred) {
 	return declare([_WidgetBase], {
 		_portal: null,
 		startup: function () {
 			var _self = this, deferred;
+			_self.alertDialog = new alertBox();
 			deferred = new Deferred();
 
 			this._setApplicationTheme();
+
 			topic.subscribe("saveBookHandler", function () {
 				_self._saveSelectedBook();
 			});
@@ -97,7 +100,7 @@
 				});
 			}, function (error) {
 				if (error.httpCode === 403) {
-					alert(nls.validateOrganizationUser);
+					_self.alertDialog._setContent(nls.validateOrganizationUser, 0);
 					IdentityManager.credentials[0].destroy();
 				}
 				if (dom.byId("outerLoadingIndicator")) {
@@ -213,7 +216,7 @@
 				dojo.bookInfo = [];
 				_self._createConfigurationPanel(response);
 			}, function (error) {
-				alert(nls.errorMessages.contentQueryError);
+				_self.alertDialog._setContent(nls.errorMessages.contentQueryError, 0);
 				domStyle.set(dom.byId("outerLoadingIndicator"), "display", "none");
 			});
 		},
@@ -256,7 +259,6 @@
 			currentItemId = dojo.bookInfo[dojo.currentBookIndex].BookConfigData.itemId;
 			requestUrl = this._portal.getPortalUser().userContentUrl + '/items/' + currentItemId + '/delete';
 			this._sendEsriRequest(queryParam, requestUrl, "delete", nls.errorMessages.deletingItemError);
-
 		},
 
 		_copyBookItem: function () {
@@ -289,7 +291,7 @@
 		_sendEsriRequest: function (queryParam, requestUrl, reqType) {
 			var _self = this;
 			esriRequest({
-				url: requestUrl + '/' + kernel.id.credentials[0].token,
+				url: requestUrl,
 				content: queryParam,
 				async: false,
 				handleAs: 'json'
@@ -331,7 +333,7 @@
 			} else if (reqType === "copy") {
 				errorMsg = nls.errorMessages.copyItemError;
 			}
-			alert(errorMsg);
+			this.alertDialog._setContent(errorMsg, 0);
 		},
 
 		_getFullUserName: function () {

@@ -1,4 +1,4 @@
-﻿/*global */
+﻿/*global define */
 /*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
 /*
  | Copyright 2014 Esri
@@ -53,6 +53,7 @@ define([], function () {
 
         //proxy url
         ProxyURL: "/proxy/proxy.ashx",
+
         //tag for searching briefing book config
         ConfigSearchTag: 'BriefingBookConfigItem',
 
@@ -177,7 +178,7 @@ define([], function () {
                 title: "Webmap title goes here",
                 caption: "Webmap caption goes here",
                 URL: '',
-                height: 230                                // in pixel
+                height: 230                             // in pixel
             },
             "title": {
                 type: "text",
@@ -188,25 +189,25 @@ define([], function () {
             "text": {
                 type: "text",
                 text: "Add text here",
-                height: 40                                // in pixel
+                height: 40                              // in pixel
             },
             "HTML": {
                 type: "HTML",
                 HTML: "<p>Add HTML here</p>",
-                height: 100                                // in pixel
+                height: 100                             // in pixel
             },
             "image": {
                 type: "image",
                 URL: "",
                 height: 100,
-                width: ''                                // in pixel
+                width: ''                               // in pixel
             },
             "video": {
                 type: "video",
                 title: "Video title",
                 caption: "The video caption",
                 URL: '',
-                height: 250                            // in pixel
+                height: 250                         // in pixel
             },
             "flickr": {
                 type: "flickr",
@@ -217,16 +218,16 @@ define([], function () {
                 URL: '',
                 rows: 5,
                 columns: 5,
-                height: 250                            // in pixel
+                height: 250                         // in pixel
             },
             "logo": {
                 type: "logo",
                 URL: "themes/images/logo-default.jpg",
-                height: 50                              // in pixel
+                height: 50                            // in pixel
             },
             "TOC": {
                 type: "TOC",
-                height: 200                             // in pixel
+                height: 200                          // in pixel
             },
             "author": {
                 text: "Author",

@@ -21,7 +21,7 @@ The Briefing Book can be used to create new briefings and reports that include A
 
 ## Resources
 
-Learn more about Esri's [ArcGIS Solutions maps and apps](http://solutions.arcgis.com/).
+Learn more about Esri's [ArcGIS Solutions](http://solutions.arcgis.com/).
 
 Show me a list of other [Esri GitHub repositories](http://esri.github.io/).
 

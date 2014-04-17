@@ -1,9 +1,10 @@
 # briefing-book
 
-The Briefing Book application allows GIS professionals to author briefing/map book web applications.
-The application will also be used to modify existing contents and re-publish it in users own environment.
-A prototype developed by Esri will be used in concert with the specifications to guide application development.
-Briefing/Map Book will be accessed from browsers on tablets and desktops.
+Briefing Book is a configuration of ArcGIS and a JavaScript application that allows users to view and create map-based briefings and reports with interactive content.
+
+This application can be deployed by local, state, and national governments; utilities, NGOs, as well as private industries; to create and deliver dynamic and interactive briefings and reports for executives, decision-makers, knowledge-workers, and constituents.
+
+The Briefing Book can be used to create new briefings and reports that include ArcGIS maps, videos, photos, and written text. The briefings and reports are stored in your ArcGIS Online Organization or Portal for ArcGIS site and can be shared with members of your organization or the general public. The Briefing Book presents briefings and reports you author on a single bookshelf optimized for tablet devices.
 
 [Image of Briefing Book application](briefing-book.png "Briefing Book application")
 

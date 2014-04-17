@@ -21,9 +21,9 @@ The Briefing Book can be used to create new briefings and reports that include A
 
 ## Resources
 
-Learn more about Esri's [ArcGIS for Local Government maps and apps](http://solutions.arcgis.com/local-government/).
+Learn more about Esri's [ArcGIS Solutions maps and apps](http://solutions.arcgis.com/).
 
-Show me a list of other [Local Government GitHub repositories](http://esri.github.io/#Local-Government).
+Show me a list of other [Esri GitHub repositories](http://esri.github.io/).
 
 ## Issues
 

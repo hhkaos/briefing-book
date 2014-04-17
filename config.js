@@ -1,4 +1,21 @@
-﻿define([], function () {
+﻿/*global define */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+/*
+ | Copyright 2014 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
+define([], function () {
     return {
         /*  appSetting contains application configuration */
 
@@ -11,25 +28,31 @@
         // Set application Favicon path
         ApplicationFavicon: "themes/images/mapBookFavIco.ico",
 
-        // Set application mode. Set to false for Public interface. Set to true for Admin interface
-        AuthoringMode: false, 	//false:      Public mode and true:      Editable mode
+        // Set application home screen path
+        AppHomeScreenIcon: "themes/images/mapbookHomeIcon-grey.ico",
 
-        //Set theme for application 
+        // Set application mode. Set to false for Public interface. Set to true for Admin interface
+        AuthoringMode: false, //false:      Public mode and true:      Editable mode
+
+        //Set theme for application
         ApplicationTheme: "grey", // grey||blue.css
 
         BriefingBookCoverIcon: "themes/images/map-book-bg-grey.png",
 
         //video url for YouTube
-        YouTubeVideoUrl: "http://www.youtube.com/embed/",
+        YouTubeVideoUrl: "https://www.youtube.com/embed/",
 
         //video url for Esri
-        EsriVideoUrl: "http://video.esri.com/iframe/",
+        EsriVideoUrl: "https://video.esri.com/iframe/",
 
         //video url for Vimeo
-        VimeoVideoUrl: "http://player.vimeo.com/video/",
+        VimeoVideoUrl: "https://player.vimeo.com/video/",
 
         //portal url
-        PortalURL: "http://arcgis4localgov2.maps.arcgis.com/",
+        PortalURL: "https://arcgis4localgov2.maps.arcgis.com",
+
+        //proxy url
+        ProxyURL: "/proxy/proxy.ashx",
 
         //tag for searching briefing book config
         ConfigSearchTag: 'BriefingBookConfigItem',
@@ -39,6 +62,9 @@
 
         //max webmap count
         MaxWebMapCount: 100,
+
+        //display no of webmap thumbnail in' Select webmap' dialog
+        webmapPerPage: 10,
 
         //Sorting field
         SortField: 'owner', //Values:title | owner | avgRating |numViews| created | modified
@@ -54,7 +80,7 @@
             columns: 2,
             columnWidth: [50, 50],
             content: [
-								 ["title", "subtitle", "author", "date", "logo"], ["webmap"]
+                                 ["title", "subtitle", "author", "date", "logo"], ["webmap"]
             ],
             height: [[40, 100, 60, 50], [300]],
             type: "CoverPage"
@@ -62,88 +88,88 @@
         },
         /* content page layout contains layout for content page*/
         ContentPageLayouts: [
-						 {
-						     Name: "ContentLayout1",
-						     columnWidth: [50, 50],
-						     columns: 2,
-						     templateIcon: "themes/images/contentLayout1.png",
-						     selectedTemplateIcon: "themes/images/contentLayout1-select.png",
-						     content: [
+                         {
+                            Name: "ContentLayout1",
+                            columnWidth: [50, 50],
+                            columns: 2,
+                            templateIcon: "themes/images/contentLayout1.png",
+                            selectedTemplateIcon: "themes/images/contentLayout1-select.png",
+                            content: [
                                          ["text", "TOC"], ["webmap"]
-						     ],
-						     height: [[50, 200], [250]],
-						     type: "ContentPage"
-						 }, {
-						     Name: "ContentLayout2",
-						     columns: 2,
-						     columnWidth: [50, 50],
-						     templateIcon: "themes/images/contentLayout2.png",
-						     selectedTemplateIcon: "themes/images/contentLayout2-select.png",
-						     content: [
+                             ],
+                            height: [[50, 200], [250]],
+                            type: "ContentPage"
+                         }, {
+                            Name: "ContentLayout2",
+                            columns: 2,
+                            columnWidth: [50, 50],
+                            templateIcon: "themes/images/contentLayout2.png",
+                            selectedTemplateIcon: "themes/images/contentLayout2-select.png",
+                            content: [
                                           ["webmap", "text"], ["TOC"]
-						     ],
-						     height: [[300, 100], [400]]
-						 }, {
-						     Name: "ContentLayout3",
-						     columns: 2,
-						     columnWidth: [50, 50],
-						     templateIcon: "themes/images/contentLayout3.png",
-						     selectedTemplateIcon: "themes/images/contentLayout3-select.png",
-						     content: [
+                             ],
+                            height: [[300, 100], [400]]
+                         }, {
+                            Name: "ContentLayout3",
+                            columns: 2,
+                            columnWidth: [50, 50],
+                            templateIcon: "themes/images/contentLayout3.png",
+                            selectedTemplateIcon: "themes/images/contentLayout3-select.png",
+                            content: [
                                           ["TOC"],
                                           ["text", "webmap"]
-						     ],
-						     height: [[300], [50, 250]]
-						 }
+                             ],
+                            height: [[300], [50, 250]]
+                         }
         ],
         /* book page layout contains layout for different pages of books */
         BookPageLayouts: [
-							{
-							    Name: "TwoColumnLayout",
-							    columnWidth: [40, 60],
-							    columns: 2,
-							    templateIcon: "themes/images/temp1.png",
-							    selectedTemplateIcon: "themes/images/temp1-select.png",
-							    content: [
-										["text"],
-										["webmap"]
-							    ],
-							    height: [[250], [250]]
-							}, {
-							    Name: "MostlyText",
-							    columns: 2,
-							    columnWidth: [50, 50],
-							    templateIcon: "themes/images/temp2.png",
-							    selectedTemplateIcon: "themes/images/temp2-select.png",
-							    content: [
-										 ["webmap", "text"],
-										 ["text"]
-							    ],
-							    height: [[230, 30], [300]]
+                            {
+                                Name: "TwoColumnLayout",
+                                columnWidth: [40, 60],
+                                columns: 2,
+                                templateIcon: "themes/images/temp1.png",
+                                selectedTemplateIcon: "themes/images/temp1-select.png",
+                                content: [
+                                        ["text"],
+                                        ["webmap"]
+                                ],
+                                height: [[250], [250]]
+                            }, {
+                                Name: "MostlyText",
+                                columns: 2,
+                                columnWidth: [50, 50],
+                                templateIcon: "themes/images/temp2.png",
+                                selectedTemplateIcon: "themes/images/temp2-select.png",
+                                content: [
+                                         ["webmap", "text"],
+                                         ["text"]
+                                ],
+                                height: [[230, 30], [300]]
 
-							}, {
-							    Name: "OneColumnLayout",
-							    columns: 1,
-							    columnWidth: [100],
-							    templateIcon: "themes/images/temp3.png",
-							    selectedTemplateIcon: "themes/images/temp3-select.png",
-							    content: [
-										 ["webmap", "text"]
-							    ],
-							    height: [[250, 50]]
+                            }, {
+                                Name: "OneColumnLayout",
+                                columns: 1,
+                                columnWidth: [100],
+                                templateIcon: "themes/images/temp3.png",
+                                selectedTemplateIcon: "themes/images/temp3-select.png",
+                                content: [
+                                         ["webmap", "text"]
+                                ],
+                                height: [[250, 50]]
 
-							}, {
-							    Name: "DominantVisual",
-							    columns: 2,
-							    columnWidth: [30, 70],
-							    templateIcon: "themes/images/temp4.png",
-							    selectedTemplateIcon: "themes/images/temp4-select.png",
-							    content: [
-										 ["webmap", "text"],
-										 ["text"]
-							    ],
-							    height: [[230, 60], [335]]
-							}
+                            }, {
+                                Name: "DominantVisual",
+                                columns: 2,
+                                columnWidth: [30, 70],
+                                templateIcon: "themes/images/temp4.png",
+                                selectedTemplateIcon: "themes/images/temp4-select.png",
+                                content: [
+                                         ["webmap", "text"],
+                                         ["text"]
+                                ],
+                                height: [[230, 60], [335]]
+                            }
         ],
         ModuleDefaultsConfig: {
             "webmap": {
@@ -152,36 +178,36 @@
                 title: "Webmap title goes here",
                 caption: "Webmap caption goes here",
                 URL: '',
-                height: 230								// in pixel
+                height: 230                             // in pixel
             },
             "title": {
                 type: "text",
                 text: "Untitled",
                 height: 30,
-                uid: "title"							// in pixel
+                uid: "title"                            // in pixel
             },
             "text": {
                 type: "text",
                 text: "Add text here",
-                height: 40								// in pixel
+                height: 40                              // in pixel
             },
             "HTML": {
                 type: "HTML",
                 HTML: "<p>Add HTML here</p>",
-                height: 100								// in pixel
+                height: 100                             // in pixel
             },
             "image": {
                 type: "image",
                 URL: "",
                 height: 100,
-                width: ''								// in pixel
+                width: ''                               // in pixel
             },
             "video": {
                 type: "video",
                 title: "Video title",
                 caption: "The video caption",
                 URL: '',
-                height: 250							// in pixel
+                height: 250                         // in pixel
             },
             "flickr": {
                 type: "flickr",
@@ -192,16 +218,16 @@
                 URL: '',
                 rows: 5,
                 columns: 5,
-                height: 250							// in pixel
+                height: 250                         // in pixel
             },
             "logo": {
                 type: "logo",
                 URL: "themes/images/logo-default.jpg",
-                height: 50							  // in pixel
+                height: 50                            // in pixel
             },
             "TOC": {
                 type: "TOC",
-                height: 200							 // in pixel
+                height: 200                          // in pixel
             },
             "author": {
                 text: "Author",

@@ -6,7 +6,7 @@ This application can be deployed by local, state, and national governments; util
 
 The Briefing Book can be used to create new briefings and reports that include ArcGIS maps, videos, photos, and written text. The briefings and reports are stored in your ArcGIS Online Organization or Portal for ArcGIS site and can be shared with members of your organization or the general public. The Briefing Book presents briefings and reports you author on a single bookshelf optimized for tablet devices.
 
-[![Image of Briefing Book application](https://raw.github.com/Esri/briefing-book/master/briefing-book.png "Briefing Book application")](https://raw.github.com/Esri/briefing-book/master/briefing-book.png)
+[![Briefing Book application](briefing-book.png "Briefing Book application")](https://raw.github.com/Esri/briefing-book/master/briefing-book.png)
 
 ## Features
 

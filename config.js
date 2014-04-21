@@ -31,7 +31,8 @@ define([], function () {
         // Set application home screen path
         AppHomeScreenIcon: "themes/images/mapbookHomeIcon-grey.ico",
 
-        // Set application mode. Set to false for Public interface. Set to true for Admin interface
+        //Authoring Mode not supported in this release.
+        //Set application mode. Set to false for Public interface. Set to true for Admin interface
         AuthoringMode: false, //false:      Public mode and true:      Editable mode
 
         //Set theme for application

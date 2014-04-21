@@ -48,17 +48,17 @@ define([], function () {
         //video url for Vimeo
         VimeoVideoUrl: "https://player.vimeo.com/video/",
 
-        //portal url
-        PortalURL: "https://arcgis4localgov2.maps.arcgis.com",
+        //The URL for your ArcGIS Online Organization or Portal for ArcGIS site.
+        PortalURL: "",
 
-        //proxy url
+        //Location of your proxy file
         ProxyURL: "/proxy/proxy.ashx",
 
-        //tag for searching briefing book config
-        ConfigSearchTag: 'BriefingBookConfigItem',
+        //The unique tag given to each book. This tag will determine which books are visible in the Briefing Book application.
+        ConfigSearchTag: '',
 
         //cookie/local storage name  for storing user credential
-        Credential: "esri_briefingbook_credential",
+        Credential: "esribriefingbookcredential",
 
         //max webmap count
         MaxWebMapCount: 100,

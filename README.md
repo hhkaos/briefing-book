@@ -18,6 +18,14 @@ The Briefing Book can be used to create new briefings and reports that include A
 ### General Help
 [New to Github? Get started here.](http://htmlpreview.github.com/?https://github.com/Esri/esri.github.com/blob/master/help/esri-getting-to-know-github.html)
 
+## Getting Started
+
+You'll need to configure and publish that application to get started:
+
+[Configure the application](http://solutions.arcgis.com/local-government/help/briefing-book/get-started/configure-application/)
+
+[Publish the application](http://solutions.arcgis.com/local-government/help/briefing-book/get-started/publish-application/)
+
 ## Resources
 
 Learn more about Esri's [ArcGIS Solutions](http://solutions.arcgis.com/).

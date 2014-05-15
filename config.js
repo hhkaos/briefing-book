@@ -50,8 +50,11 @@ define([], function () {
         VimeoVideoUrl: "https://player.vimeo.com/video/",
 
         // The URL for your ArcGIS Online Organization or Portal for ArcGIS site,
-        // e.g., something like "https://myOrg.maps.arcgis.com/"
+        // e.g., something like "https://myOrg.maps.arcgis.com/" for an Online Organization
         PortalURL: "",
+
+        // OAuth application id
+        OAuthAppid: "", // e.g., something like "AFTKRmv16wj14N3z"
 
         // Location of your proxy file
         ProxyURL: "/proxy/proxy.ashx",

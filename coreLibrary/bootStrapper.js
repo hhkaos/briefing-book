@@ -20,11 +20,14 @@
 require([
     "coreLibrary/widgetLoader",
     "application/config",
+    "esri/IdentityManager",
+    "coreLibrary/OAuthHelper",
     "widgets/alertDialog/alertDialog",
     "esri/config",
     "esri/arcgis/utils",
+    "dojo/Deferred",
     "dojo/domReady!"
-], function (widgetLoader, config, alertBox, esriConfig, arcgisUtils, domReady) {
+], function (widgetLoader, config, IdentityManager, OAuthHelper, alertBox, esriConfig, arcgisUtils, Deferred, domReady) {
 
     //========================================================================================================================//
 
@@ -36,16 +39,58 @@ require([
         */
         dojo.appConfigData = config;
         dojo.bookInfo = [];
-        esriConfig.defaults.io.proxyUrl = dojoConfig.baseURL + dojo.appConfigData.ProxyURL;
-        esriConfig.defaults.io.alwaysUseProxy = false;
+        _initializeApplication();
         esriConfig.defaults.io.corsDetection = true;
         esriConfig.defaults.io.corsEnabledServers.push(dojo.appConfigData.PortalURL);
         esriConfig.defaults.io.timeout = 600000;
-        arcgisUtils.arcgisUrl = dojo.appConfigData.PortalURL + '/sharing/content/items';
+
         var applicationWidgetLoader = new widgetLoader();
         applicationWidgetLoader.startup();
+
     } catch (ex) {
         this.alertDialog = new alertBox();
         this.alertDialog._setContent(ex.message, 0);
     }
+
+    // adapted from repository application-boilerplate-js
+    function _initializeApplication() {
+        var appLocation, instance;
+
+        // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
+        // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
+        // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
+        appLocation = location.pathname.indexOf("/apps/");
+        if (appLocation === -1) {
+            appLocation = location.pathname.indexOf("/home/");
+        }
+        // app is hosted and no sharing url is defined so let's figure it out.
+        if (appLocation !== -1) {
+            // hosted or portal
+            instance = location.pathname.substr(0, appLocation); //get the portal instance name
+            dojo.appConfigData.PortalURL = location.protocol + "//" + location.host + instance;
+            dojo.appConfigData.ProxyURL = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+        } else {
+            // setup OAuth if oauth appid exists. If we don't call it here before querying for appid
+            // the identity manager dialog will appear if the appid isn't publicly shared.
+            if (dojo.appConfigData.OAuthAppid) {
+                _setupOAuth(dojo.appConfigData.OAuthAppid, dojo.appConfigData.PortalURL);
+            }
+        }
+        arcgisUtils.arcgisUrl = dojo.appConfigData.PortalURL + "/sharing/rest/content/items";
+        // Define the proxy url for the app
+        if (dojo.appConfigData.ProxyURL) {
+            esriConfig.defaults.io.proxyUrl = dojoConfig.baseURL + dojo.appConfigData.ProxyURL;
+            esriConfig.defaults.io.alwaysUseProxy = false;
+        }
+    }
+
+    // from repository application-boilerplate-js
+    function _setupOAuth(oauthappid, portalURL) {
+        OAuthHelper.init({
+            appId: oauthappid,
+            portal: portalURL,
+            expiration: (4 * 60) // 4 hours (in minutes); default is 30 minutes
+        });
+    }
+
 });

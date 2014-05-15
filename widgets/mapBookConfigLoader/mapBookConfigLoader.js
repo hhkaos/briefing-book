@@ -37,11 +37,12 @@ define([
     "esri/request",
     "esri/urlUtils",
     "esri/IdentityManager",
+    "coreLibrary/OAuthHelper",
     "../alertDialog/alertDialog",
     "dojo/DeferredList",
     "dojo/_base/Deferred",
     "dojo/parser"
-], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, alertBox, DeferredList, Deferred) {
+], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, OAuthHelper, alertBox, DeferredList, Deferred) {
     return declare([_WidgetBase], {
         _portal: null,
         startup: function () {
@@ -134,27 +135,35 @@ define([
         _loadCredentials: function (deferred) {
             deferred.resolve();
             var idJson, idObject, isCredAvailable = false;
-            if (this._supports_local_storage()) {
-                idJson = window.localStorage.getItem(dojo.appConfigData.Credential);
+
+            // If we've connected via OAuth, we can go ahead with the the behind-the-scenes login
+            if (OAuthHelper.isSignedIn()) {
+                this._displayLoginDialog(false);
+
+            // Otherwise see if we've cached credentials
             } else {
-                if (cookie.isSupported()) {
-                    idJson = cookie(dojo.appConfigData.Credential);
+                if (this._supports_local_storage()) {
+                    idJson = window.localStorage.getItem(dojo.appConfigData.Credential);
+                } else {
+                    if (cookie.isSupported()) {
+                        idJson = cookie(dojo.appConfigData.Credential);
+                    }
                 }
-            }
-            if (idJson && idJson !== "null" && idJson.length > 4) {
-                idObject = JSON.parse(idJson);
-                if (idObject.credentials[0].expires > Date.now()) {
-                    if (dojo.appConfigData.PortalURL === idObject.serverInfos[0].server) {
-                        isCredAvailable = true;
-                        kernel.id.initialize(idObject);
-                        this._displayLoginDialog(deferred);
+                if (idJson && idJson !== "null" && idJson.length > 4) {
+                    idObject = JSON.parse(idJson);
+                    if (idObject.credentials[0].expires > Date.now()) {
+                        if (dojo.appConfigData.PortalURL === idObject.serverInfos[0].server) {
+                            isCredAvailable = true;
+                            kernel.id.initialize(idObject);
+                            this._displayLoginDialog(deferred);
+                        }
                     }
                 }
             }
+
             if (!isCredAvailable) {
                 this._queryOrgItems();
             }
-
         },
 
         _supports_local_storage: function () {

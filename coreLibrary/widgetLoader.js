@@ -1,4 +1,4 @@
-﻿/*global define,Modernizr */
+﻿/*global define */
 /*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
 /*
  | Copyright 2013 Esri
@@ -39,10 +39,19 @@ define([
                     applicationHeader = new appHeader();
                     selectWebmap = new selectWebmap();
                     sharebook = new shareBook();
+                }, function () {
+                    var message = "";
+                    if (dojo.appConfigData.PortalURL) {
+                        message = nls.errorMessages.configurationError;
+                    } else {
+                        message = nls.errorMessages.organizationNotSet;
+                    }
+                    alertDialog = new alertBox();
+                    alertDialog._setContent(message, 0);
                 });
             } catch (ex) {
                 alertDialog = new alertBox();
-                alertDialog._setContent(nls.errorMessages.widgetNotLoaded, 0);
+                alertDialog._setContent(nls.errorMessages.configurationError, 0);
             }
         }
     });

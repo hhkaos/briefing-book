@@ -80,10 +80,15 @@ define([
                 }
             });
 
-            this._portal = new esriPortal.Portal(dojo.appConfigData.PortalURL);
-            dojo.connect(_self._portal, 'onLoad', function () {
-                _self._loadCredentials(deferred);
-            });
+            if (dojo.appConfigData.PortalURL) {
+                this._portal = new esriPortal.Portal(dojo.appConfigData.PortalURL);
+                dojo.connect(_self._portal, 'onLoad', function () {
+                    _self._loadCredentials(deferred);
+                });
+            } else {
+                deferred.reject();
+
+            }
             return deferred.promise;
         },
 

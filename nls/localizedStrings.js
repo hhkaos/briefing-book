@@ -67,7 +67,7 @@ define({
         confirmAppReloading: "Briefing book gallery will be reloaded and you may lose the edits.",
         validateBookOwner: "You do not have permission to edit this book.",
         validateOrganizationUser: "You are not the member of this Organization.",
-        copyKeyword: 'Copy - ',
+        copyKeyword: "Copy - ",
         signInText: "Sign In",
         signOutText: "Sign Out",
         unitInPixel: " (px)",
@@ -91,22 +91,24 @@ define({
         orientationNotSupported: "App does not support this orientation",
         errorMessages: {
             webmapSearchFailed: "An error occurred while searching the map",
-            widgetNotLoaded: "widget not loaded",
+            widgetNotLoaded: "Widget not loaded",
             updatingItemError: "Updating of the selected item failed",
             contentPageRequired: "Content Page Required",
             moduleFieldsEmpty: "Some module fields are not filled",
             invalidMapUrl: "Invalid map url",
             downloadZipFileFailed: "Downloading failed",
             fieldInputIsNotValid: "Invalid input",
-            addingItemError: "Adding new item is failed",
-            deletingItemError: "Deleting selected item is failed",
-            updaingItemError: "Updating selected item is failed",
-            copyItemError: "Copying of selected item is failed",
+            addingItemError: "Adding new item failed",
+            deletingItemError: "Deleting selected item failed",
+            updaingItemError: "Updating selected item failed",
+            copyItemError: "Copying of selected item failed",
             contentQueryError: "Failed to load user contents",
             webmapError: "An error occurred while loading the map",
             permissionDenied: "You do not have permissions to access this resource.",
-            shareItemError: "Updating selected item is failed"
+            shareItemError: "Updating selected item failed",
+            organizationNotSet: "Please configure your URL for your ArcGIS Online Organization or Portal for ArcGIS site.",
+            configurationError: "Please check your configuration"
         }
     },
-    es: true, fr: true, it: true
+    fr: true
 });

@@ -53,7 +53,7 @@ define([], function () {
         // e.g., something like "https://myOrg.maps.arcgis.com/" for an Online Organization
         PortalURL: "",
 
-        // OAuth application id
+        // OAuth application id; leave empty to have the app prompt for the Online Organization member's username and password
         OAuthAppid: "", // e.g., something like "AFTKRmv16wj14N3z"
 
         // Location of your proxy file

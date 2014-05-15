@@ -92,7 +92,7 @@ define({
         errorMessages: {
             webmapSearchFailed: "An error occurred while searching the map",
             widgetNotLoaded: "widget not loaded",
-            updatingItemError: "Updating of selected item is failed",
+            updatingItemError: "Updating of the selected item failed",
             contentPageRequired: "Content Page Required",
             moduleFieldsEmpty: "Some module fields are not filled",
             invalidMapUrl: "Invalid map url",

@@ -134,10 +134,19 @@ define([
 
         _loadCredentials: function (deferred) {
             deferred.resolve();
-            var idJson, idObject, isCredAvailable = false;
+            var idJson, idObject, isCredAvailable = false, signedInViaOAuth = false;
 
-            // If we've connected via OAuth, we can go ahead with the the behind-the-scenes login
-            if (OAuthHelper.isSignedIn()) {
+            // If we've connected via OAuth, we can go ahead with the the behind-the-scenes login.
+            // We shield the call because it throws an exception if OAuthHelper has not been
+            // initialized, but we can only initialize OAuthHelper if we're intending to use it
+            // (its initialization alters the Identity Manager, so we don't want to initialize it
+            // all the time).
+            try {
+                signedInViaOAuth = OAuthHelper.isSignedIn();
+            } catch (ignore) {
+                signedInViaOAuth = false;
+            }
+            if (signedInViaOAuth) {
                 this._displayLoginDialog(false);
 
             // Otherwise see if we've cached credentials

@@ -59,6 +59,9 @@ define([], function () {
         // Location of your proxy file
         ProxyURL: "/proxy/proxy.ashx",
 
+        // Location of your geometry service; necessary for loading webmaps that aren't in Web Map Mercator Auxiliary Sphere
+        GeometryServiceURL: "",
+
         // The unique tag given to each book. This tag will determine which books are visible in the Briefing Book application.
         ConfigSearchTag: '',
 

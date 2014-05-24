@@ -25,9 +25,10 @@ require([
     "widgets/alertDialog/alertDialog",
     "esri/config",
     "esri/arcgis/utils",
+    "esri/tasks/GeometryService",
     "dojo/Deferred",
     "dojo/domReady!"
-], function (widgetLoader, config, IdentityManager, OAuthHelper, alertBox, esriConfig, arcgisUtils, Deferred, domReady) {
+], function (widgetLoader, config, IdentityManager, OAuthHelper, alertBox, esriConfig, arcgisUtils, GeometryService, Deferred, domReady) {
 
     //========================================================================================================================//
 
@@ -81,6 +82,11 @@ require([
         if (dojo.appConfigData.ProxyURL) {
             esriConfig.defaults.io.proxyUrl = dojoConfig.baseURL + dojo.appConfigData.ProxyURL;
             esriConfig.defaults.io.alwaysUseProxy = false;
+        }
+
+        // Set the geometry helper service to be the app default.
+        if (dojo.appConfigData.GeometryServiceURL) {
+            esriConfig.defaults.geometryService = new GeometryService(dojo.appConfigData.GeometryServiceURL);
         }
     }
 

@@ -257,7 +257,11 @@ define([
             if (this.isEditModeEnable) {
                 domStyle.set(query(".esriMapBookEditPage")[0], "display", "block");
                 array.forEach(mapBookContents, function (node) {
+                    // Add edit bar to item
                     domClass.add(node, "esriEditableModeContent");
+
+                    // Enable drag-and-drop
+                    domClass.add(node, "dojoDndHandle");
                 });
                 if (this.currentIndex > 1) {
                     domStyle.set(query(".esriDeleteIcon")[0], "display", "block");
@@ -274,7 +278,11 @@ define([
                     domStyle.set(query('.esriMapBookEditPage')[0], "height", "auto");
                 }
                 array.forEach(mapBookContents, function (node) {
+                    // Remove edit bar from item
                     domClass.remove(node, "esriEditableModeContent");
+
+                    // Disable drag-and-drop
+                    domClass.remove(node, "dojoDndHandle");
                 });
 
                 this._togglePageNavigation(true);
@@ -676,7 +684,7 @@ define([
             var mapBookPageContent, pageModule, moduleIndex, pageContentModule;
             mapBookPageContent = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             moduleIndex = domAttr.get(pageContentHolder, "moduleIndex");
-            pageModule = domConstruct.create("div", { "class": "divPageModule dojoDndHandle" }, pageContentHolder);
+            pageModule = domConstruct.create("div", { "class": "divPageModule" }, pageContentHolder);
             domAttr.set(pageModule, "moduleIndex", moduleIndex);
             if (currentModuleContent && currentModuleContent.length > 0) {
                 if (!this.isEditModeEnable) {

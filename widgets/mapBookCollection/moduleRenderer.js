@@ -172,7 +172,7 @@ define([
                 this.mapBookDetails[dojo.currentBookIndex][this.currentIndex][moduleKey] = pageTitle;
                 this._updateTOC();
             } else {
-                pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "divPageModule dojoDndHandle" }, moduleContainer);
+                pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "divPageModule" }, moduleContainer);
                 domAttr.set(pageModule, "type", moduleType);
                 this._renderModuleContent(moduleType, pageModule, moduleAttr);
             }
@@ -197,7 +197,7 @@ define([
             domAttr.set(divModuleContent, "moduleIndex", newModuleIndex);
             domAttr.set(divModuleContent, "columnIndex", columnIndex);
             domAttr.set(divModuleContent, "contentIndex", index);
-            pageModule = domConstruct.create("div", { "moduleIndex": newModuleIndex, "class": "divPageModule dojoDndHandle" }, divModuleContent);
+            pageModule = domConstruct.create("div", { "moduleIndex": newModuleIndex, "class": "divPageModule" }, divModuleContent);
             domAttr.set(divModuleContent, "type", moduleType);
             this._renderModuleContent(moduleType, pageModule, moduleData);
             domAttr.set(this.currentNode, "moduleKey", newModuleKey);

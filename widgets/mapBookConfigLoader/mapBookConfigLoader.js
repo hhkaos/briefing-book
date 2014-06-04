@@ -277,6 +277,7 @@ define([
             if (currentItemId === nls.defaultItemId) {
                 requestUrl = this._portal.getPortalUser().userContentUrl + '/addItem';
                 queryParam.type = 'Web Mapping Application';
+                queryParam.typeKeywords = 'JavaScript,Configurable';
                 queryParam.title = dojo.bookInfo[dojo.currentBookIndex].BookConfigData.title;
                 queryParam.tags = dojo.appConfigData.ConfigSearchTag;
                 requestType = "add";

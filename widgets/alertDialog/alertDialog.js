@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -30,7 +30,7 @@ define([
     "dojo/on",
     "dojo/query",
     "dojo/i18n!nls/localizedStrings"
-], function (declare, array, deferred, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, nls) {
+], function (declare, array, Deferred, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, nls) {
     return declare([_WidgetBase], {
         postCreate: function () {
             var _self = this, alertDialogContent, alertButtons;
@@ -62,7 +62,7 @@ define([
                 domStyle.set(this.button2, "display", "none");
                 this.domNode.titleNode.innerHTML = nls.alertDialogTitle;
             } else if (MessageBoxButtons === 1) {
-                this.defer = new deferred();
+                this.defer = new Deferred();
                 domStyle.set(this.button2, "display", "block");
                 this.domNode.titleNode.innerHTML = nls.confirmDialogTitle;
             }
@@ -77,7 +77,7 @@ define([
         _hide: function (btnNode) {
             var btnValue, value;
             btnValue = domAttr.get(btnNode, "value");
-            value = btnValue == "0" ? true : false;
+            value = btnValue === "0" ? true : false;
             this.domNode.hide();
             if (this.defer) {
                 this.defer.resolve(value);

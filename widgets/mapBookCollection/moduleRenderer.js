@@ -1,20 +1,20 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo,dijit*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
- | Copyright 2014 Esri
- |
- | Licensed under the Apache License, Version 2.0 (the "License");
- | you may not use this file except in compliance with the License.
- | You may obtain a copy of the License at
- |
- |    http://www.apache.org/licenses/LICENSE-2.0
- |
- | Unless required by applicable law or agreed to in writing, software
- | distributed under the License is distributed on an "AS IS" BASIS,
- | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- | See the License for the specific language governing permissions and
- | limitations under the License.
- */
+| Copyright 2014 Esri
+|
+| Licensed under the Apache License, Version 2.0 (the "License");
+| you may not use this file except in compliance with the License.
+| You may obtain a copy of the License at
+|
+|    http://www.apache.org/licenses/LICENSE-2.0
+|
+| Unless required by applicable law or agreed to in writing, software
+| distributed under the License is distributed on an "AS IS" BASIS,
+| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+| See the License for the specific language governing permissions and
+| limitations under the License.
+*/
 define([
     "dojo/_base/declare",
     "dojo/_base/array",
@@ -47,7 +47,11 @@ define([
                     this.currentNode = nodesArray[nodeIndex];
                     this.currentNode.index = nodeIndex;
                     this.currentNode.innerHTML = '';
-                    dndNode = nodes[0].firstElementChild ? nodes[0].firstElementChild : nodes[0].firstChild;
+                    if (nodes[0].firstElementChild) {
+                        dndNode = nodes[0].firstElementChild;
+                    } else {
+                        dndNode = nodes[0].firstChild;
+                    }
                     moduleType = domAttr.get(dndNode, "type");
                     this._showModuleSettingDialog(moduleType, true, targetContainer, nodesArray.length);
                     break;
@@ -58,33 +62,33 @@ define([
         _renderModuleContent: function (moduleType, pageModule, moduleData) {
             var moduleIndex = domAttr.get(pageModule.parentElement, "moduleIndex");
             switch (moduleType) {
-                case "webmap":
-                    this._createWebmapModule(moduleData, pageModule, moduleIndex);
-                    break;
+            case "webmap":
+                this._createWebmapModule(moduleData, pageModule, moduleIndex);
+                break;
 
-                case "video":
-                    this._renderVideoContent(moduleData, pageModule);
-                    break;
+            case "video":
+                this._renderVideoContent(moduleData, pageModule);
+                break;
 
-                case "image":
-                    this._createImageModule(moduleData, pageModule, moduleIndex);
-                    break;
+            case "image":
+                this._createImageModule(moduleData, pageModule, moduleIndex);
+                break;
 
-                case "flickr":
-                    this._renderPhotoSetContent(moduleData, pageModule);
-                    break;
+            case "flickr":
+                this._renderPhotoSetContent(moduleData, pageModule);
+                break;
 
-                case "logo":
-                    this._createLogo(moduleData, pageModule);
-                    break;
+            case "logo":
+                this._createLogo(moduleData, pageModule);
+                break;
 
-                case "TOC":
-                    this._renderTOCContent(pageModule);
-                    break;
+            case "TOC":
+                this._renderTOCContent(pageModule);
+                break;
 
-                default:
-                    this._createTextModule(moduleData, pageModule);
-                    break;
+            default:
+                this._createTextModule(moduleData, pageModule);
+                break;
             }
         },
 
@@ -92,7 +96,7 @@ define([
             var colIndex, contentIndex, moduleIndex, moduleData, mapId, bookList;
             moduleIndex = domAttr.get(moduleContainer, "moduleIndex");
             this._destroyExistingNode(moduleContainer.parentElement, false);
-            colIndex = parseInt(domAttr.get(moduleContainer, "columnIndex"));
+            colIndex = parseInt(domAttr.get(moduleContainer, "columnIndex"), 10);
             bookList = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].BookConfigData);
             moduleData = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             contentIndex = array.indexOf(bookList.content[colIndex], moduleKey);
@@ -106,15 +110,15 @@ define([
         },
 
         _renderNewPageModule: function (pageContentContainer, newBookPage, currentModuleContent, arrContent) {
-            var newModuleKey, pageModule, contentIndex, columnIndex, moduleIndex, _self = this, pageContentModule;
+            var newModuleKey, pageModule, contentIndex, columnIndex, moduleIndex, pageContentModule;
 
             pageModule = query('.divPageModule', pageContentContainer)[0];
             moduleIndex = domAttr.get(pageModule, "moduleIndex");
             domAttr.set(pageModule.parentElement, "moduleIndex", moduleIndex);
 
             pageContentModule = lang.clone(dojo.appConfigData.ModuleDefaultsConfig[currentModuleContent]);
-            contentIndex = parseInt(domAttr.get(pageModule.parentElement, "contentIndex"));
-            columnIndex = parseInt(domAttr.get(pageModule.parentElement, "columnIndex"));
+            contentIndex = parseInt(domAttr.get(pageModule.parentElement, "contentIndex"), 10);
+            columnIndex = parseInt(domAttr.get(pageModule.parentElement, "columnIndex"), 10);
             pageContentModule.height = newBookPage.height[columnIndex][contentIndex];
             domClass.add(pageModule.parentElement, "esriEditableModeContent");
             domAttr.set(pageModule.parentElement, "type", pageContentModule.type);
@@ -122,7 +126,7 @@ define([
                 newModuleKey = currentModuleContent;
                 pageContentModule[pageContentModule.type] = dojo.bookInfo[dojo.currentBookIndex].BookConfigData[currentModuleContent];
             } else {
-                newModuleKey = ((new Date()).getTime()).toString() + contentIndex + '' + columnIndex; //get unique key in microseconds
+                newModuleKey = ((new Date()).getTime()).toString() + contentIndex.toString() + columnIndex.toString(); //get unique key in microseconds
             }
             domAttr.set(pageContentContainer, "moduleKey", newModuleKey);
             newBookPage.content[columnIndex][contentIndex] = newModuleKey;
@@ -134,8 +138,7 @@ define([
 
         _updateExistingModule: function (moduleContainer, moduleType, moduleKey, moduleInputs) {
 
-            var moduleIndex, inputFields, moduleData, moduleAttr, pageModule, bookListData, moduleContent, pageTitle, inputKey, inputIndex, attr;
-            moduleIndex = domAttr.get(moduleContainer, "moduleIndex");
+            var _self = this, moduleIndex, inputFields, moduleData, moduleAttr, imgModule, pageModule, bookListData, moduleContent, pageTitle, inputKey, inputIndex, attr;
             domConstruct.empty(moduleContainer);
             inputFields = query('.esriSettingInput');
             moduleData = {};
@@ -145,7 +148,7 @@ define([
                 if (inputKey === "text") {
                     if (moduleKey === "author") {
                         dojo.bookInfo[dojo.currentBookIndex].BookConfigData.author = moduleInputs[inputIndex].editNode.textContent;
-                    } if (moduleKey === "title") {
+                    } else if (moduleKey === "title") {
                         pageTitle = moduleInputs[inputIndex].editNode.textContent;
                         if (this.currentIndex === 0) {
                             dojo.bookInfo[dojo.currentBookIndex].BookConfigData.title = pageTitle;
@@ -159,7 +162,7 @@ define([
             }
             moduleContent = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             moduleAttr = moduleContent[moduleKey];
-            for (attr in moduleAttr) {
+            for (attr in moduleData) {
                 if (moduleData.hasOwnProperty(attr)) {
                     moduleAttr[attr] = moduleData[attr];
                 }
@@ -175,15 +178,23 @@ define([
                 pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "divPageModule" }, moduleContainer);
                 domAttr.set(pageModule, "type", moduleType);
                 this._renderModuleContent(moduleType, pageModule, moduleAttr);
+                if (moduleType === "image") {
+                    imgModule = query(".esriImageModule", pageModule)[0];
+                    if (imgModule) {
+                        setTimeout(function () {
+                            _self._setImageDimensions(imgModule, true);
+                        }, 1000);
+                    }
+                }
             }
             dijit.byId("settingDialog").hide();
         },
 
         _createNewModule: function (targetContainer, moduleType, index, moduleInputs) {
-            var columnIndex, pageModule, inputFields, moduleData, divModuleContent, inputKey, moduleAttr, bookList, newModuleKey, newModuleIndex, inputIndex;
+            var _self = this, columnIndex, pageModule, inputFields, moduleData, divModuleContent, imgModule, inputKey, moduleAttr, bookList, newModuleKey, newModuleIndex, inputIndex;
 
-            columnIndex = parseInt(domAttr.get(targetContainer.node, "columnIndex"));
-            newModuleIndex = index + '' + columnIndex + '' + this.currentIndex + "new" + '' + dojo.currentBookIndex;
+            columnIndex = parseInt(domAttr.get(targetContainer.node, "columnIndex"), 10);
+            newModuleIndex = index.toString() + columnIndex.toString() + this.currentIndex.toString() + "new" + dojo.currentBookIndex.toString();
             inputFields = query('.esriSettingInput');
             moduleData = {};
             for (inputIndex = 0; inputIndex < inputFields.length; inputIndex++) {
@@ -202,6 +213,14 @@ define([
             this._renderModuleContent(moduleType, pageModule, moduleData);
             domAttr.set(this.currentNode, "moduleKey", newModuleKey);
             this.currentNode.appendChild(divModuleContent);
+            if (moduleType === "image") {
+                imgModule = query(".esriImageModule", pageModule)[0];
+                if (imgModule) {
+                    setTimeout(function () {
+                        _self._setImageDimensions(imgModule, true);
+                    }, 1000);
+                }
+            }
             bookList = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].BookConfigData);
             moduleAttr = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             if (!bookList.content[columnIndex]) {
@@ -229,7 +248,7 @@ define([
         },
 
         _createTextModule: function (moduleData, pageModule) {
-            var bookPages, divText, moduleIndex;
+            var divText, moduleIndex;
             moduleIndex = domAttr.get(pageModule.parentElement, "moduleIndex");
             divText = domConstruct.create("div", { "id": "resizable" + moduleIndex, "innerHTML": moduleData[moduleData.type] }, pageModule);
             domStyle.set(divText, "height", moduleData.height + 'px');
@@ -246,7 +265,7 @@ define([
         },
 
         _createCoverPageTitle: function (divText, moduleData) {
-            var titleText, pageTitle, bookPages;
+            var pageTitle, bookPages;
             pageTitle = dojo.bookInfo[dojo.currentBookIndex].BookConfigData.title;
             domClass.add(divText, "esriGeorgiaFont esriPageTitle esriTitleFontSize");
             this.mapBookDetails[dojo.currentBookIndex][this.currentIndex].title = pageTitle;
@@ -264,7 +283,7 @@ define([
 
         _createWebmapModule: function (pageContentModule, pageModule, moduleIndex) {
             var divMapModuleHolder, mapContent, mapContentBtns, mapContentImgs, btnViewFullMap, loadingIndicator,
-            loadingIndicatorImage, imgLegendData, _self = this;
+                imgLegendData, _self = this;
             divMapModuleHolder = domConstruct.create("div", { "class": "mapModule" }, pageModule);
 
             this._createModuleHeaderTitle(divMapModuleHolder, pageContentModule);
@@ -283,7 +302,7 @@ define([
             });
             if (pageContentModule.URL) {
                 loadingIndicator = domConstruct.create("div", { id: "loadingmap" + moduleIndex, "class": "mapLoadingIndicator" }, mapContent);
-                loadingIndicatorImage = domConstruct.create("div", { "class": "mapLoadingIndicatorImage" }, loadingIndicator);
+                domConstruct.create("div", { "class": "mapLoadingIndicatorImage" }, loadingIndicator);
                 this._createFullViewMap(btnViewFullMap, moduleIndex);
                 this._renderWebMapContent(pageContentModule, mapContent.id, mapContentImgs, pageModule.parentElement);
             }
@@ -321,7 +340,7 @@ define([
                     domStyle.set(dom.byId("loading" + mapId), "display", "none");
                     _self._createLegend(response.map);
                     _self._createHomeButton(response.map);
-                    if ("ontouchstart" in window) {
+                    if (window.orientation !== null || window.orientation !== undefined) {
                         _self.own(touch.over(dom.byId(mapId), function () {
                             response.map.resize();
                             response.map.reposition();
@@ -406,13 +425,10 @@ define([
         },
 
         _createImageModule: function (pageContentModule, pageModule, moduleIndex) {
-            var innerDiv, imgModule, imageHeight, imgPath, imageDialog;
+            var innerDiv, imgModule, imgPath, imageDialog;
             innerDiv = domConstruct.create("div", { "id": "innerDiv" + "Img" + moduleIndex, "style": 'height:auto', "class": "innerDiv" }, pageModule);
             if (dojo.isString(pageContentModule.URL) && lang.trim(pageContentModule.URL) !== "") {
-                imgModule = domConstruct.create("img", { "id": "resizableImg" + moduleIndex, "class": "esriImageModule", "style": 'height:' + pageContentModule.height + 'px;width:auto', "src": pageContentModule.URL }, innerDiv);
-                if (pageContentModule.URL === '') {
-                    domAttr.set(innerDiv, "innerHTML", "Image");
-                }
+                imgModule = domConstruct.create("img", { "id": "resizableImg" + moduleIndex, "class": "esriImageModule esriAutoWidth", "style": 'height:auto', "src": pageContentModule.URL }, innerDiv);
                 imgModule.URL = pageContentModule.URL;
                 on(imgModule, "click", function () {
                     imgPath = this.URL;
@@ -425,7 +441,7 @@ define([
         },
 
         _renderVideoContent: function (pageContentModule, pageModule) {
-            var embed = '', videoProvider = null, urlParam = pageContentModule.URL, resizableFrame = false;
+            var embed = '', videoProvider = null, urlParam = pageContentModule.URL, videoURL, resizableFrame = false;
             if (pageContentModule.title) {
                 embed += '<div class="esriModuleTitle">' + pageContentModule.title + '</div>';
             }
@@ -437,40 +453,37 @@ define([
                 } else if (pageContentModule.URL.match("esri")) {
                     videoProvider = "esri";
                 }
-                var videoURL = pageContentModule.URL.match(/.com/);
-                if (videoURL) {
-                    videoURL = urlUtils.urlToObject(pageContentModule.URL);
-                }
+                videoURL = urlUtils.urlToObject(pageContentModule.URL);
                 switch (videoProvider) {
-                    case "vimeo":
-                        if (videoURL) {
-                            urlParam = pageContentModule.URL.split('/');
-                            urlParam = urlParam[urlParam.length - 1];
-                        }
-                        videoURL = dojo.appConfigData.VimeoVideoUrl + urlParam;
-                        embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder=0 webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
-                        break;
-                    case "youtube":
-                        if (videoURL) {
-                            urlParam = videoURL.query.v;
-                        }
-                        videoURL = dojo.appConfigData.YouTubeVideoUrl + urlParam;
-
-                        embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder='0' allowfullscreen></iframe>";
-                        break;
-                    case "esri":
-                        if (videoURL) {
-                            videoURL = pageContentModule.URL.replace("watch", "iframe");
-                        } else {
-                            videoURL = dojo.appConfigData.EsriVideoUrl + urlParam;
-                        }
-                        embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder=0 webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
-                        break;
+                case "vimeo":
+                    if (videoURL) {
+                        urlParam = pageContentModule.URL.split('/');
+                        urlParam = urlParam[urlParam.length - 1];
+                    }
+                    videoURL = dojo.appConfigData.VimeoVideoUrl + urlParam;
+                    embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder=0 webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
+                    break;
+                case "youtube":
+                    if (videoURL) {
+                        urlParam = videoURL.query.v;
+                    }
+                    videoURL = dojo.appConfigData.YouTubeVideoUrl + urlParam;
+                    embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder='0' allowfullscreen></iframe>";
+                    break;
+                case "esri":
+                    if (videoURL) {
+                        videoURL = pageContentModule.URL.replace("watch", "iframe");
+                    } else {
+                        videoURL = dojo.appConfigData.EsriVideoUrl + urlParam;
+                    }
+                    embed += "<iframe width=" + "90%" + " height=" + pageContentModule.height + "px src='" + videoURL + "' frameborder=0 webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
+                    break;
                 }
                 if (pageContentModule.caption) {
                     embed += '<div class="esriModuleCaption">' + pageContentModule.caption + '</div>';
                 }
                 pageModule.innerHTML = embed;
+                domStyle.set(pageModule, "overflow", "hidden");
             }
             if (query('iframe', pageModule)[0]) {
                 resizableFrame = query('iframe', pageModule)[0];
@@ -499,16 +512,7 @@ define([
                     domAttr.set(divPageNo, "innerHTML", (pageIndex - 1));
                 }
                 tocContent.appendChild(anchorTag);
-                on(anchorTag, "click", function (evt) {
-                    if (!domClass.contains(this.parentElement.parentElement.parentElement, "esriEditableModeContent")) {
-                        if (_self.mapBookDetails[dojo.currentBookIndex][this.value] !== "EmptyContent") {
-                            _self._gotoPage(this.value);
-                            evt.cancelBubble = true;
-                            evt.cancelable = true;
-                        }
-                    }
-                    evt.stopPropagation();
-                });
+                on(anchorTag, "click", lang.hitch(this, this._openSelectedPage));
             }
             if (anchorTag) {
                 domStyle.set(anchorTag, "border-bottom", "none");
@@ -517,6 +521,23 @@ define([
                 domStyle.set(parentNode, "height", moduleData.height + "px");
             }
             parentNode.appendChild(tocContent);
+        },
+
+        _openSelectedPage: function (event) {
+            var target;
+            if (event.currentTarget) {
+                target = event.currentTarget;
+            } else {
+                target = event.srcElement;
+            }
+            if (!domClass.contains(target.parentElement.parentElement.parentElement, "esriEditableModeContent")) {
+                if (this.mapBookDetails[dojo.currentBookIndex][target.value] !== "EmptyContent") {
+                    this._gotoPage(target.value);
+                    event.cancelBubble = true;
+                    event.cancelable = true;
+                }
+            }
+            event.stopPropagation();
         },
 
         _renderPhotoSetContent: function (moduleData, pageModule) {
@@ -551,7 +572,7 @@ define([
         },
 
         _createEditMenu: function (pageContentHolder, moduleId, moduleHolder) {
-            var _self = this, resizeHandle, moduleHolderId, resizer, deleteBtnNode, moduleType, divEditIcon, columnIndex, deleteModuleFlag, editModuleIcon, divEditOption, divDeleteIcon, moduleContainer;
+            var _self = this, resizeHandle, moduleHolderId, resizer, deleteBtnNode, moduleType, divEditIcon, divEditOption, divDeleteIcon, moduleContainer;
             moduleType = domAttr.get(pageContentHolder, "type");
             domAttr.set(pageContentHolder, "key", moduleId);
             divEditOption = domConstruct.create("div", { "class": "esriEditContentOption" }, null);
@@ -571,7 +592,6 @@ define([
                 domAttr.set(resizer.domNode, "key", moduleId);
             }
 
-            columnIndex = domAttr.get(pageContentHolder, "columnIndex");
             if (moduleId !== "title") {
                 divDeleteIcon = domConstruct.create("div", { "key": moduleId, "class": "esriDeletetModuleIcon", "title": nls.editMentDeleteTitle }, divEditOption);
                 domAttr.set(divDeleteIcon, "type", moduleType);
@@ -594,11 +614,6 @@ define([
                 _self._showModuleSettingDialog(domAttr.get(this, "type"), false, moduleContainer, domAttr.get(this, "key"));
             });
 
-            this.own(on(pageContentHolder, "dblclick", function (evt) {
-                if (_self.isEditModeEnable) {
-                    _self._showModuleSettingDialog(domAttr.get(this, "type"), false, this, domAttr.get(this, "key"));
-                }
-            }));
         }
     });
 });

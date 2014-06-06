@@ -1,22 +1,23 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
- | Copyright 2014 Esri
- |
- | Licensed under the Apache License, Version 2.0 (the "License");
- | you may not use this file except in compliance with the License.
- | You may obtain a copy of the License at
- |
- |    http://www.apache.org/licenses/LICENSE-2.0
- |
- | Unless required by applicable law or agreed to in writing, software
- | distributed under the License is distributed on an "AS IS" BASIS,
- | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- | See the License for the specific language governing permissions and
- | limitations under the License.
- */
+| Copyright 2014 Esri
+|
+| Licensed under the Apache License, Version 2.0 (the "License");
+| you may not use this file except in compliance with the License.
+| You may obtain a copy of the License at
+|
+|    http://www.apache.org/licenses/LICENSE-2.0
+|
+| Unless required by applicable law or agreed to in writing, software
+| distributed under the License is distributed on an "AS IS" BASIS,
+| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+| See the License for the specific language governing permissions and
+| limitations under the License.
+*/
 define([
     "dojo/_base/declare",
+    "dojo/_base/lang",
     "dojo/dom-construct",
     "dojo/dom-attr",
     "dojo/dom-style",
@@ -27,12 +28,12 @@ define([
     "dojo/query",
     "dojo/i18n!nls/localizedStrings",
     "dojo/parser"
-], function (declare, domConstruct, domAttr, domStyle, domClass, dom, dndSource, on, query, nls) {
+], function (declare, lang, domConstruct, domAttr, domStyle, domClass, dom, DndSource, on, query, nls) {
     return declare([], {
 
         _createPageSlider: function () {
             var divPageSlider, dndPageList = [], divPageSliderLeft, divPageSliderContent, divPageSliderRight, listItem,
-                divPage, ulist, bookPagesLength, uListDndCont, divLeftArrowIcon, divRightArrowIcon, bookPageIndex, _self = this;
+                ulist, bookPagesLength, uListDndCont, divLeftArrowIcon, divRightArrowIcon, bookPageIndex, _self = this;
             divPageSlider = query('.esriPageSliderContainer')[0];
             if (divPageSlider) {
                 domConstruct.empty(divPageSlider);
@@ -57,14 +58,12 @@ define([
                 });
                 _self.pageIndex = 0;
                 ulist = domConstruct.create("ul", { "dndContType": "pageCarousal", "class": "esriPageSliderUlist" }, divPageSliderContent);
-                uListDndCont = new dndSource(ulist, { accept: ["carousalPage"] });
+                uListDndCont = new DndSource(ulist, { accept: ["carousalPage"] });
                 for (bookPageIndex = 0; bookPageIndex < bookPagesLength; bookPageIndex++) {
                     listItem = domConstruct.create("li", { "class": "esriPageSliderListItem" }, null);
                     domAttr.set(listItem, "index", bookPageIndex + 2);
-                    divPage = domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": bookPageIndex + 2, "innerHTML": "Page " + (bookPageIndex + 1) }, listItem);
-                    on(listItem, "click", function (evt) {
-                        _self._gotoPage(parseInt(domAttr.get(this, "index")));
-                    });
+                    domConstruct.create("div", { "class": "esriPageSliderDiv esriBookPage", "index": bookPageIndex + 2, "innerHTML": "Page " + (bookPageIndex + 1) }, listItem);
+                    on(listItem, "click", lang.hitch(this, this._viewSelectedpage));
                     listItem.dndType = "carousalPage";
                     dndPageList.push(listItem);
                 }
@@ -81,19 +80,33 @@ define([
             }
         },
 
+        _viewSelectedpage: function (evt) {
+            var target;
+            if (event.currentTarget) {
+                target = event.currentTarget;
+            } else {
+                target = event.srcElement;
+            }
+            this._gotoPage(parseInt(domAttr.get(target, "index"), 10));
+        },
+
         _handlePageNavigation: function (currentObj, isSlideLeft) {
             var currentClass, totalPageLength;
             totalPageLength = this.mapBookDetails[dojo.currentBookIndex].length;
             if (this.isNavigationEnabled) {
                 currentClass = isSlideLeft ? "esriPrevDisabled" : "esriNextDisabled";
                 if (!domClass.contains(currentObj, currentClass)) {
-                    if (totalPageLength - 1 === this.currentIndex && !(isSlideLeft)) {
+                    if (totalPageLength - 1 === this.currentIndex && !isSlideLeft) {
                         this.currentIndex = 0;
                     } else {
-                        isSlideLeft ? this.currentIndex-- : this.currentIndex++;
+                        if (isSlideLeft) {
+                            this.currentIndex--;
+                        } else {
+                            this.currentIndex++;
+                        }
                     }
                     if (this.mapBookDetails[dojo.currentBookIndex][this.currentIndex] === "EmptyContent") {
-                        isSlideLeft ? this.currentIndex = 0 : this.currentIndex++;
+                        if (isSlideLeft) { this.currentIndex = 0; } else { this.currentIndex++; }
                     }
                     this._slideBookPage();
                 }
@@ -185,7 +198,7 @@ define([
             if (domStyle.get(query(".esriPageSliderContainer")[0], "display") === "inline-block") {
                 pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
                 pageUList = query('.esriPageSliderUlist')[0];
-                isSlideLeft ? this.pageIndex++ : this.pageIndex--;
+                if (isSlideLeft) { this.pageIndex++; } else { this.pageIndex--; }
                 sliderLeft = this.pageIndex * pageWidth;
                 domStyle.set(pageUList, "margin-left", sliderLeft + 'px');
                 pageUList.style.marginLeft = sliderLeft + 'px';
@@ -194,11 +207,10 @@ define([
         },
 
         _setSliderArrows: function () {
-            var sliderleft, pageUlistWidth, sliderContentWidth, pageWidth, pageUList, uListChild;
+            var sliderleft, pageUlistWidth, sliderContentWidth, pageWidth, pageUList;
             if (query('.esriPageSliderContent')[0]) {
                 sliderContentWidth = domStyle.get(query('.esriPageSliderContent')[0], 'width');
                 pageUList = query('.esriPageSliderUlist')[0];
-                uListChild = query('.esriPageSliderUlist')[0].children.length;
                 if (domStyle.get(query(".esriPageSliderContainer")[0], "display") === "inline-block") {
                     pageWidth = domStyle.get(query('.esriPageSliderListItem')[0], "width");
                     pageUlistWidth = pageWidth * pageUList.childElementCount;
@@ -210,8 +222,7 @@ define([
                         } else {
                             domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");
                         }
-                    }
-                    else {
+                    } else {
                         this._removeClass(query('.esriLeftArrowIcon')[0], "esriLeftArrowDisable");
                         if (sliderContentWidth >= pageUlistWidth + sliderleft) {
                             domClass.add(query('.esriRightArrowIcon')[0], "esriRightArrowDisable");

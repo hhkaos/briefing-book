@@ -854,7 +854,10 @@ h2 {
 	float: left;
 	z-index: 0;
 	cursor: pointer;
-	width: auto !important;
+}
+
+.esriAutoWidth{
+    width:auto !important;
 }
 
 .esriLogoIcon {
@@ -1788,4 +1791,3 @@ h2 {
 	background-color: #616161;
 	cursor: pointer;
 }
-

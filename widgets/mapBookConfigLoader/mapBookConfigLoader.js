@@ -1,20 +1,20 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
- | Copyright 2014 Esri
- |
- | Licensed under the Apache License, Version 2.0 (the "License");
- | you may not use this file except in compliance with the License.
- | You may obtain a copy of the License at
- |
- |    http://www.apache.org/licenses/LICENSE-2.0
- |
- | Unless required by applicable law or agreed to in writing, software
- | distributed under the License is distributed on an "AS IS" BASIS,
- | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- | See the License for the specific language governing permissions and
- | limitations under the License.
- */
+| Copyright 2014 Esri
+|
+| Licensed under the Apache License, Version 2.0 (the "License");
+| you may not use this file except in compliance with the License.
+| You may obtain a copy of the License at
+|
+|    http://www.apache.org/licenses/LICENSE-2.0
+|
+| Unless required by applicable law or agreed to in writing, software
+| distributed under the License is distributed on an "AS IS" BASIS,
+| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+| See the License for the specific language governing permissions and
+| limitations under the License.
+*/
 define([
     "dojo/_base/declare",
     "dojo/_base/array",
@@ -42,12 +42,12 @@ define([
     "dojo/DeferredList",
     "dojo/_base/Deferred",
     "dojo/parser"
-], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, OAuthHelper, alertBox, DeferredList, Deferred) {
+], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, OAuthHelper, AlertBox, DeferredList, Deferred) {
     return declare([_WidgetBase], {
         _portal: null,
         startup: function () {
             var _self = this, deferred;
-            _self.alertDialog = new alertBox();
+            _self.alertDialog = new AlertBox();
             deferred = new Deferred();
 
             this._setApplicationTheme();
@@ -143,13 +143,13 @@ define([
             // all the time).
             try {
                 signedInViaOAuth = OAuthHelper.isSignedIn();
-            } catch (ignore) {
+            } catch (ex) {
                 signedInViaOAuth = false;
             }
             if (signedInViaOAuth) {
                 this._displayLoginDialog(false);
 
-            // Otherwise see if we've cached credentials
+                // Otherwise see if we've cached credentials
             } else {
                 if (this._supports_local_storage()) {
                     idJson = window.localStorage.getItem(dojo.appConfigData.Credential);
@@ -177,7 +177,9 @@ define([
 
         _supports_local_storage: function () {
             try {
-                return "localStorage" in window && window["localStorage"] !== null;
+                if (window && window.localStorage && window.localStorage !== null) {
+                    return true;
+                }
             } catch (e) {
                 return false;
             }
@@ -209,7 +211,7 @@ define([
         },
 
         _createConfigurationPanel: function (response) {
-            var _self = this, deferArray, configData, deferList, bookIndex;
+            var deferArray, configData, deferList, bookIndex;
             deferArray = [];
             array.forEach(response.results, function (itemData) {
                 var defer = new Deferred();
@@ -220,10 +222,18 @@ define([
                     handleAs: "json"
                 });
                 configData.then(function (itemInfo) {
-                    itemInfo.BookConfigData.itemId = itemData.id;
-                    itemInfo.BookConfigData.owner = itemData.owner;
-                    itemInfo.BookConfigData.UnSaveEditsExists = false;
-                    defer.resolve(itemInfo);
+                    if (itemInfo.BookConfigData && itemInfo.ModuleConfigData) {
+                        try {
+                            itemInfo.BookConfigData.itemId = itemData.id;
+                            itemInfo.BookConfigData.owner = itemData.owner;
+                            itemInfo.BookConfigData.UnSaveEditsExists = false;
+                            defer.resolve(itemInfo);
+                        } catch (ex) {
+                            defer.resolve();
+                        }
+                    } else {
+                        defer.resolve();
+                    }
                 }, function (e) {
                     defer.resolve();
                 });
@@ -234,9 +244,7 @@ define([
             deferList.then(function (results) {
                 for (bookIndex = 0; bookIndex < results.length; bookIndex++) {
                     if (results[bookIndex][1]) {
-                        if (results[bookIndex][1].BookConfigData && results[bookIndex][1].ModuleConfigData) {
-                            dojo.bookInfo.push(results[bookIndex][1]);
-                        }
+                        dojo.bookInfo.push(results[bookIndex][1]);
                     }
                 }
                 topic.publish("authoringModeHandler");
@@ -388,17 +396,17 @@ define([
         _setApplicationTheme: function () {
             var cssURL;
             switch (dojo.appConfigData.ApplicationTheme) {
-                case "blue":
-                    cssURL = "themes/styles/theme_blue.css";
-                    break;
+            case "blue":
+                cssURL = "themes/styles/theme_blue.css";
+                break;
 
-                case "grey":
-                    cssURL = "themes/styles/theme_grey.css";
-                    break;
+            case "grey":
+                cssURL = "themes/styles/theme_grey.css";
+                break;
 
-                default:
-                    cssURL = "themes/styles/theme_grey.css";
-                    break;
+            default:
+                cssURL = "themes/styles/theme_grey.css";
+                break;
             }
             if (dom.byId("appTheme")) {
                 domAttr.set(dom.byId("appTheme"), "href", cssURL);

@@ -687,9 +687,6 @@ define([
                     _self.mapBookDetails[dojo.currentBookIndex][_self.currentIndex] = newBookPage;
                 }
             }
-            setTimeout(function () {
-                _self._checkImageDimension(currentPageContainer, true);
-            }, 1000);
         },
 
         _createColumnContent: function (currentModuleContent, pageContentHolder, newBookPage, arrContent) {

@@ -134,7 +134,7 @@ define([
 
         _loadCredentials: function (deferred) {
             deferred.resolve();
-            var idJson, idObject, isCredAvailable = false, signedInViaOAuth = false;
+            var idJson, idObject, i, isCredAvailable = false, signedInViaOAuth = false;
 
             // If we've connected via OAuth, we can go ahead with the the behind-the-scenes login.
             // We shield the call because it throws an exception if OAuthHelper has not been
@@ -160,11 +160,13 @@ define([
                 }
                 if (idJson && idJson !== "null" && idJson.length > 4) {
                     idObject = JSON.parse(idJson);
-                    if (idObject.credentials[0].expires > Date.now()) {
-                        if (dojo.appConfigData.PortalURL === idObject.serverInfos[0].server) {
-                            isCredAvailable = true;
-                            kernel.id.initialize(idObject);
-                            this._displayLoginDialog(deferred);
+                    for (i = 0; i < idObject.credentials.length; i++) {
+                        if (dojo.appConfigData.PortalURL === idObject.credentials[i].server) {
+                            if (idObject.credentials[i].expires > Date.now()) {
+                                isCredAvailable = true;
+                                kernel.id.initialize(idObject);
+                                this._displayLoginDialog(deferred);
+                            }
                         }
                     }
                 }

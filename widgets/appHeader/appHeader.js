@@ -270,7 +270,7 @@ define([
         },
 
         _displayHomePage: function () {
-            if (window.orientation !== null || window.orientation !== undefined) {
+            if (window.orientation !== null && window.orientation !== undefined) {
                 dojo.appConfigData.AuthoringMode = false;
 
             }

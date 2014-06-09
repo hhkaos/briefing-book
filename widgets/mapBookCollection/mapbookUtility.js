@@ -252,8 +252,8 @@ define([
             configData[moduleKey].height = Math.floor(newHeight);
         },
 
-        _checkImageDimension: function (listcontentPage, isOnLoad) {
-            var _self = this, imgModules = query('.esriImageModule', listcontentPage);
+        _checkImageDimension: function (page, isOnLoad) {
+            var _self = this, imgModules = query('.esriImageModule', page);
 
             array.forEach(imgModules, function (imgModule) {
                 _self._setImageDimensions(imgModule, isOnLoad);
@@ -263,12 +263,11 @@ define([
 
         _setImageDimensions: function (imgModule, isOnLoad) {
             var aspectRatio, newWidth, newHeight;
-            if (isOnLoad) {
+            if (isOnLoad && imgModule.offsetHeight > 0) {
                 domStyle.set(imgModule, "maxHeight", imgModule.offsetHeight + 'px');
                 domStyle.set(imgModule, "maxWidth", imgModule.offsetWidth + 'px');
             }
             if (imgModule.parentElement.offsetWidth < imgModule.offsetWidth) {
-
                 aspectRatio = imgModule.offsetWidth / imgModule.offsetHeight;
                 newWidth = imgModule.parentElement.offsetWidth - 5;
                 newHeight = Math.floor(newWidth / aspectRatio);

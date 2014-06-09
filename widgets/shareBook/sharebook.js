@@ -70,7 +70,7 @@ define([
             for (optionIndex = 0; optionIndex < shareOptions.length; optionIndex++) {
                 divShareDialogOptionList = domConstruct.create("div", { "class": "esriShareDialogOptionList" }, divShareDialogContent);
                 divCheckBox = domConstruct.create("div", { "id": "chkBox" + shareOptions[optionIndex].key, "class": "esriCheckBox", "key": shareOptions[optionIndex].key }, divShareDialogOptionList);
-                on(divCheckBox, "click", _self._toggleSharingCheckbox, this);
+                on(divCheckBox, "click", lang.hitch(this, this._toggleSharingCheckbox));
                 domConstruct.create("div", { "class": "esriCheckBoxLabel", "innerHTML": shareOptions[optionIndex].label }, divShareDialogOptionList);
             }
 
@@ -126,9 +126,9 @@ define([
 
         },
 
-        _toggleSharingCheckbox: function (evt) {
+        _toggleSharingCheckbox: function (event) {
             var checkBoxKey, chkBox;
-            if (evt.currentTarget) {
+            if (event.currentTarget) {
                 chkBox = event.currentTarget;
             } else {
                 chkBox = event.srcElement;

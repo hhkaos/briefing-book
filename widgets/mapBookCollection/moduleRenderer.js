@@ -138,7 +138,7 @@ define([
 
         _updateExistingModule: function (moduleContainer, moduleType, moduleKey, moduleInputs) {
 
-            var _self = this, moduleIndex, inputFields, moduleData, moduleAttr, imgModule, pageModule, bookListData, moduleContent, pageTitle, inputKey, inputIndex, attr;
+            var moduleIndex, inputFields, moduleData, moduleAttr, pageModule, bookListData, moduleContent, pageTitle, inputKey, inputIndex, attr;
             domConstruct.empty(moduleContainer);
             inputFields = query('.esriSettingInput');
             moduleData = {};
@@ -178,20 +178,12 @@ define([
                 pageModule = domConstruct.create("div", { "moduleIndex": moduleIndex, "class": "divPageModule" }, moduleContainer);
                 domAttr.set(pageModule, "type", moduleType);
                 this._renderModuleContent(moduleType, pageModule, moduleAttr);
-                if (moduleType === "image") {
-                    imgModule = query(".esriImageModule", pageModule)[0];
-                    if (imgModule) {
-                        setTimeout(function () {
-                            _self._setImageDimensions(imgModule, true);
-                        }, 1000);
-                    }
-                }
             }
             dijit.byId("settingDialog").hide();
         },
 
         _createNewModule: function (targetContainer, moduleType, index, moduleInputs) {
-            var _self = this, columnIndex, pageModule, inputFields, moduleData, divModuleContent, imgModule, inputKey, moduleAttr, bookList, newModuleKey, newModuleIndex, inputIndex;
+            var columnIndex, pageModule, inputFields, moduleData, divModuleContent, inputKey, moduleAttr, bookList, newModuleKey, newModuleIndex, inputIndex;
 
             columnIndex = parseInt(domAttr.get(targetContainer.node, "columnIndex"), 10);
             newModuleIndex = index.toString() + columnIndex.toString() + this.currentIndex.toString() + "new" + dojo.currentBookIndex.toString();
@@ -213,14 +205,7 @@ define([
             this._renderModuleContent(moduleType, pageModule, moduleData);
             domAttr.set(this.currentNode, "moduleKey", newModuleKey);
             this.currentNode.appendChild(divModuleContent);
-            if (moduleType === "image") {
-                imgModule = query(".esriImageModule", pageModule)[0];
-                if (imgModule) {
-                    setTimeout(function () {
-                        _self._setImageDimensions(imgModule, true);
-                    }, 1000);
-                }
-            }
+
             bookList = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].BookConfigData);
             moduleAttr = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             if (!bookList.content[columnIndex]) {
@@ -340,7 +325,7 @@ define([
                     domStyle.set(dom.byId("loading" + mapId), "display", "none");
                     _self._createLegend(response.map);
                     _self._createHomeButton(response.map);
-                    if (window.orientation !== null || window.orientation !== undefined) {
+                    if (window.orientation !== null && window.orientation !== undefined) {
                         _self.own(touch.over(dom.byId(mapId), function () {
                             response.map.resize();
                             response.map.reposition();
@@ -425,11 +410,15 @@ define([
         },
 
         _createImageModule: function (pageContentModule, pageModule, moduleIndex) {
-            var innerDiv, imgModule, imgPath, imageDialog;
+            var innerDiv, imgModule, imgPath, imageDialog, _self = this;
             innerDiv = domConstruct.create("div", { "id": "innerDiv" + "Img" + moduleIndex, "style": 'height:auto', "class": "innerDiv" }, pageModule);
             if (dojo.isString(pageContentModule.URL) && lang.trim(pageContentModule.URL) !== "") {
                 imgModule = domConstruct.create("img", { "id": "resizableImg" + moduleIndex, "class": "esriImageModule esriAutoWidth", "style": 'height:auto', "src": pageContentModule.URL }, innerDiv);
                 imgModule.URL = pageContentModule.URL;
+                on(imgModule, "load", function () {
+                    _self._setImageDimensions(imgModule, true);
+                });
+
                 on(imgModule, "click", function () {
                     imgPath = this.URL;
                     imageDialog = new Lightbox.LightboxDialog({});

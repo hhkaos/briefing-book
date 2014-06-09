@@ -80,7 +80,7 @@ define([
             }
         },
 
-        _viewSelectedpage: function (evt) {
+        _viewSelectedpage: function (event) {
             var target;
             if (event.currentTarget) {
                 target = event.currentTarget;

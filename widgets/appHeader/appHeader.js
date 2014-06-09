@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -34,13 +34,13 @@ define([
     "dojo/i18n!nls/localizedStrings",
     "../alertDialog/alertDialog",
     "../mapBookCollection/mapbookUtility"
-], function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, alertBox, mapbookUtility) {
+], function (declare, domConstruct, lang, array, domAttr, domStyle, dom, domClass, on, query, template, topic, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, nls, AlertBox, mapbookUtility) {
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, mapbookUtility], {
         templateString: template,
         nls: nls,
-        postCreate: function () {
-            var _self = this, applicationHeaderDiv, paginationDiv;
-            _self.alertDialog = new alertBox();
+        startup: function () {
+            var _self = this, applicationHeaderDiv;
+            _self.alertDialog = new AlertBox();
             if (query('.esriOrientationBlockedText')[0]) {
                 query('.esriOrientationBlockedText')[0].innerHTML = nls.orientationNotSupported;
             }
@@ -50,7 +50,7 @@ define([
             });
             applicationHeaderDiv = domConstruct.create("div", {}, dom.byId("mapBookHeaderContainer"));
             domConstruct.place(this.applicationHeaderParentContainer, applicationHeaderDiv);
-            paginationDiv = domConstruct.create("span", { "id": "esriPaginationSpan" }, this.paginationDiv);
+            domConstruct.create("span", { "id": "esriPaginationSpan" }, this.paginationDiv);
 
             this._createApplicationHeader();
             document.title = dojo.appConfigData.ApplicationName;
@@ -88,11 +88,10 @@ define([
         },
 
         _createHomeIcon: function () {
-            var homeButtonDiv, confirmHomePageView, _self = this;
+            var homeButtonDiv, _self = this;
             homeButtonDiv = domConstruct.create("div", { "class": "esrihomeButtonIcon", "style": "display:none", "title": nls.homeTitle }, this.applicationHeaderWidgetsContainer);
 
             this.own(on(homeButtonDiv, "click", function () {
-                confirmHomePageView = true;
                 if (dojo.bookInfo[dojo.currentBookIndex].BookConfigData.UnSaveEditsExists) {
                     _self.alertDialog._setContent(nls.validateUnSavedEdits, 1).then(function (confirmHomePageView) {
                         if (confirmHomePageView) {
@@ -150,7 +149,7 @@ define([
         },
 
         _createCopyBookIcon: function () {
-            var copyBookIcon, confirmCopy = true, _self = this;
+            var copyBookIcon, _self = this;
 
             copyBookIcon = domConstruct.create("div", { "class": "esriCopyBookIcon", "title": nls.copyBookShelf }, this.applicationHeaderWidgetsContainer);
             this.own(on(copyBookIcon, "click", function () {
@@ -271,7 +270,7 @@ define([
         },
 
         _displayHomePage: function () {
-            if ("ontouchstart" in window) {
+            if (window.orientation !== null && window.orientation !== undefined) {
                 dojo.appConfigData.AuthoringMode = false;
 
             }

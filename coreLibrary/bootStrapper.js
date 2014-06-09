@@ -1,5 +1,5 @@
-﻿/*global require */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global require,dojo,dojoConfig */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
  |
@@ -28,29 +28,18 @@ require([
     "esri/tasks/GeometryService",
     "dojo/Deferred",
     "dojo/domReady!"
-], function (widgetLoader, config, IdentityManager, OAuthHelper, alertBox, esriConfig, arcgisUtils, GeometryService, Deferred, domReady) {
+], function (WidgetLoader, config, IdentityManager, OAuthHelper, AlertBox, esriConfig, arcgisUtils, GeometryService, Deferred, domReady) {
 
     //========================================================================================================================//
 
-    try {
 
-        /**
-        * load application configuration settings from configuration file
-        * create an object of widget loader class
-        */
-        dojo.appConfigData = config;
-        dojo.bookInfo = [];
-        _initializeApplication();
-        esriConfig.defaults.io.corsDetection = true;
-        esriConfig.defaults.io.corsEnabledServers.push(dojo.appConfigData.PortalURL);
-        esriConfig.defaults.io.timeout = 600000;
-
-        var applicationWidgetLoader = new widgetLoader();
-        applicationWidgetLoader.startup();
-
-    } catch (ex) {
-        this.alertDialog = new alertBox();
-        this.alertDialog._setContent(ex.message, 0);
+    // from repository application-boilerplate-js
+    function _setupOAuth(oauthappid, portalURL) {
+        OAuthHelper.init({
+            appId: oauthappid,
+            portal: portalURL,
+            expiration: (4 * 60) // 4 hours (in minutes); default is 30 minutes
+        });
     }
 
     // adapted from repository application-boilerplate-js
@@ -90,13 +79,25 @@ require([
         }
     }
 
-    // from repository application-boilerplate-js
-    function _setupOAuth(oauthappid, portalURL) {
-        OAuthHelper.init({
-            appId: oauthappid,
-            portal: portalURL,
-            expiration: (4 * 60) // 4 hours (in minutes); default is 30 minutes
-        });
+    try {
+
+        /**
+        * load application configuration settings from configuration file
+        * create an object of widget loader class
+        */
+        dojo.appConfigData = config;
+        dojo.bookInfo = [];
+        _initializeApplication();
+        esriConfig.defaults.io.corsDetection = true;
+        esriConfig.defaults.io.corsEnabledServers.push(dojo.appConfigData.PortalURL);
+        esriConfig.defaults.io.timeout = 600000;
+
+        var applicationWidgetLoader = new WidgetLoader();
+        applicationWidgetLoader.startup();
+
+    } catch (ex) {
+        this.alertDialog = new AlertBox();
+        this.alertDialog._setContent(ex.message, 0);
     }
 
 });

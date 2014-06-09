@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo,dijit,console*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -43,7 +43,7 @@ define([
         _portal: null,
         _selectedWebmap: null,
         _webmapModule: null,
-        postCreate: function () {
+        startup: function () {
             var _self = this;
 
             topic.subscribe("_getPortal", function (portal) {
@@ -66,7 +66,7 @@ define([
         },
 
         _resizeSelectWebmapDialog: function () {
-            var container, pageIndex, containerWidth, outerContainerWidth;
+            var container, containerWidth, outerContainerWidth;
             container = query('.esriSelectWebmapContainer')[0];
             if (container) {
                 containerWidth = domStyle.get(container, "width") - 5;
@@ -101,10 +101,10 @@ define([
         },
 
         _createPaginationFooter: function (divSelectWebMapContainer) {
-            var divPaginationFooter, divInnerPaginationFooter, divWebmapCount, divPrev, divPageStatus, divNext, _self = this;
+            var divPaginationFooter, divInnerPaginationFooter, divPrev, divPageStatus, divNext, _self = this;
             divPaginationFooter = domConstruct.create("div", { "class": "esriWebmapPagination" }, divSelectWebMapContainer);
             divInnerPaginationFooter = domConstruct.create("div", { "class": "esriPaginationInnerDiv" }, divPaginationFooter);
-            divWebmapCount = domConstruct.create("div", { "class": "esriWebmapCountDiv" }, divInnerPaginationFooter);
+            domConstruct.create("div", { "class": "esriWebmapCountDiv" }, divInnerPaginationFooter);
             divPrev = domConstruct.create("div", { "class": "esriPaginationPrevious disableNavigation", "innerHTML": "<span class='esriPaginationText'>Previous<span>" }, divInnerPaginationFooter);
             divPageStatus = domConstruct.create("div", { "class": "esriCurrentPageStatus" }, divInnerPaginationFooter);
             divNext = domConstruct.create("div", { "class": "esriPaginationNext disableNavigation", "innerHTML": "<span class='esriPaginationText'>Next</span>" }, divInnerPaginationFooter);
@@ -123,10 +123,13 @@ define([
             var currentPageIndex, webmapPageList;
             if (!domClass.contains(btnNode, "disableNavigation")) {
                 webmapPageList = query('.esriWebmaplistPage');
-                currentPageIndex = parseInt(domAttr.get(query('.esriCurrentPageIndex')[0], "currentPage"));
+                currentPageIndex = parseInt(domAttr.get(query('.esriCurrentPageIndex')[0], "currentPage"), 10);
                 domClass.add(webmapPageList[currentPageIndex], "displayNone");
-
-                isNext ? currentPageIndex++ : currentPageIndex--;
+                if (isNext) {
+                    currentPageIndex++;
+                } else {
+                    currentPageIndex--;
+                }
                 domClass.remove(webmapPageList[currentPageIndex], "displayNone");
                 domClass.remove(query('.esriPaginationNext')[0], "disableNavigation");
                 domClass.remove(query('.esriPaginationPrevious')[0], "disableNavigation");
@@ -166,8 +169,8 @@ define([
         },
 
         _createWebMapDialogContent: function (response) {
-            var pageIndex, webMapURL, _self = this, webmapIndex, divWebmapPage, divWebmapThumbnail, imgWebmapDescript, imgWebmapThumbnail, pageWidth,
-            paginationFooter, noOfpages, pageContentIndex;
+            var pageIndex, webMapURL, _self = this, webmapIndex, divWebmapPage, divWebmapThumbnail, imgWebmapDescript, pageWidth,
+                paginationFooter, noOfpages, pageContentIndex;
             this._selectedWebmap = null;
             webMapURL = dojo.appConfigData.PortalURL + '/home/webmap/viewer.html?webmap=';
             domConstruct.empty(dom.byId("divWebmapContent"));
@@ -183,7 +186,7 @@ define([
                     for (pageContentIndex = 0; pageContentIndex < dojo.appConfigData.webmapPerPage; pageContentIndex++) {
                         if (response.results[webmapIndex]) {
                             divWebmapThumbnail = domConstruct.create("div", { "class": "esriWebmapThumbnailDiv" }, divWebmapPage);
-                            imgWebmapThumbnail = domConstruct.create("img", { "src": response.results[webmapIndex].thumbnailUrl, "class": "esriWebmapThumbnail" }, divWebmapThumbnail);
+                            domConstruct.create("img", { "src": response.results[webmapIndex].thumbnailUrl, "class": "esriWebmapThumbnail" }, divWebmapThumbnail);
                             domAttr.set(divWebmapThumbnail, "webmapID", webMapURL + response.results[webmapIndex].id);
                             domAttr.set(divWebmapThumbnail, "webmapTitle", response.results[webmapIndex].title);
                             domAttr.set(divWebmapThumbnail, "webmapCaption", response.results[webmapIndex].snippet);
@@ -195,22 +198,13 @@ define([
                                 imgWebmapDescript.innerHTML = nls.descriptionNotAvailable;
                             }
 
-                            _self.own(on(divWebmapThumbnail, "click", function () {
-                                _self._selectWebmap(this, false);
-                            }));
+                            _self.own(on(divWebmapThumbnail, "click", lang.hitch(this, this._selectWebmap)));
 
-                            _self.own(on(divWebmapThumbnail, "mouseover", function () {
-                                _self._toggleDescriptionView(this, true);
-                            }));
+                            _self.own(on(divWebmapThumbnail, "mouseover", lang.hitch(this, this._toggleDescriptionView)));
 
-                            _self.own(on(divWebmapThumbnail, "mouseout", function () {
-                                _self._toggleDescriptionView(this, false);
-                            }));
+                            _self.own(on(divWebmapThumbnail, "mouseout", lang.hitch(this, this._toggleDescriptionView)));
 
-                            _self.own(on(divWebmapThumbnail, "dblclick", function (evt) {
-                                _self._selectWebmap(this, true);
-                                evt.stopPropagation();
-                            }));
+                            _self.own(on(divWebmapThumbnail, "dblclick", lang.hitch(this, this._selectWebmap)));
 
                             webmapIndex++;
                         }
@@ -247,7 +241,17 @@ define([
             this._resizeSelectWebmapDialog();
         },
 
-        _selectWebmap: function (selectedNode, isDblClicked) {
+        _selectWebmap: function (event) {
+            var isDblClicked = false, selectedNode;
+            if (event.currentTarget) {
+                selectedNode = event.currentTarget;
+            } else {
+                selectedNode = event.srcElement;
+            }
+            if (event.type === "dblclick") {
+                isDblClicked = true;
+                event.stopPropagation();
+            }
             if (query('.esriSelectedWebmapDiv')[0]) {
                 domClass.remove(query('.esriSelectedWebmapDiv')[0], "esriSelectedWebmapDiv");
             }
@@ -260,8 +264,16 @@ define([
         },
 
 
-        _toggleDescriptionView: function (selectedNode, isVisible) {
-            var imgWebmap, descWebmap;
+        _toggleDescriptionView: function (event) {
+            var selectedNode, imgWebmap, descWebmap, isVisible = false;
+            if (event.currentTarget) {
+                selectedNode = event.currentTarget;
+            } else {
+                selectedNode = event.srcElement;
+            }
+            if (event.type === "mouseover") {
+                isVisible = true;
+            }
             imgWebmap = query('.esriWebmapThumbnail', selectedNode)[0];
             descWebmap = query('.esriWebmapDescript', selectedNode)[0];
             if (isVisible) {
@@ -274,7 +286,7 @@ define([
         },
 
         _setSelectedWebmapAttr: function (isDblClicked) {
-            var inputIndex, moduleInputs, inputKey, inputFields;
+            var inputIndex, moduleInputs, inputKey, inputFields, btnSave;
             if (this._selectedWebmap) {
                 moduleInputs = [];
                 inputFields = query('.esriSettingInput');
@@ -288,7 +300,7 @@ define([
                 }
             }
             if (isDblClicked) {
-                var btnSave = query('.esriSettingSave')[0];
+                btnSave = query('.esriSettingSave')[0];
                 topic.publish("validateInputHandler", btnSave, this._webmapModule, moduleInputs);
             }
         },
@@ -344,14 +356,14 @@ define([
             searchParam = dijit.byId("searchWebmapComboBox").item.value;
 
             switch (searchParam) {
-                case "arcgis":
-                    break;
-                case "org":
-                    queryParam = "orgid:" + this._portal.id;
-                    break;
-                case "mycontent":
-                    queryParam = "owner: " + dojo.currentUser;
-                    break;
+            case "arcgis":
+                break;
+            case "org":
+                queryParam = "orgid:" + this._portal.id;
+                break;
+            case "mycontent":
+                queryParam = "owner: " + dojo.currentUser;
+                break;
             }
             if (lang.trim(dijit.byId("searchTagTextBox").get("value")) !== "") {
                 if (queryParam !== '') {

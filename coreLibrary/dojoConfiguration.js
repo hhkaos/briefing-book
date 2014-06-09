@@ -1,5 +1,5 @@
-﻿/*global location,dojoConfig */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojoConfig:true */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
  |
@@ -26,10 +26,10 @@ dojoConfig = {
     async: true,
     baseURL: root,
     packages: [
-            { name: "application", location: root },
-            { name: "widgets", location: root + '/widgets' },
-            { name: "coreLibrary", location: root + '/coreLibrary' },
-            { name: "nls", location: root + '/nls' }
+        { name: "application", location: root },
+        { name: "widgets", location: root + '/widgets' },
+        { name: "coreLibrary", location: root + '/coreLibrary' },
+        { name: "nls", location: root + '/nls' }
     ]
 };
 if (location.search.match(/locale=([\w\-]+)/)) {

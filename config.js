@@ -61,7 +61,7 @@ define([], function () {
 
         // Location of your geometry service; necessary for loading webmaps that aren't in Web Map Mercator Auxiliary Sphere
         // Portal for ArcGIS organizations should replace the URL below with the organizations geometry service
-        GeometryServiceURL: "",
+        GeometryServiceURL: "http://tasks.arcgisonline.com/arcgis/rest/services/Geometry/GeometryServer",
 
         // The unique tag given to each book. This tag will determine which books are visible in the Briefing Book application.
         ConfigSearchTag: '',

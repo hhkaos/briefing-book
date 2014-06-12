@@ -6,6 +6,7 @@
 	font-size: 12px;
 	font-family: Sans-Serif !important;
 	color: #6E6E6E;
+	top:0px !important;
 }
 
 .esriCTFullHeightWidth {
@@ -273,6 +274,7 @@
 	cursor: pointer;
 	position: relative;
 	top: 45.5%;
+	z-index: 10000 !important;
 }
 
 .esriNextDisabled {
@@ -307,6 +309,7 @@
 	cursor: pointer;
 	position: relative;
 	top: 45.5%;
+	z-index: 10000 !important;
 }
 
 .esriMapcontentPages {
@@ -455,6 +458,14 @@
 
 .esriContentListDiv .esriTOCcontainer {
 	padding: 5px 0px;
+}
+
+.esriContentListPanelDiv #divContentList{
+        display:none;
+}
+
+.esriContentPanelOpened #divContentList{
+        display:block !important;
 }
 
 #divContentList .esriContentListDiv {
@@ -854,7 +865,10 @@ h2 {
 	float: left;
 	z-index: 0;
 	cursor: pointer;
-	width: auto !important;
+}
+
+.esriAutoWidth{
+    width:auto !important;
 }
 
 .esriLogoIcon {
@@ -1788,4 +1802,3 @@ h2 {
 	background-color: #616161;
 	cursor: pointer;
 }
-

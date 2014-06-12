@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo,dijit*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -34,12 +34,12 @@ define([
     "esri/request",
     "../alertDialog/alertDialog",
     "dojo/parser"
-], function (declare, array, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, Portal, esriRequest, alertBox) {
+], function (declare, array, lang, _WidgetBase, Dialog, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, Portal, esriRequest, AlertBox) {
     return declare([_WidgetBase], {
         _portal: null,
-        postCreate: function () {
+        startup: function () {
             var _self = this;
-            _self.alertDialog = new alertBox();
+            _self.alertDialog = new AlertBox();
 
             topic.subscribe("_getPortal", function (portal) {
                 _self._portal = portal;
@@ -52,7 +52,7 @@ define([
 
         _createShareBookDialog: function () {
             var btnContainer, shareBookDialog, btnShare, _self = this, optionIndex, divShareDialogOptionList, divCheckBox,
-            divCheckBoxLabel, shareOptions, divShareDialogContent;
+                shareOptions, divShareDialogContent;
 
             if (dijit.byId("ShareBookDialog")) {
                 dijit.byId("ShareBookDialog").destroy();
@@ -70,10 +70,8 @@ define([
             for (optionIndex = 0; optionIndex < shareOptions.length; optionIndex++) {
                 divShareDialogOptionList = domConstruct.create("div", { "class": "esriShareDialogOptionList" }, divShareDialogContent);
                 divCheckBox = domConstruct.create("div", { "id": "chkBox" + shareOptions[optionIndex].key, "class": "esriCheckBox", "key": shareOptions[optionIndex].key }, divShareDialogOptionList);
-                on(divCheckBox, "click", function () {
-                    _self._toggleSharingCheckbox(this);
-                });
-                divCheckBoxLabel = domConstruct.create("div", { "class": "esriCheckBoxLabel", "innerHTML": shareOptions[optionIndex].label }, divShareDialogOptionList);
+                on(divCheckBox, "click", lang.hitch(this, this._toggleSharingCheckbox));
+                domConstruct.create("div", { "class": "esriCheckBoxLabel", "innerHTML": shareOptions[optionIndex].label }, divShareDialogOptionList);
             }
 
             btnContainer = domConstruct.create("div", { "class": "esriButtonContainer" }, divShareDialogContent);
@@ -115,21 +113,26 @@ define([
 
         _setSharingOptions: function (shareKey, isChecked) {
             switch (shareKey) {
-                case "everyone":
-                    dojo.bookInfo[dojo.currentBookIndex].BookConfigData.shareWithEveryone = isChecked;
-                    break;
-                case "org":
-                    dojo.bookInfo[dojo.currentBookIndex].BookConfigData.shareWithOrg = isChecked;
-                    break;
-                case "copyProtected":
-                    dojo.bookInfo[dojo.currentBookIndex].BookConfigData.copyProtected = isChecked;
-                    break;
+            case "everyone":
+                dojo.bookInfo[dojo.currentBookIndex].BookConfigData.shareWithEveryone = isChecked;
+                break;
+            case "org":
+                dojo.bookInfo[dojo.currentBookIndex].BookConfigData.shareWithOrg = isChecked;
+                break;
+            case "copyProtected":
+                dojo.bookInfo[dojo.currentBookIndex].BookConfigData.copyProtected = isChecked;
+                break;
             }
 
         },
 
-        _toggleSharingCheckbox: function (chkBox) {
-            var checked, checkBoxKey;
+        _toggleSharingCheckbox: function (event) {
+            var checkBoxKey, chkBox;
+            if (event.currentTarget) {
+                chkBox = event.currentTarget;
+            } else {
+                chkBox = event.srcElement;
+            }
             checkBoxKey = domAttr.get(chkBox, "key");
             if (domClass.contains(chkBox, "esriCheckBoxChecked")) {
                 if (!domClass.contains(chkBox, "opacityChkBox")) {

@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo,dijit*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -144,13 +144,10 @@ define([
         },
 
         _toggleFullMapView: function (btnNode) {
-            var containerId, divFullMap, zoomSlider, divCustomMap, timeSlider, mapContainer, esriLogo;
+            var containerId, divFullMap, divCustomMap, mapContainer;
             containerId = domAttr.get(btnNode, "index");
             mapContainer = dom.byId("map" + containerId);
             divFullMap = dom.byId("viewFull" + containerId);
-            zoomSlider = query('.esriSimpleSlider', mapContainer)[0];
-            timeSlider = query('.esriTimeSlider', mapContainer)[0];
-            esriLogo = query('.esriControlsBR', mapContainer)[0];
             divCustomMap = dom.byId("divMapContainer" + containerId);
 
             if (domStyle.get(divFullMap, "display") === "none") {
@@ -237,11 +234,47 @@ define([
         },
 
         _setNewHeight: function (resizerObj) {
-            var moduleKey, newHeight, configData;
+            var moduleKey, newHeight, newWidth, configData, aspectRatio;
             moduleKey = domAttr.get(resizerObj.domNode, "key");
             newHeight = domStyle.get(resizerObj.targetDomNode, "height");
+            if (domClass.contains(resizerObj.targetDomNode, "esriImageModule")) {
+                domClass.add(resizerObj.targetDomNode, "esriAutoWidth");
+                if (resizerObj.targetDomNode.parentElement.offsetWidth < resizerObj.targetDomNode.offsetWidth) {
+                    aspectRatio = resizerObj.targetDomNode.offsetWidth / resizerObj.targetDomNode.offsetHeight;
+                    newWidth = resizerObj.targetDomNode.parentElement.offsetWidth - 5;
+                    newHeight = Math.floor(newWidth / aspectRatio);
+                    domClass.remove(resizerObj.targetDomNode, "esriAutoWidth");
+                    domStyle.set(resizerObj.targetDomNode, "width", newWidth + 'px');
+                    domStyle.set(resizerObj.targetDomNode, "height", newHeight + 'px');
+                }
+            }
             configData = this._getConfigData(dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData);
             configData[moduleKey].height = Math.floor(newHeight);
+        },
+
+        _checkImageDimension: function (page, isOnLoad) {
+            var _self = this, imgModules = query('.esriImageModule', page);
+
+            array.forEach(imgModules, function (imgModule) {
+                _self._setImageDimensions(imgModule, isOnLoad);
+            });
+
+        },
+
+        _setImageDimensions: function (imgModule, isOnLoad) {
+            var aspectRatio, newWidth, newHeight;
+            if (isOnLoad && imgModule.offsetHeight > 0) {
+                domStyle.set(imgModule, "maxHeight", imgModule.offsetHeight + 'px');
+                domStyle.set(imgModule, "maxWidth", imgModule.offsetWidth + 'px');
+            }
+            if (imgModule.parentElement.offsetWidth < imgModule.offsetWidth) {
+                aspectRatio = imgModule.offsetWidth / imgModule.offsetHeight;
+                newWidth = imgModule.parentElement.offsetWidth - 5;
+                newHeight = Math.floor(newWidth / aspectRatio);
+                domClass.remove(imgModule, "esriAutoWidth");
+                domStyle.set(imgModule, "width", newWidth + 'px');
+                domStyle.set(imgModule, "height", newHeight + 'px');
+            }
         }
     });
 });

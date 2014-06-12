@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -37,16 +37,17 @@ define([
     "esri/request",
     "esri/urlUtils",
     "esri/IdentityManager",
+    "coreLibrary/OAuthHelper",
     "../alertDialog/alertDialog",
     "dojo/DeferredList",
     "dojo/_base/Deferred",
     "dojo/parser"
-], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, alertBox, DeferredList, Deferred) {
+], function (declare, array, lang, _WidgetBase, domConstruct, domAttr, domStyle, domClass, dom, on, query, topic, nls, esriPortal, arcgisUtils, config, cookie, kernel, esriRequest, urlUtils, IdentityManager, OAuthHelper, AlertBox, DeferredList, Deferred) {
     return declare([_WidgetBase], {
         _portal: null,
         startup: function () {
             var _self = this, deferred;
-            _self.alertDialog = new alertBox();
+            _self.alertDialog = new AlertBox();
             deferred = new Deferred();
 
             this._setApplicationTheme();
@@ -80,10 +81,15 @@ define([
                 }
             });
 
-            this._portal = new esriPortal.Portal(dojo.appConfigData.PortalURL);
-            dojo.connect(_self._portal, 'onLoad', function () {
-                _self._loadCredentials(deferred);
-            });
+            if (dojo.appConfigData.PortalURL) {
+                this._portal = new esriPortal.Portal(dojo.appConfigData.PortalURL);
+                dojo.connect(_self._portal, 'onLoad', function () {
+                    _self._loadCredentials(deferred);
+                });
+            } else {
+                deferred.reject();
+
+            }
             return deferred.promise;
         },
 
@@ -128,33 +134,54 @@ define([
 
         _loadCredentials: function (deferred) {
             deferred.resolve();
-            var idJson, idObject, isCredAvailable = false;
-            if (this._supports_local_storage()) {
-                idJson = window.localStorage.getItem(dojo.appConfigData.Credential);
-            } else {
-                if (cookie.isSupported()) {
-                    idJson = cookie(dojo.appConfigData.Credential);
-                }
+            var idJson, idObject, i, isCredAvailable = false, signedInViaOAuth = false;
+
+            // If we've connected via OAuth, we can go ahead with the the behind-the-scenes login.
+            // We shield the call because it throws an exception if OAuthHelper has not been
+            // initialized, but we can only initialize OAuthHelper if we're intending to use it
+            // (its initialization alters the Identity Manager, so we don't want to initialize it
+            // all the time).
+            try {
+                signedInViaOAuth = OAuthHelper.isSignedIn();
+            } catch (ex) {
+                signedInViaOAuth = false;
             }
-            if (idJson && idJson !== "null" && idJson.length > 4) {
-                idObject = JSON.parse(idJson);
-                if (idObject.credentials[0].expires > Date.now()) {
-                    if (dojo.appConfigData.PortalURL === idObject.serverInfos[0].server) {
-                        isCredAvailable = true;
-                        kernel.id.initialize(idObject);
-                        this._displayLoginDialog(deferred);
+            if (signedInViaOAuth) {
+                this._displayLoginDialog(false);
+
+                // Otherwise see if we've cached credentials
+            } else {
+                if (this._supports_local_storage()) {
+                    idJson = window.localStorage.getItem(dojo.appConfigData.Credential);
+                } else {
+                    if (cookie.isSupported()) {
+                        idJson = cookie(dojo.appConfigData.Credential);
+                    }
+                }
+                if (idJson && idJson !== "null" && idJson.length > 4) {
+                    idObject = JSON.parse(idJson);
+                    for (i = 0; i < idObject.credentials.length; i++) {
+                        if (dojo.appConfigData.PortalURL === idObject.credentials[i].server) {
+                            if (idObject.credentials[i].expires > Date.now()) {
+                                isCredAvailable = true;
+                                kernel.id.initialize(idObject);
+                                this._displayLoginDialog(deferred);
+                            }
+                        }
                     }
                 }
             }
+
             if (!isCredAvailable) {
                 this._queryOrgItems();
             }
-
         },
 
         _supports_local_storage: function () {
             try {
-                return "localStorage" in window && window["localStorage"] !== null;
+                if (window && window.localStorage && window.localStorage !== null) {
+                    return true;
+                }
             } catch (e) {
                 return false;
             }
@@ -186,7 +213,7 @@ define([
         },
 
         _createConfigurationPanel: function (response) {
-            var _self = this, deferArray, configData, deferList, bookIndex;
+            var deferArray, configData, deferList, bookIndex;
             deferArray = [];
             array.forEach(response.results, function (itemData) {
                 var defer = new Deferred();
@@ -197,10 +224,18 @@ define([
                     handleAs: "json"
                 });
                 configData.then(function (itemInfo) {
-                    itemInfo.BookConfigData.itemId = itemData.id;
-                    itemInfo.BookConfigData.owner = itemData.owner;
-                    itemInfo.BookConfigData.UnSaveEditsExists = false;
-                    defer.resolve(itemInfo);
+                    if (itemInfo.BookConfigData && itemInfo.ModuleConfigData) {
+                        try {
+                            itemInfo.BookConfigData.itemId = itemData.id;
+                            itemInfo.BookConfigData.owner = itemData.owner;
+                            itemInfo.BookConfigData.UnSaveEditsExists = false;
+                            defer.resolve(itemInfo);
+                        } catch (ex) {
+                            defer.resolve();
+                        }
+                    } else {
+                        defer.resolve();
+                    }
                 }, function (e) {
                     defer.resolve();
                 });
@@ -211,9 +246,7 @@ define([
             deferList.then(function (results) {
                 for (bookIndex = 0; bookIndex < results.length; bookIndex++) {
                     if (results[bookIndex][1]) {
-                        if (results[bookIndex][1].BookConfigData && results[bookIndex][1].ModuleConfigData) {
-                            dojo.bookInfo.push(results[bookIndex][1]);
-                        }
+                        dojo.bookInfo.push(results[bookIndex][1]);
                     }
                 }
                 topic.publish("authoringModeHandler");
@@ -254,6 +287,7 @@ define([
             if (currentItemId === nls.defaultItemId) {
                 requestUrl = this._portal.getPortalUser().userContentUrl + '/addItem';
                 queryParam.type = 'Web Mapping Application';
+                queryParam.typeKeywords = 'JavaScript,Configurable';
                 queryParam.title = dojo.bookInfo[dojo.currentBookIndex].BookConfigData.title;
                 queryParam.tags = dojo.appConfigData.ConfigSearchTag;
                 requestType = "add";
@@ -364,17 +398,17 @@ define([
         _setApplicationTheme: function () {
             var cssURL;
             switch (dojo.appConfigData.ApplicationTheme) {
-                case "blue":
-                    cssURL = "themes/styles/theme_blue.css";
-                    break;
+            case "blue":
+                cssURL = "themes/styles/theme_blue.css";
+                break;
 
-                case "grey":
-                    cssURL = "themes/styles/theme_grey.css";
-                    break;
+            case "grey":
+                cssURL = "themes/styles/theme_grey.css";
+                break;
 
-                default:
-                    cssURL = "themes/styles/theme_grey.css";
-                    break;
+            default:
+                cssURL = "themes/styles/theme_grey.css";
+                break;
             }
             if (dom.byId("appTheme")) {
                 domAttr.set(dom.byId("appTheme"), "href", cssURL);

@@ -1,5 +1,5 @@
-﻿/*global define,Modernizr */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
  |
@@ -27,22 +27,35 @@ define([
     "widgets/selectWebmap/selectWebmap",
     "widgets/shareBook/shareBook",
     "dojo/domReady!"
-], function (declare, nls, _WidgetBase, alertBox, appHeader, mapBookCollection, mapBookConfigLoader, selectWebmap, shareBook) {
+], function (declare, nls, _WidgetBase, AlertBox, AppHeader, MapBookCollection, MapBookConfigLoader, SelectWebmap, ShareBook) {
     return declare([_WidgetBase], {
         nls: nls,
         startup: function () {
-            var mapbookLoader, MapBookCollection, applicationHeader, sharebook, alertDialog;
+            var mapbookLoader, mapBookCollection, applicationHeader, sharebook, alertDialog, selectWebmap;
             try {
-                mapbookLoader = new mapBookConfigLoader();
+                mapbookLoader = new MapBookConfigLoader();
                 mapbookLoader.startup().then(function (response) {
-                    MapBookCollection = new mapBookCollection();
-                    applicationHeader = new appHeader();
-                    selectWebmap = new selectWebmap();
-                    sharebook = new shareBook();
+                    mapBookCollection = new MapBookCollection();
+                    mapBookCollection.startup();
+                    applicationHeader = new AppHeader();
+                    applicationHeader.startup();
+                    selectWebmap = new SelectWebmap();
+                    selectWebmap.startup();
+                    sharebook = new ShareBook();
+                    sharebook.startup();
+                }, function () {
+                    var message = "";
+                    if (dojo.appConfigData.PortalURL) {
+                        message = nls.errorMessages.configurationError;
+                    } else {
+                        message = nls.errorMessages.organizationNotSet;
+                    }
+                    alertDialog = new AlertBox();
+                    alertDialog._setContent(message, 0);
                 });
             } catch (ex) {
-                alertDialog = new alertBox();
-                alertDialog._setContent(nls.errorMessages.widgetNotLoaded, 0);
+                alertDialog = new AlertBox();
+                alertDialog._setContent(nls.errorMessages.configurationError, 0);
             }
         }
     });

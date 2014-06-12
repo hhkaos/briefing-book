@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dojo,dijit*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -62,7 +62,7 @@ define([
         },
 
         _renderPage: function (page) {
-            var _self = this, listItem, pageHeight, currentPage, currentPageContainer;
+            var listItem, pageHeight, currentPageContainer;
             listItem = domConstruct.create("li", { "class": "esriMapBookPageListItem" }, null);
             dom.byId("mapBookPagesUList").appendChild(listItem);
             this.currentIndex = page.index;
@@ -105,8 +105,8 @@ define([
         },
 
         _renderEditPage: function () {
-            var divEditPage, isModuleValid, divEditPageHeader, divEditPageList, imgOptionList, imgEditCoverPage, imgEditContentPage, divAddNewPage,
-            tempContHeight, divEditPageBody, divPageSlider, _self = this;
+            var divEditPage, divEditPageHeader, divEditPageList, imgOptionList, imgEditCoverPage, imgEditContentPage, divAddNewPage,
+                tempContHeight, divEditPageBody, _self = this;
 
             divEditPage = domConstruct.create("div", { "class": "esriMapBookEditPage" }, dom.byId('esriMapPages'));
             divEditPageHeader = domConstruct.create("div", { "class": "esriEditPageHeader" }, divEditPage);
@@ -134,7 +134,7 @@ define([
             domConstruct.create("div", { "class": "esriAddNewPageImg" }, divAddNewPage);
             domConstruct.create("div", { "class": "esriAddNewPageLabel", "innerHTML": nls.addPageTitle }, divAddNewPage);
             divEditPageBody = domConstruct.create("div", { "class": "esriEditPageBody" }, divEditPage);
-            divPageSlider = domConstruct.create("div", { "class": "esriPageSliderContainer" }, divEditPageHeader);
+            domConstruct.create("div", { "class": "esriPageSliderContainer" }, divEditPageHeader);
             _self._createPageSlider();
             _self._createDnDModuleList();
             _self._renderTemplateOptionPage(divEditPageBody, dojo.appConfigData.BookPageLayouts, true);
@@ -155,14 +155,14 @@ define([
         },
 
         _renderTemplateOptionPage: function (divEditPageBody, configLayout, isBookPageLayout) {
-            var _self = this, divTitle, divOuter, layoutType, templateType, divTemplateContainer, divTemplatelist, divEditPageBodyContent, divEditPageFooter, divAddPage, divCancel, tempIndex;
+            var _self = this, divOuter, layoutType, templateType, divTemplateContainer, divTemplatelist, divEditPageBodyContent, divEditPageFooter, divAddPage, divCancel, tempIndex;
             if (isBookPageLayout) {
                 layoutType = "pageLayoutOption";
             } else {
                 layoutType = "contentLayoutOption";
             }
             divEditPageBodyContent = domConstruct.create("div", { "class": layoutType }, divEditPageBody);
-            divTitle = domConstruct.create("div", { "class": "esriLabelSelectlayout", "innerHTML": nls.selectAnyLayout }, divEditPageBodyContent);
+            domConstruct.create("div", { "class": "esriLabelSelectlayout", "innerHTML": nls.selectAnyLayout }, divEditPageBodyContent);
             divOuter = domConstruct.create("div", { "class": "esriTemplateOuterDiv" }, divEditPageBodyContent);
             array.forEach(configLayout, function (layoutOption, index) {
                 divTemplateContainer = domConstruct.create("div", { "class": "esriTemplateContainer" }, divOuter);
@@ -194,9 +194,9 @@ define([
         },
 
         _createNewPage: function (isBookPageLayout) {
-            var selectedTempIndex, newPage = {}, pageIndex, flag = false, currentPageIndex = this.currentIndex;
+            var selectedTempIndex, newPage = {}, pageIndex, selectedPage, flag = false, currentPageIndex = this.currentIndex;
 
-            selectedTempIndex = parseInt(domAttr.get(query('.selectedTemplate')[0], "index"));
+            selectedTempIndex = parseInt(domAttr.get(query('.selectedTemplate')[0], "index"), 10);
             pageIndex = this.mapBookDetails[dojo.currentBookIndex].length;
 
             if (isBookPageLayout) {
@@ -235,7 +235,6 @@ define([
                 if (isBookPageLayout) {
                     this._reArrangePageList(currentPageIndex + 1);
                 } else {
-                    var selectedPage;
                     selectedPage = dom.byId('mapBookPagesUList').lastChild;
                     dom.byId('mapBookPagesUList').insertBefore(selectedPage, dom.byId('mapBookPagesUList').children[1]);
                     this.currentIndex = 1;
@@ -247,13 +246,12 @@ define([
         },
 
         _reArrangePageList: function (currentPageIndex) {
-            var currentListItemIndex = this.currentIndex;
-            var refListItemIndex = currentPageIndex;
+            var currentListItemIndex = this.currentIndex, selectedPage, bookPages, mapBookDetails, bookListdata,
+                refListItemIndex = currentPageIndex;
             if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
                 currentListItemIndex--;
                 refListItemIndex--;
             }
-            var selectedPage, bookPages, mapBookDetails, bookListdata;
             selectedPage = dom.byId('mapBookPagesUList').children[currentListItemIndex];
             dom.byId('mapBookPagesUList').insertBefore(selectedPage, dom.byId('mapBookPagesUList').children[refListItemIndex]);
 
@@ -273,14 +271,13 @@ define([
         },
 
         _deletePage: function () {
-            var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this, moduleData, pageIndex = this.currentIndex, index;
+            var selectedPage, pageModuleContent, bookPages, bookPageIndex, _self = this, pageIndex = this.currentIndex, index;
             if (this.mapBookDetails[dojo.currentBookIndex][1] === "EmptyContent") {
                 pageIndex--;
             }
             selectedPage = dom.byId('mapBookPagesUList').children[pageIndex];
             domStyle.set(selectedPage, "display", "none");
             bookPages = dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData.BookPages;
-            moduleData = dojo.bookInfo[dojo.currentBookIndex].ModuleConfigData.BookPages[this.currentIndex - 2];
             bookPageIndex = this.currentIndex - 2;
             pageModuleContent = query('.esriMapBookColContent', selectedPage);
             this.mapBookDetails[dojo.currentBookIndex].splice(bookPageIndex + 2, 1);

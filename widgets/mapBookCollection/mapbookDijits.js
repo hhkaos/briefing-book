@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global define,dijit*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2014 Esri
  |
@@ -67,7 +67,7 @@ define([
         },
 
         _createTextEditor: function (moduleSettingContent, moduleAttr, key) {
-            var divInputContainer, dijitInputContainer, fontFamily, fontSize;
+            var divInputContainer, dijitInputContainer, fontFamily;
             this._destroyExistingNode(dijit.byId("textEditor"), true);
             divInputContainer = domConstruct.create("div", { "class": "esriTextArea" }, moduleSettingContent);
 
@@ -125,7 +125,7 @@ define([
         },
 
         _createTimeSlider: function (response) {
-            var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, sliderDiv, esriLogo, layeIndex;
+            var webmap, showTimeSlider, itemData, timeSlider, webmapTimeSlider, timeExtent, esriLogo, layeIndex;
             webmap = response.map;
             showTimeSlider = false;
             itemData = response.itemInfo.itemData;
@@ -141,7 +141,7 @@ define([
             }
             if (showTimeSlider) {
                 this._destroyExistingNode(dijit.byId("Slider" + webmap.id), true);
-                sliderDiv = domConstruct.create("div", { "id": "Slider" + webmap.id, "class": "esriSliderDemo" }, webmap.root);
+                domConstruct.create("div", { "id": "Slider" + webmap.id, "class": "esriSliderDemo" }, webmap.root);
                 timeSlider = new TimeSlider({
                     style: "width: 100%;"
                 }, dom.byId("Slider" + webmap.id));

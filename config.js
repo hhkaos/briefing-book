@@ -206,8 +206,8 @@ define([], function () {
             "webmap": {
                 map: '',
                 type: "webmap",
-                title: "Webmap title goes here",
-                caption: "Webmap caption goes here",
+                title: "Map title goes here",
+                caption: "Map caption goes here",
                 URL: '',
                 height: 230 // in pixel
             },
